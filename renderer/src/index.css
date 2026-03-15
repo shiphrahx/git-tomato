@@ -81,14 +81,43 @@ body {
 .panel__body {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 24px 24px 28px;
+  align-items: stretch;
   flex: 1;
+  overflow: hidden; /* children manage their own scroll */
 }
 
 .panel__body--timeline {
-  padding: 0;
   align-items: stretch;
+}
+
+/* Fixed section: heading + ring + controls + connector */
+.panel__timer-fixed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 24px 0;
+  flex-shrink: 0;
+}
+
+/* Scrollable commit list */
+.panel__commit-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 24px 20px;
+}
+
+.panel__commit-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.panel__commit-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel__commit-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+}
+.panel__commit-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.22);
 }
 
 /* ─── Heading ───────────────────────────────────────────────── */
@@ -237,6 +266,14 @@ body {
 
 .commit-card:hover {
   background: rgba(255,255,255,0.08);
+}
+
+.commit-card--clickable {
+  cursor: pointer;
+}
+
+.commit-card--clickable:hover {
+  border-color: rgba(255,77,77,0.3);
 }
 
 .commit-card__icon {
@@ -411,6 +448,16 @@ body {
   flex-shrink: 0;
 }
 
+.session-card__hash--link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.session-card__hash--link:hover {
+  color: #ff4d4d;
+}
+
 .session-card__message {
   font-size: 12px;
   color: #c9c9c9;
@@ -441,4 +488,298 @@ body {
 .timeline-empty__hint {
   font-size: 12px;
   color: rgba(255,255,255,0.15);
+}
+
+/* ─── Week digest ───────────────────────────────────────────── */
+
+.week-digest {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.week-digest__summary {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.week-digest__scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.week-digest__scroll::-webkit-scrollbar { width: 4px; }
+.week-digest__scroll::-webkit-scrollbar-track { background: transparent; }
+.week-digest__scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+/* ─── Bar chart ─────────────────────────────────────────────── */
+
+.week-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 100px;
+}
+
+.week-chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.week-chart__bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.week-chart__bar {
+  width: 100%;
+  min-height: 2px;
+  background: rgba(255,77,77,0.35);
+  border-radius: 4px 4px 2px 2px;
+  transition: height 0.3s ease;
+}
+
+.week-chart__bar--today {
+  background: #ff4d4d;
+  box-shadow: 0 0 8px rgba(255,77,77,0.4);
+}
+
+.week-chart__label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.week-chart__label--today {
+  color: #ff6b6b;
+}
+
+.week-chart__commits {
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  font-weight: 500;
+}
+
+/* ─── Repo breakdown ─────────────────────────────────────────── */
+
+.week-repos__title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 10px;
+}
+
+.week-repos__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.week-repos__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6e6e6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.week-repos__meta {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* ─── Settings window ───────────────────────────────────────── */
+
+.app-shell--settings {
+  overflow-y: auto;
+  align-items: flex-start;
+  height: 100%;
+}
+
+.settings {
+  width: 100%;
+  padding: 28px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.settings__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e6e6e6;
+  margin-bottom: 24px;
+  letter-spacing: -0.01em;
+}
+
+.settings__section {
+  margin-bottom: 28px;
+}
+
+.settings__section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.settings__field {
+  margin-bottom: 14px;
+}
+
+.settings__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #e6e6e6;
+  margin-bottom: 6px;
+}
+
+.settings__input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings__input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #e6e6e6;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.settings__input:focus {
+  border-color: rgba(255,77,77,0.6);
+}
+
+.settings__input--number {
+  width: 72px;
+}
+
+.settings__input--path {
+  font-family: 'SF Mono', 'Cascadia Code', monospace;
+  font-size: 12px;
+}
+
+.settings__unit {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  flex-shrink: 0;
+}
+
+.settings__hint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.settings__hint code {
+  color: #ff6b6b;
+  font-family: 'SF Mono', 'Cascadia Code', monospace;
+}
+
+.settings__repo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.settings__repo-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.settings__repo-remove {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.settings__repo-remove:hover {
+  color: #ff4d4d;
+  background: rgba(255,77,77,0.1);
+}
+
+.settings__add-repo {
+  background: none;
+  border: 1px dashed rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  padding: 7px 14px;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.settings__add-repo:hover {
+  border-color: rgba(255,77,77,0.4);
+  color: #ff6b6b;
+}
+
+.settings__footer {
+  padding-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba(255,255,255,0.3);
+  font-size: 13px;
+}
+
+.btn--saved {
+  background: #38a169 !important;
+  box-shadow: 0 0 16px rgba(56,161,105,0.3) !important;
 }

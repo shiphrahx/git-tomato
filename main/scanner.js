@@ -42,6 +42,24 @@ function findGitRepos(baseDirs) {
   return repos;
 }
 
+function getRemoteUrl(repoPath) {
+  try {
+    const raw = execSync(`${GIT_BIN} remote get-url origin`, {
+      cwd: repoPath,
+      timeout: 3000,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    // Normalise SSH → HTTPS: git@github.com:owner/repo.git → https://github.com/owner/repo
+    const ssh = raw.match(/^git@([^:]+):(.+?)(?:\.git)?$/);
+    if (ssh) return `https://${ssh[1]}/${ssh[2]}`;
+    // Strip trailing .git from HTTPS URLs
+    return raw.replace(/\.git$/, '');
+  } catch (_) {
+    return null;
+  }
+}
+
 function getCommitsSince(isoTimestamp, repoPaths) {
   const searchPaths =
     repoPaths && repoPaths.length > 0
@@ -83,6 +101,7 @@ function getCommitsSince(isoTimestamp, repoPaths) {
         results.push({
           repo: path.basename(repoPath),
           repoPath,
+          remoteUrl: getRemoteUrl(repoPath),
           commits,
         });
       }

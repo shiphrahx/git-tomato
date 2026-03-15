@@ -1,0 +1,147 @@
+import React, { useState, useEffect } from 'react';
+
+export function Settings() {
+  const [settings, setSettings] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    window.electronAPI.getSettings().then(setSettings);
+  }, []);
+
+  function handleChange(field, value) {
+    setSettings(prev => ({ ...prev, [field]: value }));
+    setSaved(false);
+  }
+
+  function handleRepoPathChange(index, value) {
+    const updated = [...(settings.repoPaths ?? [])];
+    updated[index] = value;
+    setSettings(prev => ({ ...prev, repoPaths: updated }));
+    setSaved(false);
+  }
+
+  function addRepoPath() {
+    setSettings(prev => ({ ...prev, repoPaths: [...(prev.repoPaths ?? []), ''] }));
+    setSaved(false);
+  }
+
+  function removeRepoPath(index) {
+    const updated = (settings.repoPaths ?? []).filter((_, i) => i !== index);
+    setSettings(prev => ({ ...prev, repoPaths: updated }));
+    setSaved(false);
+  }
+
+  async function handleSave() {
+    await window.electronAPI.setSettings(settings);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  if (!settings) {
+    return <div className="settings-loading">Loading…</div>;
+  }
+
+  return (
+    <div className="settings">
+      <h1 className="settings__title">Settings</h1>
+
+      {/* Timer */}
+      <section className="settings__section">
+        <h2 className="settings__section-title">Timer</h2>
+
+        <div className="settings__field">
+          <label className="settings__label">Focus duration</label>
+          <div className="settings__input-row">
+            <input
+              className="settings__input settings__input--number"
+              type="number"
+              min="1"
+              max="120"
+              value={settings.focusDuration}
+              onChange={e => handleChange('focusDuration', parseInt(e.target.value) || 25)}
+            />
+            <span className="settings__unit">min</span>
+          </div>
+        </div>
+
+        <div className="settings__field">
+          <label className="settings__label">Short break</label>
+          <div className="settings__input-row">
+            <input
+              className="settings__input settings__input--number"
+              type="number"
+              min="1"
+              max="60"
+              value={settings.shortBreak}
+              onChange={e => handleChange('shortBreak', parseInt(e.target.value) || 5)}
+            />
+            <span className="settings__unit">min</span>
+          </div>
+        </div>
+      </section>
+
+      {/* GitHub */}
+      <section className="settings__section">
+        <h2 className="settings__section-title">GitHub</h2>
+        <div className="settings__field">
+          <label className="settings__label">Personal access token</label>
+          <input
+            className="settings__input"
+            type="password"
+            placeholder="ghp_••••••••••••••••••••"
+            value={settings.githubToken ?? ''}
+            onChange={e => handleChange('githubToken', e.target.value)}
+          />
+          <p className="settings__hint">
+            Used to open commit links and future GitHub integrations.
+            Needs <code>repo</code> scope.
+          </p>
+        </div>
+      </section>
+
+      {/* Repo paths */}
+      <section className="settings__section">
+        <h2 className="settings__section-title">Watched repositories</h2>
+        <p className="settings__hint">
+          Directories scanned for git commits at session end. Leave empty to
+          auto-discover repos in ~/projects, ~/code, and ~/dev.
+        </p>
+
+        <div className="settings__repo-list">
+          {(settings.repoPaths ?? []).map((p, i) => (
+            <div key={i} className="settings__repo-row">
+              <input
+                className="settings__input settings__input--path"
+                type="text"
+                placeholder="/Users/you/projects/my-app"
+                value={p}
+                onChange={e => handleRepoPathChange(i, e.target.value)}
+              />
+              <button
+                className="settings__repo-remove"
+                onClick={() => removeRepoPath(i)}
+                title="Remove"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button className="settings__add-repo" onClick={addRepoPath}>
+          + Add path
+        </button>
+      </section>
+
+      {/* Save */}
+      <div className="settings__footer">
+        <button
+          className={`btn btn--primary${saved ? ' btn--saved' : ''}`}
+          onClick={handleSave}
+        >
+          {saved ? 'Saved ✓' : 'Save'}
+        </button>
+      </div>
+    </div>
+  );
+}

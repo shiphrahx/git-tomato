@@ -19,6 +19,8 @@ let state = {
   timeLeft: DEFAULT_DURATIONS.focus,
   startedAt: null,    // ms timestamp, set on first start of this session
   intervalId: null,
+  pollId: null,
+  seenHashes: new Set(),
   settings: { ...DEFAULT_DURATIONS },
   repoPaths: [],
 };
@@ -30,22 +32,45 @@ function setWindow(win) {
   mainWindow = win;
 }
 
+function sendToAll(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, payload);
+  }
+}
+
 function updateSettings(settings) {
   if (settings.focusDuration) state.settings.focus = settings.focusDuration * 60;
   if (settings.shortBreak) state.settings.break = settings.shortBreak * 60;
   if (settings.repoPaths) state.repoPaths = settings.repoPaths;
-  // Reset timeLeft if not running
+  // Reset timeLeft if not running and push update to renderer
   if (state.status === 'idle') {
     state.timeLeft = state.settings[state.type];
+    pushTick();
   }
 }
 
 function pushTick() {
-  const payload = { timeLeft: state.timeLeft, status: state.status, type: state.type };
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send(CHANNELS.TIMER_TICK, payload);
-  }
+  const payload = { timeLeft: state.timeLeft, status: state.status, type: state.type, totalSeconds: state.settings[state.type] };
+  sendToAll(CHANNELS.TIMER_TICK, payload);
   timerEvents.emit('tick', payload);
+}
+
+function pollCommits() {
+  if (state.status !== 'running' || !state.startedAt) return;
+  const since = new Date(state.startedAt).toISOString();
+  const repos = scanner.getCommitsSince(since, state.repoPaths);
+  const newCommits = [];
+  for (const repo of repos) {
+    for (const commit of repo.commits) {
+      if (!state.seenHashes.has(commit.hash)) {
+        state.seenHashes.add(commit.hash);
+        newCommits.push({ repo: repo.repo, remoteUrl: repo.remoteUrl, ...commit });
+      }
+    }
+  }
+  if (newCommits.length > 0) {
+    sendToAll(CHANNELS.COMMITS_LIVE, newCommits);
+  }
 }
 
 function tick() {
@@ -59,7 +84,9 @@ function tick() {
 
 function completeSession() {
   clearInterval(state.intervalId);
+  clearInterval(state.pollId);
   state.intervalId = null;
+  state.pollId = null;
   state.status = 'idle';
 
   const endedAt = Date.now();
@@ -78,9 +105,7 @@ function completeSession() {
 
   store.saveSession(session);
 
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send(CHANNELS.SESSION_COMPLETE, session);
-  }
+  sendToAll(CHANNELS.SESSION_COMPLETE, session);
 
   sendSessionCompleteNotification(session);
   timerEvents.emit('sessionComplete', session);
@@ -102,25 +127,33 @@ function registerHandlers() {
     if (state.status === 'running') return;
     if (!state.startedAt) {
       state.startedAt = Date.now();
+      state.seenHashes = new Set();
     }
     state.status = 'running';
     state.intervalId = setInterval(tick, 1000);
+    state.pollId = setInterval(pollCommits, 10000);
+    pollCommits(); // immediate first poll
     pushTick();
   });
 
   ipcMain.on(CHANNELS.TIMER_PAUSE, () => {
     if (state.status !== 'running') return;
     clearInterval(state.intervalId);
+    clearInterval(state.pollId);
     state.intervalId = null;
+    state.pollId = null;
     state.status = 'paused';
     pushTick();
   });
 
   ipcMain.on(CHANNELS.TIMER_RESET, () => {
     clearInterval(state.intervalId);
+    clearInterval(state.pollId);
     state.intervalId = null;
+    state.pollId = null;
     state.status = 'idle';
     state.startedAt = null;
+    state.seenHashes = new Set();
     state.timeLeft = state.settings[state.type];
     pushTick();
   });
@@ -128,7 +161,7 @@ function registerHandlers() {
 
 // Allow renderer to request current state on load
 function getState() {
-  return { timeLeft: state.timeLeft, status: state.status, type: state.type };
+  return { timeLeft: state.timeLeft, status: state.status, type: state.type, totalSeconds: state.settings[state.type] };
 }
 
 module.exports = { setWindow, registerHandlers, updateSettings, getState, timerEvents };

@@ -41,7 +41,13 @@ export function SessionCard({ session }) {
               <ul className="session-card__commits-list">
                 {r.commits.map(c => (
                   <li key={c.hash} className="session-card__commit">
-                    <code className="session-card__hash">{c.hash}</code>
+                    <code
+                      className={`session-card__hash${r.remoteUrl ? ' session-card__hash--link' : ''}`}
+                      onClick={() => r.remoteUrl && window.electronAPI?.openUrl(`${r.remoteUrl}/commit/${c.hash}`)}
+                      title={r.remoteUrl ? 'Open on GitHub' : undefined}
+                    >
+                      {c.hash}
+                    </code>
                     <span className="session-card__message">{c.message}</span>
                   </li>
                 ))}

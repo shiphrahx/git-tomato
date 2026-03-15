@@ -4,18 +4,32 @@ import { Timer } from './components/Timer';
 import { Controls } from './components/Controls';
 import { CommitList } from './components/CommitList';
 import { DayTimeline } from './components/DayTimeline';
+import { WeekDigest } from './components/WeekDigest';
+import { Settings } from './components/Settings';
 
-const DURATIONS = {
-  focus: 25 * 60,
-  break: 5 * 60,
-};
+// Settings window loads the same renderer with ?view=settings
+const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
 
-// Static example commits shown before any real session completes
-const EXAMPLE_COMMITS = [
-  { repo: 'api-server', message: 'fix auth middleware' },
-  { repo: 'frontend',   message: 'improve loading state' },
-  { repo: 'worker',     message: 'add retry logic' },
-];
+function toRepos(commits) {
+  const map = {};
+  for (const c of commits) {
+    if (!map[c.repo]) map[c.repo] = { repo: c.repo, remoteUrl: c.remoteUrl, commits: [] };
+    map[c.repo].commits.push({ hash: c.hash, message: c.message, author: c.author });
+  }
+  return Object.values(map);
+}
+
+function mergeCommits(repos, newCommits) {
+  const map = {};
+  for (const r of repos) map[r.repo] = { ...r, commits: [...r.commits] };
+  for (const c of newCommits) {
+    if (!map[c.repo]) map[c.repo] = { repo: c.repo, remoteUrl: c.remoteUrl, commits: [] };
+    if (!map[c.repo].commits.find(x => x.hash === c.hash)) {
+      map[c.repo].commits.push({ hash: c.hash, message: c.message, author: c.author });
+    }
+  }
+  return Object.values(map);
+}
 
 // Format ms of focus time as "Xh Ym" or "Xm"
 function formatFocusTime(totalMinutes) {
@@ -26,7 +40,20 @@ function formatFocusTime(totalMinutes) {
 }
 
 export default function App() {
-  const { timeLeft, status, type, start, pause, reset } = useTimer();
+  if (isSettingsWindow) {
+    return (
+      <div className="app-shell app-shell--settings">
+        <Settings />
+      </div>
+    );
+  }
+
+  const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer } = useTimer();
+
+  function reset() {
+    setCompletedSessions(prev => prev.filter(s => !s._live));
+    resetTimer();
+  }
   const [view, setView] = useState('timer');
   const [completedSessions, setCompletedSessions] = useState([]);
 
@@ -39,13 +66,31 @@ export default function App() {
     return cleanup;
   }, []);
 
-  const totalSeconds = DURATIONS[type] ?? DURATIONS.focus;
+  // Listen for live commits polled during a running session
+  React.useEffect(() => {
+    if (!window.electronAPI) return;
+    const cleanup = window.electronAPI.onLiveCommits((newCommits) => {
+      setCompletedSessions(prev => {
+        // Append as a synthetic in-progress session entry so displayCommits picks them up
+        const live = prev.find(s => s._live);
+        if (live) {
+          return prev.map(s => s._live
+            ? { ...s, repos: mergeCommits(s.repos, newCommits) }
+            : s
+          );
+        }
+        return [...prev, { _live: true, type: 'focus', durationMinutes: 0, repos: toRepos(newCommits) }];
+      });
+    });
+    return cleanup;
+  }, []);
+
+  // totalSeconds comes from main process (reflects actual configured duration)
 
   // Gather commits from all completed sessions this session
-  const liveCommits = completedSessions.flatMap(s =>
-    s.repos.flatMap(r => r.commits.map(c => ({ repo: r.repo, message: c.message })))
+  const displayCommits = completedSessions.flatMap(s =>
+    s.repos.flatMap(r => r.commits.map(c => ({ repo: r.repo, message: c.message, hash: c.hash, remoteUrl: r.remoteUrl })))
   );
-  const displayCommits = liveCommits.length > 0 ? liveCommits : EXAMPLE_COMMITS;
 
   // Total focus minutes from completed sessions
   const focusMinutes = completedSessions
@@ -73,32 +118,40 @@ export default function App() {
           >
             Today
           </button>
+          <button
+            className={`panel__tab${view === 'week' ? ' panel__tab--active' : ''}`}
+            onClick={() => setView('week')}
+          >
+            Week
+          </button>
         </div>
 
         {view === 'timer' ? (
           <div className="panel__body">
-            {/* Header */}
-            <h1 className="panel__heading">{headerLabel}</h1>
-
-            {/* Timer ring */}
-            <div className="panel__timer">
-              <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
+            {/* Fixed upper section: header + ring + controls */}
+            <div className="panel__timer-fixed">
+              <h1 className="panel__heading">{headerLabel}</h1>
+              <div className="panel__timer">
+                <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
+              </div>
+              <div className="panel__controls">
+                <Controls status={status} onStart={start} onPause={pause} onReset={reset} />
+              </div>
+              {displayCommits.length > 0 && <div className="panel__connector" />}
             </div>
 
-            {/* Controls */}
-            <div className="panel__controls">
-              <Controls status={status} onStart={start} onPause={pause} onReset={reset} />
+            {/* Scrollable commit list */}
+            <div className="panel__commit-scroll">
+              <CommitList commits={displayCommits} />
             </div>
-
-            {/* Connector from ring to list */}
-            <div className="panel__connector" />
-
-            {/* Commit list */}
-            <CommitList commits={displayCommits} />
+          </div>
+        ) : view === 'timeline' ? (
+          <div className="panel__body panel__body--timeline">
+            <DayTimeline />
           </div>
         ) : (
           <div className="panel__body panel__body--timeline">
-            <DayTimeline />
+            <WeekDigest />
           </div>
         )}
       </div>

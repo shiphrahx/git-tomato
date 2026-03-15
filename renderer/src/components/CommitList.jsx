@@ -10,7 +10,7 @@ export function CommitList({ commits }) {
         <React.Fragment key={i}>
           {/* Connector dot between cards */}
           {i > 0 && <div className="commit-list__connector" />}
-          <CommitCard repo={item.repo} message={item.message} />
+          <CommitCard repo={item.repo} message={item.message} hash={item.hash} remoteUrl={item.remoteUrl} />
         </React.Fragment>
       ))}
     </div>
