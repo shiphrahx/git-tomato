@@ -16,6 +16,9 @@ const CHANNELS = {
   STORE_GET_SESSIONS: 'store:getSessions',
   SETTINGS_GET: 'settings:get',
   SETTINGS_SET: 'settings:set',
+
+  // Main → Renderer (live commit push during session)
+  COMMITS_LIVE: 'commits:live',
 };
 
 module.exports = { CHANNELS };

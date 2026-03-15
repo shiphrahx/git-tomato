@@ -19,6 +19,8 @@ let state = {
   timeLeft: DEFAULT_DURATIONS.focus,
   startedAt: null,    // ms timestamp, set on first start of this session
   intervalId: null,
+  pollId: null,
+  seenHashes: new Set(),
   settings: { ...DEFAULT_DURATIONS },
   repoPaths: [],
 };
@@ -49,6 +51,24 @@ function pushTick() {
   timerEvents.emit('tick', payload);
 }
 
+function pollCommits() {
+  if (state.status !== 'running' || !state.startedAt) return;
+  const since = new Date(state.startedAt).toISOString();
+  const repos = scanner.getCommitsSince(since, state.repoPaths);
+  const newCommits = [];
+  for (const repo of repos) {
+    for (const commit of repo.commits) {
+      if (!state.seenHashes.has(commit.hash)) {
+        state.seenHashes.add(commit.hash);
+        newCommits.push({ repo: repo.repo, ...commit });
+      }
+    }
+  }
+  if (newCommits.length > 0 && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(CHANNELS.COMMITS_LIVE, newCommits);
+  }
+}
+
 function tick() {
   if (state.status !== 'running') return;
   state.timeLeft -= 1;
@@ -60,7 +80,9 @@ function tick() {
 
 function completeSession() {
   clearInterval(state.intervalId);
+  clearInterval(state.pollId);
   state.intervalId = null;
+  state.pollId = null;
   state.status = 'idle';
 
   const endedAt = Date.now();
@@ -103,25 +125,33 @@ function registerHandlers() {
     if (state.status === 'running') return;
     if (!state.startedAt) {
       state.startedAt = Date.now();
+      state.seenHashes = new Set();
     }
     state.status = 'running';
     state.intervalId = setInterval(tick, 1000);
+    state.pollId = setInterval(pollCommits, 10000);
+    pollCommits(); // immediate first poll
     pushTick();
   });
 
   ipcMain.on(CHANNELS.TIMER_PAUSE, () => {
     if (state.status !== 'running') return;
     clearInterval(state.intervalId);
+    clearInterval(state.pollId);
     state.intervalId = null;
+    state.pollId = null;
     state.status = 'paused';
     pushTick();
   });
 
   ipcMain.on(CHANNELS.TIMER_RESET, () => {
     clearInterval(state.intervalId);
+    clearInterval(state.pollId);
     state.intervalId = null;
+    state.pollId = null;
     state.status = 'idle';
     state.startedAt = null;
+    state.seenHashes = new Set();
     state.timeLeft = state.settings[state.type];
     pushTick();
   });

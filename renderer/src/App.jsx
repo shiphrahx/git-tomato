@@ -10,6 +10,27 @@ import { Settings } from './components/Settings';
 // Settings window loads the same renderer with ?view=settings
 const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
 
+function toRepos(commits) {
+  const map = {};
+  for (const c of commits) {
+    if (!map[c.repo]) map[c.repo] = { repo: c.repo, commits: [] };
+    map[c.repo].commits.push({ hash: c.hash, message: c.message, author: c.author });
+  }
+  return Object.values(map);
+}
+
+function mergeCommits(repos, newCommits) {
+  const map = {};
+  for (const r of repos) map[r.repo] = { ...r, commits: [...r.commits] };
+  for (const c of newCommits) {
+    if (!map[c.repo]) map[c.repo] = { repo: c.repo, commits: [] };
+    if (!map[c.repo].commits.find(x => x.hash === c.hash)) {
+      map[c.repo].commits.push({ hash: c.hash, message: c.message, author: c.author });
+    }
+  }
+  return Object.values(map);
+}
+
 // Format ms of focus time as "Xh Ym" or "Xm"
 function formatFocusTime(totalMinutes) {
   if (totalMinutes < 60) return `${totalMinutes}m`;
@@ -27,7 +48,12 @@ export default function App() {
     );
   }
 
-  const { timeLeft, totalSeconds, status, type, start, pause, reset } = useTimer();
+  const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer } = useTimer();
+
+  function reset() {
+    setCompletedSessions(prev => prev.filter(s => !s._live));
+    resetTimer();
+  }
   const [view, setView] = useState('timer');
   const [completedSessions, setCompletedSessions] = useState([]);
 
@@ -36,6 +62,25 @@ export default function App() {
     if (!window.electronAPI) return;
     const cleanup = window.electronAPI.onSessionComplete((session) => {
       setCompletedSessions(prev => [...prev, session]);
+    });
+    return cleanup;
+  }, []);
+
+  // Listen for live commits polled during a running session
+  React.useEffect(() => {
+    if (!window.electronAPI) return;
+    const cleanup = window.electronAPI.onLiveCommits((newCommits) => {
+      setCompletedSessions(prev => {
+        // Append as a synthetic in-progress session entry so displayCommits picks them up
+        const live = prev.find(s => s._live);
+        if (live) {
+          return prev.map(s => s._live
+            ? { ...s, repos: mergeCommits(s.repos, newCommits) }
+            : s
+          );
+        }
+        return [...prev, { _live: true, type: 'focus', durationMinutes: 0, repos: toRepos(newCommits) }];
+      });
     });
     return cleanup;
   }, []);

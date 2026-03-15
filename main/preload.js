@@ -20,6 +20,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('session:complete', handler);
   },
 
+  // Live commit push during a running session — returns a cleanup function
+  onLiveCommits: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('commits:live', handler);
+    return () => ipcRenderer.removeListener('commits:live', handler);
+  },
+
   // Request current timer state on load (invoke pattern)
   getTimerState: () => ipcRenderer.invoke('timer:getState'),
 
