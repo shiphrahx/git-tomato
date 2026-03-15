@@ -4,17 +4,11 @@ import { Timer } from './components/Timer';
 import { Controls } from './components/Controls';
 import { CommitList } from './components/CommitList';
 import { DayTimeline } from './components/DayTimeline';
+import { WeekDigest } from './components/WeekDigest';
 import { Settings } from './components/Settings';
 
 // Settings window loads the same renderer with ?view=settings
 const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
-
-// Static example commits shown before any real session completes
-const EXAMPLE_COMMITS = [
-  { repo: 'api-server', message: 'fix auth middleware' },
-  { repo: 'frontend',   message: 'improve loading state' },
-  { repo: 'worker',     message: 'add retry logic' },
-];
 
 // Format ms of focus time as "Xh Ym" or "Xm"
 function formatFocusTime(totalMinutes) {
@@ -49,10 +43,9 @@ export default function App() {
   // totalSeconds comes from main process (reflects actual configured duration)
 
   // Gather commits from all completed sessions this session
-  const liveCommits = completedSessions.flatMap(s =>
+  const displayCommits = completedSessions.flatMap(s =>
     s.repos.flatMap(r => r.commits.map(c => ({ repo: r.repo, message: c.message })))
   );
-  const displayCommits = liveCommits.length > 0 ? liveCommits : EXAMPLE_COMMITS;
 
   // Total focus minutes from completed sessions
   const focusMinutes = completedSessions
@@ -80,6 +73,12 @@ export default function App() {
           >
             Today
           </button>
+          <button
+            className={`panel__tab${view === 'week' ? ' panel__tab--active' : ''}`}
+            onClick={() => setView('week')}
+          >
+            Week
+          </button>
         </div>
 
         {view === 'timer' ? (
@@ -101,9 +100,13 @@ export default function App() {
               <CommitList commits={displayCommits} />
             </div>
           </div>
-        ) : (
+        ) : view === 'timeline' ? (
           <div className="panel__body panel__body--timeline">
             <DayTimeline />
+          </div>
+        ) : (
+          <div className="panel__body panel__body--timeline">
+            <WeekDigest />
           </div>
         )}
       </div>
