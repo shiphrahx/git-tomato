@@ -1,7 +1,6 @@
-const { app, ipcMain, nativeImage, screen, BrowserWindow, Menu } = require('electron');
+const { app, ipcMain, shell, nativeImage, screen, BrowserWindow, Tray, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { menubar } = require('menubar');
 const { CHANNELS } = require('./ipc');
 const timer = require('./timer');
 const store = require('./store');
@@ -36,7 +35,9 @@ function writeSettings(settings) {
   fs.writeFileSync(SETTINGS_PATH(), JSON.stringify(settings, null, 2));
 }
 
-let mb;
+let mainWindow = null;
+let settingsWindow = null;
+let tray = null;
 
 app.whenReady().then(() => {
   // Windows: needed for dev-mode desktop notifications
@@ -47,38 +48,41 @@ app.whenReady().then(() => {
   const iconPath = path.join(__dirname, '../assets/trayTemplate.png');
   const icon = nativeImage.createFromPath(iconPath);
 
-  // On Windows, cap the height to the workArea (screen minus taskbar)
-  // so the window never bleeds behind the taskbar.
+  // Cap height to workArea on Windows
   const DESIRED_HEIGHT = 680;
-  let windowHeight = DESIRED_HEIGHT;
-  if (process.platform === 'win32') {
-    const { workArea } = screen.getPrimaryDisplay();
-    windowHeight = Math.min(DESIRED_HEIGHT, workArea.height);
-  }
+  const { workArea } = screen.getPrimaryDisplay();
+  const windowHeight = process.platform === 'win32'
+    ? Math.min(DESIRED_HEIGHT, workArea.height)
+    : DESIRED_HEIGHT;
 
-  mb = menubar({
-    index: RENDERER_URL,
-    icon,
-    browserWindow: {
-      width: 380,
-      height: windowHeight,
-      backgroundColor: '#0f1115',
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-        contextIsolation: true,
-        nodeIntegration: false,
-      },
-      resizable: false,
-      skipTaskbar: true,
-      hasShadow: false,
-      frame: false,
-      type: process.platform === 'win32' ? 'toolbar' : undefined,
+  // Position top-right of work area by default
+  const x = Math.round(workArea.x + workArea.width - 380 - 24);
+  const y = Math.round(workArea.y + 24);
+
+  mainWindow = new BrowserWindow({
+    width: 380,
+    height: windowHeight,
+    x,
+    y,
+    title: 'git-tomato',
+    backgroundColor: '#0f1115',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
-    preloadWindow: true,
-    windowPosition: process.platform === 'win32' ? 'trayBottomCenter' : 'trayCenter',
+    resizable: true,
+    skipTaskbar: false,
+    frame: true,
   });
 
-  let settingsWindow = null;
+  mainWindow.loadURL(RENDERER_URL);
+  mainWindow.setMenuBarVisibility(false);
+  mainWindow.on('closed', () => { mainWindow = null; });
+
+  // Tray icon for tooltip + right-click menu
+  tray = new Tray(icon);
+  tray.setToolTip('git-tomato');
 
   function openSettingsWindow() {
     if (settingsWindow && !settingsWindow.isDestroyed()) {
@@ -90,18 +94,17 @@ app.whenReady().then(() => {
       ? 'http://localhost:5173?view=settings'
       : `file://${path.join(__dirname, '../renderer/dist/index.html')}?view=settings`;
 
-    // Center on the primary display's work area (excludes taskbar)
-    const { workArea } = screen.getPrimaryDisplay();
+    const { workArea: wa } = screen.getPrimaryDisplay();
     const winWidth = 480;
     const winHeight = 600;
-    const x = Math.round(workArea.x + (workArea.width - winWidth) / 2);
-    const y = Math.round(workArea.y + (workArea.height - winHeight) / 2);
+    const sx = Math.round(wa.x + (wa.width - winWidth) / 2);
+    const sy = Math.round(wa.y + (wa.height - winHeight) / 2);
 
     settingsWindow = new BrowserWindow({
       width: winWidth,
       height: winHeight,
-      x,
-      y,
+      x: sx,
+      y: sy,
       title: 'git-tomato — Settings',
       backgroundColor: '#0f1115',
       webPreferences: {
@@ -118,69 +121,90 @@ app.whenReady().then(() => {
     settingsWindow.on('closed', () => { settingsWindow = null; });
   }
 
-  mb.on('ready', () => {
-    const tray = mb.tray;
+  // Right-click tray context menu
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Open git-tomato', click: showMainWindow },
+    { label: 'Settings', click: openSettingsWindow },
+    { type: 'separator' },
+    { label: 'Quit git-tomato', click: () => app.quit() },
+  ]);
+  tray.on('right-click', () => tray.popUpContextMenu(contextMenu));
+  function showMainWindow() {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      mainWindow = new BrowserWindow({
+        width: 380,
+        height: windowHeight,
+        x,
+        y,
+        title: 'git-tomato',
+        backgroundColor: '#0f1115',
+        webPreferences: {
+          preload: path.join(__dirname, 'preload.js'),
+          contextIsolation: true,
+          nodeIntegration: false,
+        },
+        resizable: true,
+        skipTaskbar: false,
+        frame: true,
+      });
+      mainWindow.loadURL(RENDERER_URL);
+      mainWindow.setMenuBarVisibility(false);
+      mainWindow.on('closed', () => { mainWindow = null; });
+      timer.setWindow(mainWindow);
+    }
+  }
 
-    // Right-click context menu
-    const contextMenu = Menu.buildFromTemplate([
-      { label: 'Settings', click: openSettingsWindow },
-      { type: 'separator' },
-      { label: 'Quit git-tomato', click: () => app.quit() },
-    ]);
-    tray.on('right-click', () => tray.popUpContextMenu(contextMenu));
+  tray.on('click', showMainWindow);
+  tray.on('double-click', showMainWindow);
 
+  // Apply saved settings to timer
+  const settings = readSettings();
+  timer.updateSettings(settings);
 
-    // Apply saved settings to timer
-    const settings = readSettings();
-    timer.updateSettings(settings);
+  // Wire up timer
+  timer.setWindow(mainWindow);
+  timer.registerHandlers();
 
-    // Wire up timer
-    timer.setWindow(mb.window);
-    timer.registerHandlers();
-
-    // Update tray title on every tick
-    timer.timerEvents.on('tick', ({ timeLeft, status }) => {
-      if (status === 'idle') {
-        tray.setTitle('');
-        tray.setToolTip('git-tomato');
-      } else {
-        const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-        const secs = (timeLeft % 60).toString().padStart(2, '0');
-        const label = `${mins}:${secs}`;
-        // macOS supports tray title text; Windows uses tooltip
-        if (process.platform === 'darwin') {
-          tray.setTitle(label);
-        }
-        tray.setToolTip(`git-tomato — ${label}`);
-      }
-    });
-
-    // Store handlers
-    ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, (_, { date } = {}) => {
-      return date ? store.getSessionsForDate(date) : store.getAllSessions();
-    });
-
-    // Settings handlers
-    ipcMain.handle(CHANNELS.SETTINGS_GET, () => readSettings());
-    ipcMain.handle(CHANNELS.SETTINGS_SET, (_, settings) => {
-      writeSettings(settings);
-      timer.updateSettings(settings);
-      return true;
-    });
-
-    // Timer state handler (renderer requests current state on load)
-    ipcMain.handle('timer:getState', () => timer.getState());
+  // Update tray tooltip on every tick
+  timer.timerEvents.on('tick', ({ timeLeft, status }) => {
+    if (status === 'idle') {
+      tray.setToolTip('git-tomato');
+    } else {
+      const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const secs = (timeLeft % 60).toString().padStart(2, '0');
+      tray.setToolTip(`git-tomato — ${mins}:${secs}`);
+    }
   });
+
+  // Store handlers
+  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, (_, { date } = {}) => {
+    return date ? store.getSessionsForDate(date) : store.getAllSessions();
+  });
+
+  // Settings handlers
+  ipcMain.handle(CHANNELS.SETTINGS_GET, () => readSettings());
+  ipcMain.handle(CHANNELS.SETTINGS_SET, (_, s) => {
+    writeSettings(s);
+    timer.updateSettings(s);
+    return true;
+  });
+
+  // Timer state handler (renderer requests current state on load)
+  ipcMain.handle('timer:getState', () => timer.getState());
+
+  // Open URL in default browser
+  ipcMain.handle(CHANNELS.OPEN_URL, (_, url) => shell.openExternal(url));
 
   // Open devtools in dev mode
   if (isDev) {
-    mb.on('after-create-window', () => {
-      mb.window.webContents.openDevTools({ mode: 'detach' });
-    });
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 });
 
-// Keep the app running when the window is closed — the tray is our persistent presence
+// Keep the app running when the window is closed — tray keeps it alive
 app.on('window-all-closed', () => {
   // Do nothing — tray app stays alive
 });

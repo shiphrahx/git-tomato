@@ -13,7 +13,7 @@ const isSettingsWindow = new URLSearchParams(window.location.search).get('view')
 function toRepos(commits) {
   const map = {};
   for (const c of commits) {
-    if (!map[c.repo]) map[c.repo] = { repo: c.repo, commits: [] };
+    if (!map[c.repo]) map[c.repo] = { repo: c.repo, remoteUrl: c.remoteUrl, commits: [] };
     map[c.repo].commits.push({ hash: c.hash, message: c.message, author: c.author });
   }
   return Object.values(map);
@@ -23,7 +23,7 @@ function mergeCommits(repos, newCommits) {
   const map = {};
   for (const r of repos) map[r.repo] = { ...r, commits: [...r.commits] };
   for (const c of newCommits) {
-    if (!map[c.repo]) map[c.repo] = { repo: c.repo, commits: [] };
+    if (!map[c.repo]) map[c.repo] = { repo: c.repo, remoteUrl: c.remoteUrl, commits: [] };
     if (!map[c.repo].commits.find(x => x.hash === c.hash)) {
       map[c.repo].commits.push({ hash: c.hash, message: c.message, author: c.author });
     }
@@ -89,7 +89,7 @@ export default function App() {
 
   // Gather commits from all completed sessions this session
   const displayCommits = completedSessions.flatMap(s =>
-    s.repos.flatMap(r => r.commits.map(c => ({ repo: r.repo, message: c.message })))
+    s.repos.flatMap(r => r.commits.map(c => ({ repo: r.repo, message: c.message, hash: c.hash, remoteUrl: r.remoteUrl })))
   );
 
   // Total focus minutes from completed sessions
@@ -137,7 +137,7 @@ export default function App() {
               <div className="panel__controls">
                 <Controls status={status} onStart={start} onPause={pause} onReset={reset} />
               </div>
-              <div className="panel__connector" />
+              {displayCommits.length > 0 && <div className="panel__connector" />}
             </div>
 
             {/* Scrollable commit list */}

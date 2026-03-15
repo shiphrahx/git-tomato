@@ -32,6 +32,12 @@ function setWindow(win) {
   mainWindow = win;
 }
 
+function sendToAll(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, payload);
+  }
+}
+
 function updateSettings(settings) {
   if (settings.focusDuration) state.settings.focus = settings.focusDuration * 60;
   if (settings.shortBreak) state.settings.break = settings.shortBreak * 60;
@@ -45,9 +51,7 @@ function updateSettings(settings) {
 
 function pushTick() {
   const payload = { timeLeft: state.timeLeft, status: state.status, type: state.type, totalSeconds: state.settings[state.type] };
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send(CHANNELS.TIMER_TICK, payload);
-  }
+  sendToAll(CHANNELS.TIMER_TICK, payload);
   timerEvents.emit('tick', payload);
 }
 
@@ -60,12 +64,12 @@ function pollCommits() {
     for (const commit of repo.commits) {
       if (!state.seenHashes.has(commit.hash)) {
         state.seenHashes.add(commit.hash);
-        newCommits.push({ repo: repo.repo, ...commit });
+        newCommits.push({ repo: repo.repo, remoteUrl: repo.remoteUrl, ...commit });
       }
     }
   }
-  if (newCommits.length > 0 && mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send(CHANNELS.COMMITS_LIVE, newCommits);
+  if (newCommits.length > 0) {
+    sendToAll(CHANNELS.COMMITS_LIVE, newCommits);
   }
 }
 
@@ -101,9 +105,7 @@ function completeSession() {
 
   store.saveSession(session);
 
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send(CHANNELS.SESSION_COMPLETE, session);
-  }
+  sendToAll(CHANNELS.SESSION_COMPLETE, session);
 
   sendSessionCompleteNotification(session);
   timerEvents.emit('sessionComplete', session);
