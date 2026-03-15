@@ -1,4 +1,4 @@
-const { app, ipcMain, nativeImage } = require('electron');
+const { app, ipcMain, nativeImage, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { menubar } = require('menubar');
@@ -44,13 +44,22 @@ app.whenReady().then(() => {
   const iconPath = path.join(__dirname, '../assets/trayTemplate.png');
   const icon = nativeImage.createFromPath(iconPath);
 
+  // On Windows, cap the height to the workArea (screen minus taskbar)
+  // so the window never bleeds behind the taskbar.
+  const DESIRED_HEIGHT = 540;
+  let windowHeight = DESIRED_HEIGHT;
+  if (process.platform === 'win32') {
+    const { workArea } = screen.getPrimaryDisplay();
+    windowHeight = Math.min(DESIRED_HEIGHT, workArea.height);
+  }
+
   mb = menubar({
     index: RENDERER_URL,
     icon,
     browserWindow: {
       width: 380,
-      height: 540,
-      backgroundColor: '#0f1115', // prevents white flash before renderer loads
+      height: windowHeight,
+      backgroundColor: '#0f1115',
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
         contextIsolation: true,
@@ -58,13 +67,11 @@ app.whenReady().then(() => {
       },
       resizable: false,
       skipTaskbar: true,
-      // Remove the default white frame/shadow that causes the white border
       hasShadow: false,
       frame: false,
       type: process.platform === 'win32' ? 'toolbar' : undefined,
     },
     preloadWindow: true,
-    // trayBottomCenter on Windows positions above the taskbar correctly
     windowPosition: process.platform === 'win32' ? 'trayBottomCenter' : 'trayCenter',
   });
 
