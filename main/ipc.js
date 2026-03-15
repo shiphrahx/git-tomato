@@ -19,6 +19,9 @@ const CHANNELS = {
 
   // Main → Renderer (live commit push during session)
   COMMITS_LIVE: 'commits:live',
+
+  // Renderer → Main (open URL in default browser)
+  OPEN_URL: 'shell:openUrl',
 };
 
 module.exports = { CHANNELS };

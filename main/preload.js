@@ -36,4 +36,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Settings
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (settings) => ipcRenderer.invoke('settings:set', settings),
+
+  // Open URL in default browser
+  openUrl: (url) => ipcRenderer.invoke('shell:openUrl', url),
 });

@@ -30,9 +30,21 @@ function RepoIcon({ repo }) {
   );
 }
 
-export function CommitCard({ repo, message }) {
+export function CommitCard({ repo, message, hash, remoteUrl }) {
+  function handleClick() {
+    if (remoteUrl && hash) {
+      window.electronAPI?.openUrl(`${remoteUrl}/commit/${hash}`);
+    }
+  }
+
+  const clickable = !!(remoteUrl && hash);
+
   return (
-    <div className="commit-card">
+    <div
+      className={`commit-card${clickable ? ' commit-card--clickable' : ''}`}
+      onClick={clickable ? handleClick : undefined}
+      title={clickable ? 'Open on GitHub' : undefined}
+    >
       <RepoIcon repo={repo} />
       <div className="commit-card__text">
         <div className="commit-card__repo">{repo} —</div>

@@ -268,6 +268,14 @@ body {
   background: rgba(255,255,255,0.08);
 }
 
+.commit-card--clickable {
+  cursor: pointer;
+}
+
+.commit-card--clickable:hover {
+  border-color: rgba(255,77,77,0.3);
+}
+
 .commit-card__icon {
   width: 28px;
   height: 28px;
@@ -438,6 +446,16 @@ body {
   font-size: 11px;
   color: #ff6b6b;
   flex-shrink: 0;
+}
+
+.session-card__hash--link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.session-card__hash--link:hover {
+  color: #ff4d4d;
 }
 
 .session-card__message {
