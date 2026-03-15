@@ -1,0 +1,14 @@
+node_modules/
+renderer/node_modules/
+renderer/dist/
+dist/
+dist-electron/
+out/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+.env
+.DS_Store
+Thumbs.db
+CLAUDE.md

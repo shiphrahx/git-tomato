@@ -1,0 +1,46 @@
+{
+  "name": "git-tomato",
+  "version": "0.1.0",
+  "description": "Pomodoro timer that tracks your git commits per session",
+  "main": "main/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:renderer\" \"wait-on http://localhost:5173 && node scripts/launch-electron.js\"",
+    "dev:renderer": "npm --prefix renderer run dev",
+    "build": "npm --prefix renderer run build && electron-builder",
+    "build:renderer": "npm --prefix renderer run build",
+    "rebuild-native": "electron-rebuild"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "menubar": "^9.5.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "34.5.8",
+    "electron-builder": "^26.8.1",
+    "electron-rebuild": "^3.2.9",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.git-tomato.app",
+    "productName": "git-tomato",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "files": [
+      "main/**",
+      "renderer/dist/**",
+      "assets/**"
+    ],
+    "nativeRebuilder": "legacy"
+  }
+}

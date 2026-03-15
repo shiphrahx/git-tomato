@@ -1,0 +1,443 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  background: transparent;
+  color: #e6e6e6;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+
+/* ─── App shell ─────────────────────────────────────────────── */
+
+.app-shell {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100%;
+  padding: 0;
+}
+
+/* ─── Panel (the floating menubar window) ───────────────────── */
+
+.panel {
+  width: 340px;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #0f1115 0%, #151821 100%);
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 24px 60px rgba(0,0,0,0.6),
+    0 8px 24px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Nav tabs ──────────────────────────────────────────────── */
+
+.panel__nav {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.panel__tab {
+  flex: 1;
+  padding: 11px 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(255,255,255,0.35);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.panel__tab:hover {
+  color: rgba(255,255,255,0.65);
+}
+
+.panel__tab--active {
+  color: #ff6b6b;
+  border-bottom-color: #ff4d4d;
+}
+
+/* ─── Panel body ────────────────────────────────────────────── */
+
+.panel__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 24px 28px;
+  flex: 1;
+}
+
+.panel__body--timeline {
+  padding: 0;
+  align-items: stretch;
+}
+
+/* ─── Heading ───────────────────────────────────────────────── */
+
+.panel__heading {
+  font-size: 16px;
+  font-weight: 500;
+  color: #e6e6e6;
+  margin-bottom: 20px;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Timer area ────────────────────────────────────────────── */
+
+.panel__timer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.timer-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 160px;
+}
+
+.timer-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,77,77,0) 40%, rgba(255,77,77,0) 100%);
+  transition: background 0.4s ease;
+  pointer-events: none;
+}
+
+.timer-glow--active {
+  background: radial-gradient(circle, rgba(255,77,77,0.12) 40%, rgba(255,77,77,0) 100%);
+}
+
+.timer-svg {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Controls ──────────────────────────────────────────────── */
+
+.panel__controls {
+  margin-bottom: 8px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 9px 26px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  letter-spacing: 0.01em;
+  transition: opacity 0.15s, transform 0.1s, background 0.15s;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: #ff4d4d;
+  color: white;
+  min-width: 100px;
+  box-shadow: 0 0 16px rgba(255,77,77,0.3);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #ff3333;
+  box-shadow: 0 0 20px rgba(255,77,77,0.45);
+}
+
+.btn--secondary {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.8);
+}
+
+/* ─── Connector dot (ring → list) ───────────────────────────── */
+
+.panel__connector {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.12);
+  margin: 4px 0 0;
+  align-self: center;
+}
+
+/* ─── Commit list ───────────────────────────────────────────── */
+
+.commit-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 4px;
+}
+
+.commit-list__connector {
+  width: 1px;
+  height: 12px;
+  background: rgba(255,255,255,0.1);
+  align-self: center;
+}
+
+/* ─── Commit card ───────────────────────────────────────────── */
+
+.commit-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.15s;
+}
+
+.commit-card:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.commit-card__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.commit-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.commit-card__repo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6e6e6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.commit-card__message {
+  font-size: 12px;
+  color: #c9c9c9;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+}
+
+/* ─── Day timeline (Today tab) ──────────────────────────────── */
+
+.day-timeline {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.day-timeline__summary {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.day-timeline__list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Scrollbar */
+.day-timeline__list::-webkit-scrollbar {
+  width: 4px;
+}
+.day-timeline__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.day-timeline__list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+}
+
+/* ─── Session card (in timeline) ────────────────────────────── */
+
+.session-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  border-left-width: 3px;
+  background: rgba(255,255,255,0.04);
+}
+
+.session-card--focus {
+  border-left-color: #ff4d4d;
+}
+
+.session-card--break {
+  border-left-color: #34d399;
+}
+
+.session-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+}
+
+.session-card__type {
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #e6e6e6;
+  flex-shrink: 0;
+}
+
+.session-card__time {
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  flex: 1;
+}
+
+.session-card__commits {
+  color: rgba(255,255,255,0.55);
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.session-card__body {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.15);
+}
+
+.session-card__repo {
+  margin-bottom: 8px;
+}
+
+.session-card__repo:last-child {
+  margin-bottom: 0;
+}
+
+.session-card__repo-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.session-card__commits-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.session-card__commit {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.session-card__hash {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 11px;
+  color: #ff6b6b;
+  flex-shrink: 0;
+}
+
+.session-card__message {
+  font-size: 12px;
+  color: #c9c9c9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Empty state ───────────────────────────────────────────── */
+
+.timeline-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.25);
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.timeline-empty__icon {
+  font-size: 36px;
+  margin-bottom: 4px;
+}
+
+.timeline-empty__hint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.15);
+}
