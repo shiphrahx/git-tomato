@@ -46,7 +46,7 @@ app.whenReady().then(() => {
 
   // On Windows, cap the height to the workArea (screen minus taskbar)
   // so the window never bleeds behind the taskbar.
-  const DESIRED_HEIGHT = 540;
+  const DESIRED_HEIGHT = 680;
   let windowHeight = DESIRED_HEIGHT;
   if (process.platform === 'win32') {
     const { workArea } = screen.getPrimaryDisplay();

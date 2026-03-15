@@ -77,24 +77,22 @@ export default function App() {
 
         {view === 'timer' ? (
           <div className="panel__body">
-            {/* Header */}
-            <h1 className="panel__heading">{headerLabel}</h1>
-
-            {/* Timer ring */}
-            <div className="panel__timer">
-              <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
+            {/* Fixed upper section: header + ring + controls */}
+            <div className="panel__timer-fixed">
+              <h1 className="panel__heading">{headerLabel}</h1>
+              <div className="panel__timer">
+                <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
+              </div>
+              <div className="panel__controls">
+                <Controls status={status} onStart={start} onPause={pause} onReset={reset} />
+              </div>
+              <div className="panel__connector" />
             </div>
 
-            {/* Controls */}
-            <div className="panel__controls">
-              <Controls status={status} onStart={start} onPause={pause} onReset={reset} />
+            {/* Scrollable commit list */}
+            <div className="panel__commit-scroll">
+              <CommitList commits={displayCommits} />
             </div>
-
-            {/* Connector from ring to list */}
-            <div className="panel__connector" />
-
-            {/* Commit list */}
-            <CommitList commits={displayCommits} />
           </div>
         ) : (
           <div className="panel__body panel__body--timeline">
