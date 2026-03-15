@@ -50,6 +50,7 @@ app.whenReady().then(() => {
     browserWindow: {
       width: 380,
       height: 540,
+      backgroundColor: '#0f1115', // prevents white flash before renderer loads
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
         contextIsolation: true,
@@ -57,8 +58,13 @@ app.whenReady().then(() => {
       },
       resizable: false,
       skipTaskbar: true,
+      // Remove the default white frame/shadow that causes the white border
+      hasShadow: false,
+      frame: false,
+      type: process.platform === 'win32' ? 'toolbar' : undefined,
     },
     preloadWindow: true,
+    // trayBottomCenter on Windows positions above the taskbar correctly
     windowPosition: process.platform === 'win32' ? 'trayBottomCenter' : 'trayCenter',
   });
 
