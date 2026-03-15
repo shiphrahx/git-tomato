@@ -34,14 +34,15 @@ function updateSettings(settings) {
   if (settings.focusDuration) state.settings.focus = settings.focusDuration * 60;
   if (settings.shortBreak) state.settings.break = settings.shortBreak * 60;
   if (settings.repoPaths) state.repoPaths = settings.repoPaths;
-  // Reset timeLeft if not running
+  // Reset timeLeft if not running and push update to renderer
   if (state.status === 'idle') {
     state.timeLeft = state.settings[state.type];
+    pushTick();
   }
 }
 
 function pushTick() {
-  const payload = { timeLeft: state.timeLeft, status: state.status, type: state.type };
+  const payload = { timeLeft: state.timeLeft, status: state.status, type: state.type, totalSeconds: state.settings[state.type] };
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(CHANNELS.TIMER_TICK, payload);
   }
@@ -128,7 +129,7 @@ function registerHandlers() {
 
 // Allow renderer to request current state on load
 function getState() {
-  return { timeLeft: state.timeLeft, status: state.status, type: state.type };
+  return { timeLeft: state.timeLeft, status: state.status, type: state.type, totalSeconds: state.settings[state.type] };
 }
 
 module.exports = { setWindow, registerHandlers, updateSettings, getState, timerEvents };

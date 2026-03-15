@@ -1,4 +1,4 @@
-const { app, ipcMain, nativeImage, screen } = require('electron');
+const { app, ipcMain, nativeImage, screen, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { menubar } = require('menubar');
@@ -19,11 +19,14 @@ const DEFAULT_SETTINGS = {
   focusDuration: 25,
   shortBreak: 5,
   repoPaths: [],
+  githubToken: '',
 };
 
 function readSettings() {
   try {
-    return JSON.parse(fs.readFileSync(SETTINGS_PATH(), 'utf8'));
+    const saved = JSON.parse(fs.readFileSync(SETTINGS_PATH(), 'utf8'));
+    // Merge with defaults so newly added fields are always present
+    return { ...DEFAULT_SETTINGS, ...saved };
   } catch (_) {
     return { ...DEFAULT_SETTINGS };
   }
@@ -75,8 +78,57 @@ app.whenReady().then(() => {
     windowPosition: process.platform === 'win32' ? 'trayBottomCenter' : 'trayCenter',
   });
 
+  let settingsWindow = null;
+
+  function openSettingsWindow() {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.focus();
+      return;
+    }
+
+    const settingsUrl = isDev
+      ? 'http://localhost:5173?view=settings'
+      : `file://${path.join(__dirname, '../renderer/dist/index.html')}?view=settings`;
+
+    // Center on the primary display's work area (excludes taskbar)
+    const { workArea } = screen.getPrimaryDisplay();
+    const winWidth = 480;
+    const winHeight = 600;
+    const x = Math.round(workArea.x + (workArea.width - winWidth) / 2);
+    const y = Math.round(workArea.y + (workArea.height - winHeight) / 2);
+
+    settingsWindow = new BrowserWindow({
+      width: winWidth,
+      height: winHeight,
+      x,
+      y,
+      title: 'git-tomato — Settings',
+      backgroundColor: '#0f1115',
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        nodeIntegration: false,
+      },
+      resizable: false,
+      skipTaskbar: false,
+    });
+
+    settingsWindow.loadURL(settingsUrl);
+    settingsWindow.setMenuBarVisibility(false);
+    settingsWindow.on('closed', () => { settingsWindow = null; });
+  }
+
   mb.on('ready', () => {
     const tray = mb.tray;
+
+    // Right-click context menu
+    const contextMenu = Menu.buildFromTemplate([
+      { label: 'Settings', click: openSettingsWindow },
+      { type: 'separator' },
+      { label: 'Quit git-tomato', click: () => app.quit() },
+    ]);
+    tray.on('right-click', () => tray.popUpContextMenu(contextMenu));
+
 
     // Apply saved settings to timer
     const settings = readSettings();

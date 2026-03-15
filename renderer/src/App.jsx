@@ -4,11 +4,10 @@ import { Timer } from './components/Timer';
 import { Controls } from './components/Controls';
 import { CommitList } from './components/CommitList';
 import { DayTimeline } from './components/DayTimeline';
+import { Settings } from './components/Settings';
 
-const DURATIONS = {
-  focus: 25 * 60,
-  break: 5 * 60,
-};
+// Settings window loads the same renderer with ?view=settings
+const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
 
 // Static example commits shown before any real session completes
 const EXAMPLE_COMMITS = [
@@ -26,7 +25,15 @@ function formatFocusTime(totalMinutes) {
 }
 
 export default function App() {
-  const { timeLeft, status, type, start, pause, reset } = useTimer();
+  if (isSettingsWindow) {
+    return (
+      <div className="app-shell app-shell--settings">
+        <Settings />
+      </div>
+    );
+  }
+
+  const { timeLeft, totalSeconds, status, type, start, pause, reset } = useTimer();
   const [view, setView] = useState('timer');
   const [completedSessions, setCompletedSessions] = useState([]);
 
@@ -39,7 +46,7 @@ export default function App() {
     return cleanup;
   }, []);
 
-  const totalSeconds = DURATIONS[type] ?? DURATIONS.focus;
+  // totalSeconds comes from main process (reflects actual configured duration)
 
   // Gather commits from all completed sessions this session
   const liveCommits = completedSessions.flatMap(s =>
