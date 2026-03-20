@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 
+function localDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function getWeekDays() {
   const days = [];
   const today = new Date();
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    days.push(d.toISOString().slice(0, 10)); // 'YYYY-MM-DD'
+    days.push(localDateStr(d));
   }
   return days;
 }
 
 function shortDayLabel(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr(new Date());
   if (dateStr === today) return 'Today';
   return d.toLocaleDateString('en-US', { weekday: 'short' });
 }
