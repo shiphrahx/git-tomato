@@ -73,7 +73,7 @@ function getCommitsSince(isoTimestamp, repoPaths) {
 
     try {
       const output = execSync(
-        `${GIT_BIN} log --since="${isoTimestamp}" --format="%h|%s|%ae" --all`,
+        `${GIT_BIN} log --since="${isoTimestamp}" --format="%H|%s|%ae" --all`,
         {
           cwd: repoPath,
           timeout: 5000,
