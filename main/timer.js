@@ -109,9 +109,13 @@ function completeSession() {
   let xpResult = null;
   if (completedType === 'focus') {
     const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
+    // H-5, H-6: only qualifying sessions (at least one commit bonus) update streak state
     // C-1: evaluate streak before awarding XP so dailyStreak and isComeback feed in
     const qualifyingCommitCount = commitBonuses.length;
-    const streakResult = evaluateStreak(qualifyingCommitCount, endedAt);
+    let streakResult = { dailyStreak: 0, weeklyStreak: 0, isComeback: false, gapDays: 0, previousDailyStreak: 0, weekBecameProductiveNow: false };
+    if (qualifyingCommitCount > 0) {
+      streakResult = evaluateStreak(qualifyingCommitCount, endedAt);
+    }
     xpResult = xp.awardSessionXp(sessionRowId, commitBonuses, streakResult.dailyStreak, streakResult.isComeback);
     xpResult.streakResult = streakResult;
 
