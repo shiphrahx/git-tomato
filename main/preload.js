@@ -42,4 +42,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Open URL in default browser
   openUrl: (url) => ipcRenderer.invoke('shell:openUrl', url),
+
+  // XP state
+  getXpState: () => ipcRenderer.invoke('xp:getState'),
+  onXpStateUpdated: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('xp:stateUpdated', handler);
+    return () => ipcRenderer.removeListener('xp:stateUpdated', handler);
+  },
 });

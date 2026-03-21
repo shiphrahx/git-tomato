@@ -1088,3 +1088,97 @@ body {
   background: #38a169 !important;
   box-shadow: 0 0 16px rgba(56,161,105,0.3) !important;
 }
+
+/* ─── XP progress bar ───────────────────────────────────────── */
+
+.xp-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.xp-bar__fill {
+  height: 100%;
+  background: #ff4d4d;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.xp-legend-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ─── Session complete XP breakdown ─────────────────────────── */
+
+.sc__xp-breakdown {
+  width: 100%;
+}
+
+.sc__xp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13px;
+}
+
+.sc__xp-row:last-child {
+  border-bottom: none;
+}
+
+.sc__xp-label {
+  color: rgba(255,255,255,0.55);
+}
+
+.sc__xp-amount {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.sc__total-xp {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  width: 100%;
+}
+
+.sc__levelup-banner {
+  width: 100%;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  text-align: center;
+}
+
+.sc__levelup-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 215, 0, 0.7);
+  margin-bottom: 4px;
+}
+
+.sc__levelup-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+/* ─── Profile XP card ───────────────────────────────────────── */
+
+.profile__xp-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 10px;
+}

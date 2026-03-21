@@ -25,6 +25,10 @@ const CHANNELS = {
 
   // Renderer → Main (all commits for a calendar day, with session windows)
   STORE_GET_DAY_COMMITS: 'store:getDayCommits',
+
+  // XP state — invoke + push
+  XP_STATE_GET: 'xp:getState',
+  XP_STATE_UPDATED: 'xp:stateUpdated',
 };
 
 module.exports = { CHANNELS };
