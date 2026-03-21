@@ -30,6 +30,15 @@ function getDb() {
 
       INSERT OR IGNORE INTO xp_state (id, total_xp, level_index, xp_since_level, xp_to_next_level, last_event_at)
       VALUES (1, 0, 0, 0, 100, NULL);
+
+      CREATE TABLE IF NOT EXISTS xp_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        event_type TEXT NOT NULL CHECK(event_type IN ('SESSION_COMPLETE','COMMIT_BONUS','FIRST_SESSION_OF_DAY','STREAK_BONUS','LEVEL_UP')),
+        xp_amount INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        session_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL
+      );
     `);
   }
   return db;
@@ -116,4 +125,25 @@ function setXpState({ totalXp, levelIndex, xpSinceLevel, xpToNextLevel, lastEven
     .run({ totalXp, levelIndex, xpSinceLevel, xpToNextLevel: xpToNextLevel ?? null, lastEventAt: lastEventAt ?? null });
 }
 
-module.exports = { saveSession, getSessionsForDate, getAllSessions, getSessionWindowsForDate, getXpState, setXpState };
+// Append a single XP event. Never modifies or deletes existing rows.
+function appendXpEvent({ eventType, xpAmount, reason, sessionId, createdAt }) {
+  getDb()
+    .prepare(
+      `INSERT INTO xp_events (event_type, xp_amount, reason, session_id, created_at)
+       VALUES (@eventType, @xpAmount, @reason, @sessionId, @createdAt)`
+    )
+    .run({ eventType, xpAmount, reason, sessionId, createdAt });
+}
+
+function getXpEvents({ sessionId } = {}) {
+  if (sessionId != null) {
+    return getDb()
+      .prepare(`SELECT * FROM xp_events WHERE session_id = ? ORDER BY id ASC`)
+      .all(sessionId);
+  }
+  return getDb()
+    .prepare(`SELECT * FROM xp_events ORDER BY id ASC`)
+    .all();
+}
+
+module.exports = { saveSession, getSessionsForDate, getAllSessions, getSessionWindowsForDate, getXpState, setXpState, appendXpEvent, getXpEvents };
