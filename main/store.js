@@ -62,4 +62,19 @@ function getAllSessions() {
     .map(r => ({ ...r, repos: JSON.parse(r.repos) }));
 }
 
-module.exports = { saveSession, getSessionsForDate, getAllSessions };
+function getSessionWindowsForDate(dateStr) {
+  const dayStart = new Date(dateStr);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dateStr);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  return getDb()
+    .prepare(
+      `SELECT started_at, ended_at FROM sessions
+       WHERE started_at >= ? AND started_at <= ?
+       ORDER BY started_at ASC`
+    )
+    .all(dayStart.getTime(), dayEnd.getTime());
+}
+
+module.exports = { saveSession, getSessionsForDate, getAllSessions, getSessionWindowsForDate };

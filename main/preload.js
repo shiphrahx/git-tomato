@@ -33,6 +33,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Session store queries
   getSessions: (date) => ipcRenderer.invoke('store:getSessions', { date }),
 
+  // All commits for a calendar day + session windows
+  getDayCommits: (date) => ipcRenderer.invoke('store:getDayCommits', { date }),
+
   // Settings
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (settings) => ipcRenderer.invoke('settings:set', settings),

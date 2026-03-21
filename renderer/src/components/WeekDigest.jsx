@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { RepoCommitList } from './RepoCommitList';
 
 function localDateStr(d) {
   const y = d.getFullYear();
@@ -28,20 +29,26 @@ function shortDayLabel(dateStr) {
 export function WeekDigest() {
   const [weekData, setWeekData] = useState(null);
 
-  useEffect(() => {
+  async function loadWeek() {
     if (!window.electronAPI) return;
     const days = getWeekDays();
-    Promise.all(days.map(d => window.electronAPI.getSessions(d).then(s => ({ date: d, sessions: s }))))
-      .then(results => setWeekData(results));
-  }, []);
+    const results = await Promise.all(
+      days.map(async d => {
+        const [sessions, dayCommits] = await Promise.all([
+          window.electronAPI.getSessions(d),
+          window.electronAPI.getDayCommits(d),
+        ]);
+        return { date: d, sessions, repos: dayCommits.repos, sessionWindows: dayCommits.sessionWindows };
+      })
+    );
+    setWeekData(results);
+  }
+
+  useEffect(() => { loadWeek(); }, []);
 
   useEffect(() => {
     if (!window.electronAPI) return;
-    const cleanup = window.electronAPI.onSessionComplete(() => {
-      const days = getWeekDays();
-      Promise.all(days.map(d => window.electronAPI.getSessions(d).then(s => ({ date: d, sessions: s }))))
-        .then(results => setWeekData(results));
-    });
+    const cleanup = window.electronAPI.onSessionComplete(() => loadWeek());
     return cleanup;
   }, []);
 
@@ -52,31 +59,34 @@ export function WeekDigest() {
   const totalFocusMinutes = weekData.reduce((sum, { sessions }) =>
     sum + sessions.filter(s => s.type === 'focus').reduce((s2, s) => s2 + s.duration_minutes, 0), 0);
 
-  const totalCommits = weekData.reduce((sum, { sessions }) =>
-    sum + sessions.reduce((s2, s) => s2 + s.repos.reduce((s3, r) => s3 + r.commits.length, 0), 0), 0);
+  const totalCommits = weekData.reduce((sum, { repos }) =>
+    sum + repos.reduce((s2, r) => s2 + r.commits.length, 0), 0);
 
   const maxMinutes = Math.max(...weekData.map(({ sessions }) =>
     sessions.filter(s => s.type === 'focus').reduce((sum, s) => sum + s.duration_minutes, 0)
   ), 1);
 
-  // Collect all repos across the week
+  // Collect all repos across the week — merge commits and session windows per repo
   const repoMap = {};
-  weekData.forEach(({ sessions }) => {
-    sessions.filter(s => s.type === 'focus').forEach(s => {
-      s.repos.forEach(r => {
-        if (!repoMap[r.repo]) repoMap[r.repo] = { commits: 0, minutes: 0 };
-        repoMap[r.repo].commits += r.commits.length;
-        repoMap[r.repo].minutes += s.duration_minutes;
-      });
+  const allSessionWindows = [];
+  weekData.forEach(({ repos, sessions, sessionWindows }) => {
+    const focusMinutes = sessions.filter(s => s.type === 'focus')
+      .reduce((sum, s) => sum + s.duration_minutes, 0);
+    if (sessionWindows) allSessionWindows.push(...sessionWindows);
+    repos.forEach(r => {
+      if (!repoMap[r.repo]) repoMap[r.repo] = { repo: r.repo, remoteUrl: r.remoteUrl, commits: [], minutes: 0 };
+      // De-duplicate commits by hash across days
+      const seen = new Set(repoMap[r.repo].commits.map(c => c.hash));
+      r.commits.forEach(c => { if (!seen.has(c.hash)) repoMap[r.repo].commits.push(c); });
+      repoMap[r.repo].minutes += focusMinutes;
     });
   });
-  const repos = Object.entries(repoMap).sort((a, b) => b[1].commits - a[1].commits);
+  const repos = Object.values(repoMap).sort((a, b) => b.commits.length - a.commits.length);
 
-  const hasAnyData = weekData.some(({ sessions }) => sessions.length > 0);
+  const hasAnyData = weekData.some(({ sessions, repos }) => sessions.length > 0 || repos.length > 0);
 
   return (
     <div className="week-digest">
-      {/* Summary bar */}
       <div className="week-digest__summary">
         <span>{totalFocusMinutes} min focused</span>
         <span>{totalCommits} commit{totalCommits !== 1 ? 's' : ''}</span>
@@ -91,15 +101,13 @@ export function WeekDigest() {
           </div>
         ) : (
           <>
-            {/* Daily bar chart */}
             <div className="week-chart">
-              {weekData.map(({ date, sessions }) => {
+              {weekData.map(({ date, sessions, repos: dayRepos }) => {
                 const focusMin = sessions.filter(s => s.type === 'focus')
                   .reduce((sum, s) => sum + s.duration_minutes, 0);
-                const commits = sessions.reduce((sum, s) =>
-                  sum + s.repos.reduce((r, repo) => r + repo.commits.length, 0), 0);
+                const commits = dayRepos.reduce((sum, r) => sum + r.commits.length, 0);
                 const heightPct = (focusMin / maxMinutes) * 100;
-                const isToday = date === new Date().toISOString().slice(0, 10);
+                const isToday = date === localDateStr(new Date());
 
                 return (
                   <div key={date} className="week-chart__col">
@@ -121,16 +129,10 @@ export function WeekDigest() {
               })}
             </div>
 
-            {/* Repo breakdown */}
             {repos.length > 0 && (
               <div className="week-repos">
                 <div className="week-repos__title">Repositories</div>
-                {repos.map(([repo, { commits, minutes }]) => (
-                  <div key={repo} className="week-repos__row">
-                    <span className="week-repos__name">{repo}</span>
-                    <span className="week-repos__meta">{commits} commit{commits !== 1 ? 's' : ''} · {minutes} min</span>
-                  </div>
-                ))}
+                <RepoCommitList repos={repos} sessionWindows={allSessionWindows} />
               </div>
             )}
           </>

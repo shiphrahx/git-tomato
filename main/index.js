@@ -4,6 +4,7 @@ const fs = require('fs');
 const { CHANNELS } = require('./ipc');
 const timer = require('./timer');
 const store = require('./store');
+const scanner = require('./scanner');
 
 const isDev = process.env.ELECTRON_DEV === '1';
 
@@ -197,6 +198,15 @@ app.whenReady().then(() => {
 
   // Open URL in default browser
   ipcMain.handle(CHANNELS.OPEN_URL, (_, url) => shell.openExternal(url));
+
+  // All commits for a calendar day + session windows for that day
+  ipcMain.handle(CHANNELS.STORE_GET_DAY_COMMITS, (_, { date } = {}) => {
+    if (!date) return { repos: [], sessionWindows: [] };
+    const settings = readSettings();
+    const repos = scanner.getAllCommitsForDay(date, settings.repoPaths);
+    const sessionWindows = store.getSessionWindowsForDate(date);
+    return { repos, sessionWindows };
+  });
 
   // Open devtools in dev mode
   if (isDev) {
