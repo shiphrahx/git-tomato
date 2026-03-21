@@ -189,6 +189,16 @@ app.whenReady().then(() => {
     return date ? store.getSessionsForDate(date) : store.getAllSessions();
   });
 
+  ipcMain.handle(CHANNELS.XP_STATE_GET, () => store.getXpState());
+
+  timer.timerEvents.on('xpStateUpdated', (xpState) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send(CHANNELS.XP_STATE_UPDATED, xpState);
+    }
+    // F-1: update tray tooltip with level title
+    tray.setToolTip(`git-tomato — ${xpState.levelTitle}`);
+  });
+
   // Settings handlers
   ipcMain.handle(CHANNELS.SETTINGS_GET, () => readSettings());
   ipcMain.handle(CHANNELS.SETTINGS_SET, (_, s) => {

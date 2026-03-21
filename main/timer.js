@@ -1,10 +1,12 @@
-const { ipcMain } = require('electron');
+const { ipcMain, Notification } = require('electron');
 const EventEmitter = require('events');
 const { CHANNELS } = require('./ipc');
 const scanner = require('./scanner');
 const store = require('./store');
 const xp = require('./xp');
+const { analyseCommits } = require('./commitAnalyser');
 const { sendSessionCompleteNotification } = require('./notifications');
+const { LEVELS } = require('./levels');
 
 // Emits 'tick' and 'sessionComplete' for main/index.js to subscribe to
 const timerEvents = new EventEmitter();
@@ -105,11 +107,34 @@ function completeSession() {
   // Award XP only for naturally completed focus sessions (C-1)
   let xpResult = null;
   if (completedType === 'focus') {
-    // Commit bonuses passed as [] until Section D analyser is implemented
-    xpResult = xp.awardSessionXp(sessionRowId, []);
+    const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
+    xpResult = xp.awardSessionXp(sessionRowId, commitBonuses);
+
+    // F-4: staggered level-up notifications
+    if (xpResult && xpResult.levelAfter > xpResult.levelBefore) {
+      const levelUps = [];
+      for (let i = xpResult.levelBefore + 1; i <= xpResult.levelAfter; i++) {
+        levelUps.push({ from: LEVELS[i - 1].title, to: LEVELS[i].title });
+      }
+      levelUps.forEach(({ from, to }, idx) => {
+        setTimeout(() => {
+          if (Notification.isSupported()) {
+            new Notification({ title: 'Level up', body: `${from} → ${to}` }).show();
+          }
+        }, idx * 2000);
+      });
+    }
+
+    const newXpState = store.getXpState();
+    newXpState.levelTitle = LEVELS[newXpState.levelIndex].title;
+    timerEvents.emit('xpStateUpdated', newXpState);
   } else {
     // Break sessions: just mark done, no XP
     store.markSessionXpDone(sessionRowId);
+
+    const newXpState = store.getXpState();
+    newXpState.levelTitle = LEVELS[newXpState.levelIndex].title;
+    timerEvents.emit('xpStateUpdated', newXpState);
   }
 
   const session = {
