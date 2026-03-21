@@ -1,4 +1,5 @@
 import React from 'react';
+import { BADGES as BADGE_DEFS } from './Badges';
 
 const LEVEL_TITLES = ['Seedling', 'Committer', 'Shipper', 'Maintainer', 'Staff', 'Principal', 'Legend'];
 
@@ -7,6 +8,7 @@ const EVENT_LABELS = {
   COMMIT_BONUS: 'Commit bonus',
   FIRST_SESSION_OF_DAY: 'First session today',
   STREAK_BONUS: 'Streak bonus',
+  COMEBACK_BONUS: 'Comeback bonus',
 };
 
 function StatPill({ label, value }) {
@@ -39,6 +41,12 @@ export function SessionComplete({ session, onDismiss }) {
     ? xpResult.events.filter(e => e.eventType !== 'LEVEL_UP' && EVENT_LABELS[e.eventType])
     : [];
 
+  // E-3: newly unlocked badge slugs
+  const newBadgeSlugs = session.newBadgeSlugs ?? [];
+  const newBadges = newBadgeSlugs
+    .map(slug => BADGE_DEFS.find(b => b.slug === slug))
+    .filter(Boolean);
+
   return (
     <div className="sc">
       <div className="sc__header">
@@ -59,7 +67,7 @@ export function SessionComplete({ session, onDismiss }) {
       <div className="sc__stats">
         <StatPill label="Commits" value={totalCommits} />
         <StatPill label="XP earned" value={xpResult?.xpGained ?? '—'} />
-        <StatPill label="Badges" value="—" />
+        <StatPill label="Badges" value={newBadges.length > 0 ? `+${newBadges.length}` : '—'} />
       </div>
 
       {xpResult && (
@@ -72,6 +80,19 @@ export function SessionComplete({ session, onDismiss }) {
             </div>
           ))}
           <div className="sc__total-xp">Total XP: {xpResult.newTotalXp}</div>
+        </div>
+      )}
+
+      {/* E-3: badge unlock summary */}
+      {newBadges.length > 0 && (
+        <div className="sc__badges">
+          <div className="sc__section-title">Badges unlocked</div>
+          {newBadges.map(badge => (
+            <div key={badge.slug} className="sc__badge-row">
+              <span className="sc__badge-icon">🏅</span>
+              <span className="sc__badge-name">{badge.name}</span>
+            </div>
+          ))}
         </div>
       )}
 

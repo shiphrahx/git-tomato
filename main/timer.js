@@ -4,8 +4,9 @@ const { CHANNELS } = require('./ipc');
 const scanner = require('./scanner');
 const store = require('./store');
 const xp = require('./xp');
-const { analyseCommits } = require('./commitAnalyser');
+const { analyseCommits, analyseCommitsRich } = require('./commitAnalyser');
 const { evaluateStreak } = require('./streaks');
+const { evaluateBadges } = require('./badges');
 const { sendSessionCompleteNotification } = require('./notifications');
 const { LEVELS } = require('./levels');
 
@@ -107,7 +108,10 @@ function completeSession() {
 
   // Award XP only for naturally completed focus sessions (C-1)
   let xpResult = null;
+  let newBadgeSlugs = [];
   if (completedType === 'focus') {
+    // Run rich commit analysis once — used by both XP (via commitBonuses) and badges
+    const richCommits = analyseCommitsRich(state.repoPaths, startedAt, endedAt);
     const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
     // H-5, H-6: only qualifying sessions (at least one commit bonus) update streak state
     // C-1: evaluate streak before awarding XP so dailyStreak and isComeback feed in
@@ -118,6 +122,15 @@ function completeSession() {
     }
     xpResult = xp.awardSessionXp(sessionRowId, commitBonuses, streakResult.dailyStreak, streakResult.isComeback);
     xpResult.streakResult = streakResult;
+
+    // B-1: evaluate badges after XP and Streaks have both finished
+    const completedSession = store.getSessionById(sessionRowId);
+    newBadgeSlugs = evaluateBadges({
+      session: completedSession,
+      richCommits,
+      xpResult,
+      streakResult,
+    });
 
     // G-4: streak broken notification — fires once when streak resets after a gap
     // isComeback means previousDailyStreak > 0 AND gap >= 2 → streak was broken
@@ -145,6 +158,7 @@ function completeSession() {
     }
 
     // F-4: staggered level-up notifications
+    let levelUpCount = 0;
     if (xpResult && xpResult.levelAfter > xpResult.levelBefore) {
       const levelUps = [];
       for (let i = xpResult.levelBefore + 1; i <= xpResult.levelAfter; i++) {
@@ -156,6 +170,20 @@ function completeSession() {
             new Notification({ title: 'Level up', body: `${from} → ${to}` }).show();
           }
         }, idx * 2000);
+      });
+      levelUpCount = levelUps.length;
+    }
+
+    // E-2: badge unlock notifications — staggered 1.5s, after level-up notifications
+    if (newBadgeSlugs.length > 0 && Notification.isSupported()) {
+      const { BADGE_BY_SLUG } = require('./badgeDefs');
+      const levelUpDuration = levelUpCount * 2000;
+      newBadgeSlugs.forEach((slug, idx) => {
+        const badge = BADGE_BY_SLUG[slug];
+        if (!badge) return;
+        setTimeout(() => {
+          new Notification({ title: badge.name, body: badge.description }).show();
+        }, levelUpDuration + idx * 1500);
       });
     }
 
@@ -179,6 +207,7 @@ function completeSession() {
     type: completedType,
     repos,
     xpResult,
+    newBadgeSlugs, // E-3: newly unlocked badge slugs for session-end summary
   };
 
   sendToAll(CHANNELS.SESSION_COMPLETE, session);
@@ -225,6 +254,7 @@ function registerHandlers() {
     state.intervalId = null;
     state.pollId = null;
     state.status = 'paused';
+    if (state.sessionRowId) store.incrementSessionPauseCount(state.sessionRowId);
     pushTick();
   });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTimer } from './hooks/useTimer';
 import { Timer } from './components/Timer';
 import { Controls } from './components/Controls';
@@ -7,6 +7,9 @@ import { WeekDigest } from './components/WeekDigest';
 import { Settings } from './components/Settings';
 import { SessionComplete } from './components/SessionComplete';
 import { Profile } from './components/Profile';
+import { Badges, BADGES as BADGE_DEFS } from './components/Badges';
+
+const TOTAL_BADGES = BADGE_DEFS.length; // 25
 
 // Settings window loads the same renderer with ?view=settings
 const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
@@ -16,6 +19,7 @@ const TABS = [
   { id: 'today',   label: 'Today',   icon: '📅' },
   { id: 'week',    label: 'Week',    icon: '📊' },
   { id: 'profile', label: 'Profile', icon: '👤' },
+  { id: 'badges',  label: 'Badges',  icon: '🏅' },
 ];
 
 export default function App() {
@@ -31,8 +35,27 @@ export default function App() {
   const [tab, setTab] = useState('timer');
   const [completedSession, setCompletedSession] = useState(null);
 
+  // E-4, E-5: badge unlock state for header
+  const [badgeUnlocks, setBadgeUnlocks] = useState([]);
+
+  useEffect(() => {
+    if (!window.electronAPI) return;
+
+    // Load initial badge unlocks
+    window.electronAPI.getBadgeUnlocks().then(records => {
+      setBadgeUnlocks(records ?? []);
+    });
+
+    // Subscribe to badge updates
+    const unsubBadges = window.electronAPI.onBadgesUpdated((records) => {
+      setBadgeUnlocks(records ?? []);
+    });
+
+    return unsubBadges;
+  }, []);
+
   // When a session completes, capture it and switch to the session-complete screen
-  React.useEffect(() => {
+  useEffect(() => {
     if (!window.electronAPI) return;
     const cleanup = window.electronAPI.onSessionComplete((session) => {
       setCompletedSession(session);
@@ -52,9 +75,30 @@ export default function App() {
 
   const showSessionComplete = tab === 'timer' && completedSession !== null;
 
+  // E-4: badge count
+  const unlockedCount = badgeUnlocks.length;
+
+  // E-5: most recently unlocked badge
+  const mostRecent = badgeUnlocks.length > 0
+    ? badgeUnlocks.reduce((a, b) => (a.unlocked_at > b.unlocked_at ? a : b))
+    : null;
+  const mostRecentDef = mostRecent
+    ? BADGE_DEFS.find(b => b.slug === mostRecent.slug)
+    : null;
+
   return (
     <div className="app-shell">
       <div className="panel">
+        {/* E-4, E-5: badge header strip */}
+        {(unlockedCount > 0 || mostRecentDef) && (
+          <div className="badge-header">
+            <span className="badge-header__count">🏅 {unlockedCount} / {TOTAL_BADGES}</span>
+            {mostRecentDef && (
+              <span className="badge-header__recent">{mostRecentDef.name}</span>
+            )}
+          </div>
+        )}
+
         <div className="panel__body">
           {tab === 'timer' && !showSessionComplete && (
             <div className="screen screen--timer">
@@ -89,6 +133,12 @@ export default function App() {
           {tab === 'profile' && (
             <div className="screen screen--profile">
               <Profile />
+            </div>
+          )}
+
+          {tab === 'badges' && (
+            <div className="screen screen--badges">
+              <Badges />
             </div>
           )}
         </div>

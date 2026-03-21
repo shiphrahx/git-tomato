@@ -32,6 +32,10 @@ const CHANNELS = {
 
   // Streak state — invoke
   STREAK_STATE_GET: 'streak:getState',
+
+  // Badge unlocks — invoke + push
+  BADGES_GET: 'badges:get',
+  BADGES_UPDATED: 'badges:updated',
 };
 
 module.exports = { CHANNELS };
