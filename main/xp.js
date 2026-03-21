@@ -59,8 +59,9 @@ function isFirstSessionOfDay(completedAtMs) {
  *                                      { xpAmount, reason }.
  * @param {number} dailyStreak        - Current daily streak after streak evaluation
  *                                      (C-6). Defaults to 0 if not provided.
+ * @param {boolean} isComeback        - True when streak module detected a comeback (E-1).
  */
-function awardSessionXp(sessionId, commitBonusEvents = [], dailyStreak = 0) {
+function awardSessionXp(sessionId, commitBonusEvents = [], dailyStreak = 0, isComeback = false) {
   const now = new Date().toISOString();
   const nowMs = Date.now();
 
@@ -88,6 +89,11 @@ function awardSessionXp(sessionId, commitBonusEvents = [], dailyStreak = 0) {
   const streak = dailyStreak;
   if (streak >= 2) {
     events.push({ eventType: 'STREAK_BONUS', xpAmount: 15, reason: `${streak}-day streak` });
+  }
+
+  // E-2: comeback bonus → +10 COMEBACK_BONUS (only when streak module flags it, E-3 already guarded)
+  if (isComeback) {
+    events.push({ eventType: 'COMEBACK_BONUS', xpAmount: 10, reason: 'Welcome back bonus' });
   }
 
   // Compute new total XP
