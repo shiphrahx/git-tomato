@@ -5,6 +5,7 @@ const scanner = require('./scanner');
 const store = require('./store');
 const xp = require('./xp');
 const { analyseCommits } = require('./commitAnalyser');
+const { evaluateStreak } = require('./streaks');
 const { sendSessionCompleteNotification } = require('./notifications');
 const { LEVELS } = require('./levels');
 
@@ -108,7 +109,40 @@ function completeSession() {
   let xpResult = null;
   if (completedType === 'focus') {
     const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
-    xpResult = xp.awardSessionXp(sessionRowId, commitBonuses);
+    // H-5, H-6: only qualifying sessions (at least one commit bonus) update streak state
+    // C-1: evaluate streak before awarding XP so dailyStreak and isComeback feed in
+    const qualifyingCommitCount = commitBonuses.length;
+    let streakResult = { dailyStreak: 0, weeklyStreak: 0, isComeback: false, gapDays: 0, previousDailyStreak: 0, weekBecameProductiveNow: false };
+    if (qualifyingCommitCount > 0) {
+      streakResult = evaluateStreak(qualifyingCommitCount, endedAt);
+    }
+    xpResult = xp.awardSessionXp(sessionRowId, commitBonuses, streakResult.dailyStreak, streakResult.isComeback);
+    xpResult.streakResult = streakResult;
+
+    // G-4: streak broken notification — fires once when streak resets after a gap
+    // isComeback means previousDailyStreak > 0 AND gap >= 2 → streak was broken
+    if (streakResult.isComeback && streakResult.previousDailyStreak >= 1 && Notification.isSupported()) {
+      new Notification({
+        title: 'Streak ended',
+        body: `Your ${streakResult.previousDailyStreak}-day streak ended`,
+      }).show();
+    }
+
+    // G-5: comeback notification (E-2 triggered)
+    if (streakResult.isComeback && Notification.isSupported()) {
+      new Notification({
+        title: 'Welcome back',
+        body: `You were away for ${streakResult.gapDays} day${streakResult.gapDays !== 1 ? 's' : ''}`,
+      }).show();
+    }
+
+    // G-6: weekly streak achieved notification
+    if (streakResult.weekBecameProductiveNow && Notification.isSupported()) {
+      new Notification({
+        title: 'Week complete',
+        body: `${streakResult.weeklyStreak}-week streak`,
+      }).show();
+    }
 
     // F-4: staggered level-up notifications
     if (xpResult && xpResult.levelAfter > xpResult.levelBefore) {

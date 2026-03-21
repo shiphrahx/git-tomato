@@ -6,6 +6,7 @@ const timer = require('./timer');
 const store = require('./store');
 const xp = require('./xp');
 const scanner = require('./scanner');
+const { dailyStreakStatus, weeklyStreakStatus, toDateStr, weekMonday } = require('./streakDefs');
 
 const isDev = process.env.ELECTRON_DEV === '1';
 
@@ -40,6 +41,47 @@ function writeSettings(settings) {
 let mainWindow = null;
 let settingsWindow = null;
 let tray = null;
+
+// D-1, D-2, D-3: build streak state payload with computed at-risk booleans.
+// At-risk is never persisted — always derived fresh from stored state + current date.
+function buildStreakPayload() {
+  const s = store.getStreakState();
+  const nowMs = Date.now();
+  const todayStr = toDateStr(nowMs);
+  const currentWeekMonday = weekMonday(nowMs);
+
+  // D-1: daily at-risk
+  const dailyStatus = dailyStreakStatus(s.lastProductiveDay, todayStr);
+  const isDailyAtRisk = dailyStatus === 'at-risk';
+
+  // D-2: weekly at-risk — need productive day count for the current week
+  const sundayStr = _sundayOf(currentWeekMonday);
+  const productiveDaysThisWeek = store.getProductiveDaysInWeek(currentWeekMonday, sundayStr).length;
+  const weeklyStatus = weeklyStreakStatus(productiveDaysThisWeek, s.lastProductiveWeek, currentWeekMonday);
+  const isWeeklyAtRisk = weeklyStatus === 'at-risk';
+
+  return {
+    dailyStreak: s.dailyStreak,
+    weeklyStreak: s.weeklyStreak,
+    longestDailyStreak: s.longestDailyStreak,
+    longestWeeklyStreak: s.longestWeeklyStreak,
+    lastProductiveDay: s.lastProductiveDay,
+    lastProductiveWeek: s.lastProductiveWeek,
+    productiveDaysThisWeek,
+    isDailyAtRisk,
+    isWeeklyAtRisk,
+  };
+}
+
+function _sundayOf(mondayStr) {
+  const d = new Date(mondayStr);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 6);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 app.whenReady().then(() => {
   // Windows: needed for dev-mode desktop notifications
@@ -191,11 +233,16 @@ app.whenReady().then(() => {
 
   ipcMain.handle(CHANNELS.XP_STATE_GET, () => store.getXpState());
 
+  // D-1, D-2, D-3: streak state with computed at-risk fields (never persisted)
+  ipcMain.handle(CHANNELS.STREAK_STATE_GET, () => {
+    return buildStreakPayload();
+  });
+
   timer.timerEvents.on('xpStateUpdated', (xpState) => {
+    const payload = { ...xpState, streakState: buildStreakPayload() };
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send(CHANNELS.XP_STATE_UPDATED, xpState);
+      mainWindow.webContents.send(CHANNELS.XP_STATE_UPDATED, payload);
     }
-    // F-1: update tray tooltip with level title
     tray.setToolTip(`git-tomato — ${xpState.levelTitle}`);
   });
 

@@ -527,6 +527,18 @@ body {
   text-align: center;
 }
 
+/* G-1, G-2: at-risk streak indicator */
+.profile__stat--at-risk {
+  border-color: rgba(255, 180, 0, 0.35);
+  background: rgba(255, 180, 0, 0.06);
+}
+.profile__stat--at-risk .profile__stat-value {
+  color: #ffb400;
+}
+.profile__stat--at-risk .profile__stat-label {
+  color: rgba(255, 180, 0, 0.7);
+}
+
 /* ─── Day timeline (Today tab) ──────────────────────────────── */
 
 .day-timeline {

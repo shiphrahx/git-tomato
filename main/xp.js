@@ -22,7 +22,7 @@ function computeXpFields(totalXp) {
   };
 }
 
-// ─── Streak helper (C-4) ─────────────────────────────────────────────────────
+// ─── Date helper (used by isFirstSessionOfDay) ────────────────────────────────
 
 function localDateStr(ms) {
   const d = new Date(ms);
@@ -30,32 +30,6 @@ function localDateStr(ms) {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
-}
-
-function computeStreak(completedAtMs) {
-  // Count consecutive calendar days with at least one focus session,
-  // ending on the day of completedAtMs.
-  const allSessions = store.getAllSessions();
-  const focusDays = new Set(
-    allSessions
-      .filter(s => s.type === 'focus' && s.status === 'completed')
-      .map(s => localDateStr(s.started_at))
-  );
-  // Also count today's completing session
-  focusDays.add(localDateStr(completedAtMs));
-
-  let streak = 0;
-  const base = new Date(completedAtMs);
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(base);
-    d.setDate(base.getDate() - i);
-    if (focusDays.has(localDateStr(d.getTime()))) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-  return streak;
 }
 
 // ─── First-session-of-day check (C-3) ────────────────────────────────────────
@@ -79,13 +53,15 @@ function isFirstSessionOfDay(completedAtMs) {
 /**
  * Award XP for a naturally completed focus session.
  *
- * @param {number} sessionId  - The sessions.id row that just completed.
- * @param {Array}  commitBonusEvents - Pre-scored commit bonus entries from the
- *                                     commit analyser (Section D). Each has
- *                                     { xpAmount, reason }. Pass [] until D
- *                                     stories are implemented.
+ * @param {number} sessionId          - The sessions.id row that just completed.
+ * @param {Array}  commitBonusEvents  - Pre-scored commit bonus entries from the
+ *                                      commit analyser (Section D). Each has
+ *                                      { xpAmount, reason }.
+ * @param {number} dailyStreak        - Current daily streak after streak evaluation
+ *                                      (C-6). Defaults to 0 if not provided.
+ * @param {boolean} isComeback        - True when streak module detected a comeback (E-1).
  */
-function awardSessionXp(sessionId, commitBonusEvents = []) {
+function awardSessionXp(sessionId, commitBonusEvents = [], dailyStreak = 0, isComeback = false) {
   const now = new Date().toISOString();
   const nowMs = Date.now();
 
@@ -109,10 +85,15 @@ function awardSessionXp(sessionId, commitBonusEvents = []) {
     events.push({ eventType: 'FIRST_SESSION_OF_DAY', xpAmount: 20, reason: 'First focus session of the day' });
   }
 
-  // C-4: streak bonus → +15 if streak ≥ 2
-  const streak = computeStreak(nowMs);
+  // C-4: streak bonus → +15 if streak ≥ 2 (streak count comes from streak module, C-6)
+  const streak = dailyStreak;
   if (streak >= 2) {
     events.push({ eventType: 'STREAK_BONUS', xpAmount: 15, reason: `${streak}-day streak` });
+  }
+
+  // E-2: comeback bonus → +10 COMEBACK_BONUS (only when streak module flags it, E-3 already guarded)
+  if (isComeback) {
+    events.push({ eventType: 'COMEBACK_BONUS', xpAmount: 10, reason: 'Welcome back bonus' });
   }
 
   // Compute new total XP

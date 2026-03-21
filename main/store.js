@@ -33,11 +33,33 @@ function getDb() {
 
       CREATE TABLE IF NOT EXISTS xp_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        event_type TEXT NOT NULL CHECK(event_type IN ('SESSION_COMPLETE','COMMIT_BONUS','FIRST_SESSION_OF_DAY','STREAK_BONUS','LEVEL_UP')),
+        event_type TEXT NOT NULL CHECK(event_type IN ('SESSION_COMPLETE','COMMIT_BONUS','FIRST_SESSION_OF_DAY','STREAK_BONUS','LEVEL_UP','COMEBACK_BONUS')),
         xp_amount INTEGER NOT NULL,
         reason TEXT NOT NULL,
         session_id INTEGER NOT NULL,
         created_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS streak_state (
+        id INTEGER PRIMARY KEY CHECK(id = 1),
+        daily_streak INTEGER NOT NULL DEFAULT 0,
+        weekly_streak INTEGER NOT NULL DEFAULT 0,
+        last_productive_day TEXT,
+        last_productive_week TEXT,
+        longest_daily_streak INTEGER NOT NULL DEFAULT 0,
+        longest_weekly_streak INTEGER NOT NULL DEFAULT 0,
+        last_evaluated_at TEXT
+      );
+
+      INSERT OR IGNORE INTO streak_state
+        (id, daily_streak, weekly_streak, last_productive_day, last_productive_week,
+         longest_daily_streak, longest_weekly_streak, last_evaluated_at)
+      VALUES (1, 0, 0, NULL, NULL, 0, 0, NULL);
+
+      CREATE TABLE IF NOT EXISTS productive_days (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        day TEXT NOT NULL UNIQUE,
+        qualifying_commits INTEGER NOT NULL DEFAULT 0
       );
     `);
 
@@ -200,6 +222,85 @@ function getXpEvents({ sessionId } = {}) {
     .all();
 }
 
+// ─── Streak state (B-1) ───────────────────────────────────────────────────────
+
+function getStreakState() {
+  const row = getDb().prepare(`SELECT * FROM streak_state WHERE id = 1`).get();
+  return {
+    dailyStreak:        row.daily_streak,
+    weeklyStreak:       row.weekly_streak,
+    lastProductiveDay:  row.last_productive_day,
+    lastProductiveWeek: row.last_productive_week,
+    longestDailyStreak:  row.longest_daily_streak,
+    longestWeeklyStreak: row.longest_weekly_streak,
+    lastEvaluatedAt:    row.last_evaluated_at,
+  };
+}
+
+function setStreakState({
+  dailyStreak, weeklyStreak, lastProductiveDay, lastProductiveWeek,
+  longestDailyStreak, longestWeeklyStreak, lastEvaluatedAt,
+}) {
+  getDb()
+    .prepare(
+      `UPDATE streak_state
+       SET daily_streak          = @dailyStreak,
+           weekly_streak         = @weeklyStreak,
+           last_productive_day   = @lastProductiveDay,
+           last_productive_week  = @lastProductiveWeek,
+           longest_daily_streak  = @longestDailyStreak,
+           longest_weekly_streak = @longestWeeklyStreak,
+           last_evaluated_at     = @lastEvaluatedAt
+       WHERE id = 1`
+    )
+    .run({
+      dailyStreak,
+      weeklyStreak,
+      lastProductiveDay:  lastProductiveDay  ?? null,
+      lastProductiveWeek: lastProductiveWeek ?? null,
+      longestDailyStreak,
+      longestWeeklyStreak,
+      lastEvaluatedAt:    lastEvaluatedAt    ?? null,
+    });
+}
+
+// ─── Productive day log (B-2) ─────────────────────────────────────────────────
+
+// Returns the row for the given ISO date string, or null.
+function getProductiveDay(dateStr) {
+  return getDb()
+    .prepare(`SELECT * FROM productive_days WHERE day = ?`)
+    .get(dateStr) ?? null;
+}
+
+// Upsert: insert on first productive session of the day, increment commit
+// count on subsequent sessions the same day (H-1, H-2).
+function upsertProductiveDay(dateStr, qualifyingCommitCount) {
+  getDb()
+    .prepare(
+      `INSERT INTO productive_days (day, qualifying_commits)
+       VALUES (@day, @count)
+       ON CONFLICT(day) DO UPDATE SET qualifying_commits = qualifying_commits + @count`
+    )
+    .run({ day: dateStr, count: qualifyingCommitCount });
+}
+
+// Return all productive day entries ordered chronologically.
+function getAllProductiveDays() {
+  return getDb()
+    .prepare(`SELECT * FROM productive_days ORDER BY day ASC`)
+    .all();
+}
+
+// Return productive day entries whose day falls within [mondayStr, sundayStr].
+function getProductiveDaysInWeek(mondayStr, sundayStr) {
+  return getDb()
+    .prepare(
+      `SELECT * FROM productive_days WHERE day >= ? AND day <= ? ORDER BY day ASC`
+    )
+    .all(mondayStr, sundayStr);
+}
+
 module.exports = {
   getDb,
   saveSession,
@@ -208,4 +309,6 @@ module.exports = {
   getSessionsForDate, getAllSessions, getSessionWindowsForDate,
   getXpState, setXpState,
   appendXpEvent, getXpEvents,
+  getStreakState, setStreakState,
+  getProductiveDay, upsertProductiveDay, getAllProductiveDays, getProductiveDaysInWeek,
 };

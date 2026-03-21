@@ -29,6 +29,9 @@ const CHANNELS = {
   // XP state — invoke + push
   XP_STATE_GET: 'xp:getState',
   XP_STATE_UPDATED: 'xp:stateUpdated',
+
+  // Streak state — invoke
+  STREAK_STATE_GET: 'streak:getState',
 };
 
 module.exports = { CHANNELS };
