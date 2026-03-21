@@ -17,7 +17,19 @@ function getDb() {
         duration_minutes INTEGER NOT NULL,
         type TEXT NOT NULL CHECK(type IN ('focus', 'break')),
         repos TEXT NOT NULL DEFAULT '[]'
-      )
+      );
+
+      CREATE TABLE IF NOT EXISTS xp_state (
+        id INTEGER PRIMARY KEY CHECK(id = 1),
+        total_xp INTEGER NOT NULL DEFAULT 0,
+        level_index INTEGER NOT NULL DEFAULT 0,
+        xp_since_level INTEGER NOT NULL DEFAULT 0,
+        xp_to_next_level INTEGER,
+        last_event_at TEXT
+      );
+
+      INSERT OR IGNORE INTO xp_state (id, total_xp, level_index, xp_since_level, xp_to_next_level, last_event_at)
+      VALUES (1, 0, 0, 0, 100, NULL);
     `);
   }
   return db;
@@ -77,4 +89,31 @@ function getSessionWindowsForDate(dateStr) {
     .all(dayStart.getTime(), dayEnd.getTime());
 }
 
-module.exports = { saveSession, getSessionsForDate, getAllSessions, getSessionWindowsForDate };
+function getXpState() {
+  const row = getDb()
+    .prepare(`SELECT * FROM xp_state WHERE id = 1`)
+    .get();
+  return {
+    totalXp: row.total_xp,
+    levelIndex: row.level_index,
+    xpSinceLevel: row.xp_since_level,
+    xpToNextLevel: row.xp_to_next_level,
+    lastEventAt: row.last_event_at,
+  };
+}
+
+function setXpState({ totalXp, levelIndex, xpSinceLevel, xpToNextLevel, lastEventAt }) {
+  getDb()
+    .prepare(
+      `UPDATE xp_state
+       SET total_xp = @totalXp,
+           level_index = @levelIndex,
+           xp_since_level = @xpSinceLevel,
+           xp_to_next_level = @xpToNextLevel,
+           last_event_at = @lastEventAt
+       WHERE id = 1`
+    )
+    .run({ totalXp, levelIndex, xpSinceLevel, xpToNextLevel: xpToNextLevel ?? null, lastEventAt: lastEventAt ?? null });
+}
+
+module.exports = { saveSession, getSessionsForDate, getAllSessions, getSessionWindowsForDate, getXpState, setXpState };
