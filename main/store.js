@@ -40,14 +40,68 @@ function getDb() {
         created_at TEXT NOT NULL
       );
     `);
+
+    // Migration: add status column to sessions if it doesn't exist yet.
+    // Values: 'in_progress' | 'completed' | 'aborted' | 'xp_pending'
+    const cols = db.prepare(`PRAGMA table_info(sessions)`).all();
+    if (!cols.find(c => c.name === 'status')) {
+      db.exec(`ALTER TABLE sessions ADD COLUMN status TEXT NOT NULL DEFAULT 'completed'`);
+    }
   }
   return db;
 }
 
+// Insert an in_progress row when a session starts. Returns the new row id.
+function beginSession({ startedAt, type, durationMinutes }) {
+  return getDb()
+    .prepare(
+      `INSERT INTO sessions (started_at, ended_at, duration_minutes, type, repos, status)
+       VALUES (@startedAt, 0, @durationMinutes, @type, '[]', 'in_progress')`
+    )
+    .run({ startedAt, durationMinutes, type }).lastInsertRowid;
+}
+
+// Mark a session as completed and store its data; transitions to xp_pending.
+function completeSession({ id, endedAt, repos }) {
+  getDb()
+    .prepare(
+      `UPDATE sessions SET ended_at = @endedAt, repos = @repos, status = 'xp_pending' WHERE id = @id`
+    )
+    .run({ id, endedAt, repos: JSON.stringify(repos) });
+}
+
+// Mark a session as fully done after XP has been committed.
+function markSessionXpDone(id) {
+  getDb()
+    .prepare(`UPDATE sessions SET status = 'completed' WHERE id = ?`)
+    .run(id);
+}
+
+// On startup: abort any session that was still in_progress (app was killed).
+function abortInProgressSessions() {
+  getDb()
+    .prepare(`UPDATE sessions SET status = 'aborted' WHERE status = 'in_progress'`)
+    .run();
+}
+
+// Return sessions that completed but whose XP was never committed.
+function getPendingXpSessions() {
+  return getDb()
+    .prepare(`SELECT * FROM sessions WHERE status = 'xp_pending' ORDER BY started_at ASC`)
+    .all()
+    .map(r => ({ ...r, repos: JSON.parse(r.repos) }));
+}
+
+function getSessionById(id) {
+  const r = getDb().prepare(`SELECT * FROM sessions WHERE id = ?`).get(id);
+  if (!r) return null;
+  return { ...r, repos: JSON.parse(r.repos) };
+}
+
 function saveSession(session) {
   const stmt = getDb().prepare(
-    `INSERT INTO sessions (started_at, ended_at, duration_minutes, type, repos)
-     VALUES (@started_at, @ended_at, @duration_minutes, @type, @repos)`
+    `INSERT INTO sessions (started_at, ended_at, duration_minutes, type, repos, status)
+     VALUES (@started_at, @ended_at, @duration_minutes, @type, @repos, 'completed')`
   );
   return stmt.run({
     started_at: session.startedAt,
@@ -146,4 +200,12 @@ function getXpEvents({ sessionId } = {}) {
     .all();
 }
 
-module.exports = { saveSession, getSessionsForDate, getAllSessions, getSessionWindowsForDate, getXpState, setXpState, appendXpEvent, getXpEvents };
+module.exports = {
+  getDb,
+  saveSession,
+  beginSession, completeSession, markSessionXpDone, abortInProgressSessions,
+  getPendingXpSessions, getSessionById,
+  getSessionsForDate, getAllSessions, getSessionWindowsForDate,
+  getXpState, setXpState,
+  appendXpEvent, getXpEvents,
+};

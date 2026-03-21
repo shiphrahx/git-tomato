@@ -4,6 +4,7 @@ const fs = require('fs');
 const { CHANNELS } = require('./ipc');
 const timer = require('./timer');
 const store = require('./store');
+const xp = require('./xp');
 const scanner = require('./scanner');
 
 const isDev = process.env.ELECTRON_DEV === '1';
@@ -160,6 +161,9 @@ app.whenReady().then(() => {
 
   tray.on('click', showMainWindow);
   tray.on('double-click', showMainWindow);
+
+  // Abort orphaned sessions and retry pending XP awards from last run
+  xp.processSessionsOnLaunch();
 
   // Apply saved settings to timer
   const settings = readSettings();
