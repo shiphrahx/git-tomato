@@ -36,6 +36,9 @@ const CHANNELS = {
   // Badge unlocks — invoke + push
   BADGES_GET: 'badges:get',
   BADGES_UPDATED: 'badges:updated',
+
+  // Open settings window
+  SETTINGS_OPEN: 'settings:open',
 };
 
 module.exports = { CHANNELS };
