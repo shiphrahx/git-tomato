@@ -2,42 +2,21 @@ import React, { useState } from 'react';
 import { useTimer } from './hooks/useTimer';
 import { Timer } from './components/Timer';
 import { Controls } from './components/Controls';
-import { CommitList } from './components/CommitList';
 import { DayTimeline } from './components/DayTimeline';
 import { WeekDigest } from './components/WeekDigest';
 import { Settings } from './components/Settings';
+import { SessionComplete } from './components/SessionComplete';
+import { Profile } from './components/Profile';
 
 // Settings window loads the same renderer with ?view=settings
 const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
 
-function toRepos(commits) {
-  const map = {};
-  for (const c of commits) {
-    if (!map[c.repo]) map[c.repo] = { repo: c.repo, remoteUrl: c.remoteUrl, commits: [] };
-    map[c.repo].commits.push({ hash: c.hash, message: c.message, author: c.author });
-  }
-  return Object.values(map);
-}
-
-function mergeCommits(repos, newCommits) {
-  const map = {};
-  for (const r of repos) map[r.repo] = { ...r, commits: [...r.commits] };
-  for (const c of newCommits) {
-    if (!map[c.repo]) map[c.repo] = { repo: c.repo, remoteUrl: c.remoteUrl, commits: [] };
-    if (!map[c.repo].commits.find(x => x.hash === c.hash)) {
-      map[c.repo].commits.push({ hash: c.hash, message: c.message, author: c.author });
-    }
-  }
-  return Object.values(map);
-}
-
-// Format ms of focus time as "Xh Ym" or "Xm"
-function formatFocusTime(totalMinutes) {
-  if (totalMinutes < 60) return `${totalMinutes}m`;
-  const h = Math.floor(totalMinutes / 60);
-  const m = totalMinutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
+const TABS = [
+  { id: 'timer',   label: 'Timer',   icon: '⏱' },
+  { id: 'today',   label: 'Today',   icon: '📅' },
+  { id: 'week',    label: 'Week',    icon: '📊' },
+  { id: 'profile', label: 'Profile', icon: '👤' },
+];
 
 export default function App() {
   if (isSettingsWindow) {
@@ -49,111 +28,87 @@ export default function App() {
   }
 
   const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer } = useTimer();
+  const [tab, setTab] = useState('timer');
+  const [completedSession, setCompletedSession] = useState(null);
 
-  function reset() {
-    setCompletedSessions(prev => prev.filter(s => !s._live));
-    resetTimer();
-  }
-  const [view, setView] = useState('timer');
-  const [completedSessions, setCompletedSessions] = useState([]);
-
-  // Listen for real session completions
+  // When a session completes, capture it and switch to the session-complete screen
   React.useEffect(() => {
     if (!window.electronAPI) return;
     const cleanup = window.electronAPI.onSessionComplete((session) => {
-      setCompletedSessions(prev => [...prev, session]);
+      setCompletedSession(session);
+      setTab('timer'); // ensure we're on timer tab so sc screen shows
     });
     return cleanup;
   }, []);
 
-  // Listen for live commits polled during a running session
-  React.useEffect(() => {
-    if (!window.electronAPI) return;
-    const cleanup = window.electronAPI.onLiveCommits((newCommits) => {
-      setCompletedSessions(prev => {
-        // Append as a synthetic in-progress session entry so displayCommits picks them up
-        const live = prev.find(s => s._live);
-        if (live) {
-          return prev.map(s => s._live
-            ? { ...s, repos: mergeCommits(s.repos, newCommits) }
-            : s
-          );
-        }
-        return [...prev, { _live: true, type: 'focus', durationMinutes: 0, repos: toRepos(newCommits) }];
-      });
-    });
-    return cleanup;
-  }, []);
+  function handleDismissComplete() {
+    setCompletedSession(null);
+  }
 
-  // totalSeconds comes from main process (reflects actual configured duration)
+  function reset() {
+    setCompletedSession(null);
+    resetTimer();
+  }
 
-  // Gather commits from all completed sessions this session
-  const displayCommits = completedSessions.flatMap(s =>
-    s.repos.flatMap(r => r.commits.map(c => ({ repo: r.repo, message: c.message, hash: c.hash, remoteUrl: r.remoteUrl })))
-  );
-
-  // Total focus minutes from completed sessions
-  const focusMinutes = completedSessions
-    .filter(s => s.type === 'focus')
-    .reduce((sum, s) => sum + s.durationMinutes, 0);
-
-  const headerLabel = focusMinutes > 0
-    ? `Today's Focus — ${formatFocusTime(focusMinutes)}`
-    : "Today's Focus";
+  const showSessionComplete = tab === 'timer' && completedSession !== null;
 
   return (
     <div className="app-shell">
       <div className="panel">
-        {/* Nav tabs */}
-        <div className="panel__nav">
-          <button
-            className={`panel__tab${view === 'timer' ? ' panel__tab--active' : ''}`}
-            onClick={() => setView('timer')}
-          >
-            Timer
-          </button>
-          <button
-            className={`panel__tab${view === 'timeline' ? ' panel__tab--active' : ''}`}
-            onClick={() => setView('timeline')}
-          >
-            Today
-          </button>
-          <button
-            className={`panel__tab${view === 'week' ? ' panel__tab--active' : ''}`}
-            onClick={() => setView('week')}
-          >
-            Week
-          </button>
+        <div className="panel__body">
+          {tab === 'timer' && !showSessionComplete && (
+            <div className="screen screen--timer">
+              <div className="screen__timer-inner">
+                <p className="timer-type-label">{type === 'focus' ? 'Focus' : 'Break'}</p>
+                <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
+                <div className="panel__controls">
+                  <Controls status={status} onStart={start} onPause={pause} onReset={reset} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showSessionComplete && (
+            <div className="screen screen--sc">
+              <SessionComplete session={completedSession} onDismiss={handleDismissComplete} />
+            </div>
+          )}
+
+          {tab === 'today' && (
+            <div className="screen screen--today">
+              <DayTimeline />
+            </div>
+          )}
+
+          {tab === 'week' && (
+            <div className="screen screen--week">
+              <WeekDigest />
+            </div>
+          )}
+
+          {tab === 'profile' && (
+            <div className="screen screen--profile">
+              <Profile />
+            </div>
+          )}
         </div>
 
-        {view === 'timer' ? (
-          <div className="panel__body">
-            {/* Fixed upper section: header + ring + controls */}
-            <div className="panel__timer-fixed">
-              <h1 className="panel__heading">{headerLabel}</h1>
-              <div className="panel__timer">
-                <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
-              </div>
-              <div className="panel__controls">
-                <Controls status={status} onStart={start} onPause={pause} onReset={reset} />
-              </div>
-              {displayCommits.length > 0 && <div className="panel__connector" />}
-            </div>
-
-            {/* Scrollable commit list */}
-            <div className="panel__commit-scroll">
-              <CommitList commits={displayCommits} />
-            </div>
-          </div>
-        ) : view === 'timeline' ? (
-          <div className="panel__body panel__body--timeline">
-            <DayTimeline />
-          </div>
-        ) : (
-          <div className="panel__body panel__body--timeline">
-            <WeekDigest />
-          </div>
-        )}
+        {/* Bottom tab bar */}
+        <nav className="tab-bar">
+          {TABS.map(t => (
+            <button
+              key={t.id}
+              className={`tab-bar__item${tab === t.id && !(t.id === 'timer' && showSessionComplete) ? ' tab-bar__item--active' : ''}`}
+              onClick={() => {
+                if (t.id === 'timer') setCompletedSession(null);
+                setTab(t.id);
+              }}
+            >
+              <span className="tab-bar__icon">{t.icon}</span>
+              <span className="tab-bar__label">{t.label}</span>
+            </button>
+          ))}
+        </nav>
       </div>
     </div>
   );

@@ -45,36 +45,7 @@ body {
   overflow: hidden;
 }
 
-/* ─── Nav tabs ──────────────────────────────────────────────── */
-
-.panel__nav {
-  display: flex;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  flex-shrink: 0;
-}
-
-.panel__tab {
-  flex: 1;
-  padding: 11px 0;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: rgba(255,255,255,0.35);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.panel__tab:hover {
-  color: rgba(255,255,255,0.65);
-}
-
-.panel__tab--active {
-  color: #ff6b6b;
-  border-bottom-color: #ff4d4d;
-}
+/* ─── Nav tabs (legacy — replaced by bottom tab bar) ─────────── */
 
 /* ─── Panel body ────────────────────────────────────────────── */
 
@@ -83,53 +54,9 @@ body {
   flex-direction: column;
   align-items: stretch;
   flex: 1;
-  overflow: hidden; /* children manage their own scroll */
+  overflow: hidden;
 }
 
-.panel__body--timeline {
-  align-items: stretch;
-}
-
-/* Fixed section: heading + ring + controls + connector */
-.panel__timer-fixed {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px 24px 0;
-  flex-shrink: 0;
-}
-
-/* Scrollable commit list */
-.panel__commit-scroll {
-  overflow-y: auto;
-  flex: 1;
-  padding: 0 24px 20px;
-}
-
-.panel__commit-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-.panel__commit-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.panel__commit-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.12);
-  border-radius: 2px;
-}
-.panel__commit-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.22);
-}
-
-/* ─── Heading ───────────────────────────────────────────────── */
-
-.panel__heading {
-  font-size: 16px;
-  font-weight: 500;
-  color: #e6e6e6;
-  margin-bottom: 20px;
-  text-align: center;
-  letter-spacing: -0.01em;
-}
 
 /* ─── Timer area ────────────────────────────────────────────── */
 
@@ -222,16 +149,6 @@ body {
   color: rgba(255,255,255,0.8);
 }
 
-/* ─── Connector dot (ring → list) ───────────────────────────── */
-
-.panel__connector {
-  width: 1px;
-  height: 20px;
-  background: rgba(255,255,255,0.12);
-  margin: 4px 0 0;
-  align-self: center;
-}
-
 /* ─── Commit list ───────────────────────────────────────────── */
 
 .commit-list {
@@ -312,6 +229,304 @@ body {
   opacity: 0.8;
 }
 
+/* ─── Bottom tab bar ────────────────────────────────────────── */
+
+.tab-bar {
+  display: flex;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+  background: rgba(15,17,21,0.95);
+}
+
+.tab-bar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 0 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.3);
+  transition: color 0.15s;
+}
+
+.tab-bar__item:hover {
+  color: rgba(255,255,255,0.6);
+}
+
+.tab-bar__item--active {
+  color: #ff6b6b;
+}
+
+.tab-bar__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.tab-bar__label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Screens ───────────────────────────────────────────────── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
+.screen--timer {
+  align-items: center;
+  justify-content: center;
+}
+
+.screen__timer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 24px;
+}
+
+.timer-type-label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 16px;
+}
+
+.screen--sc {
+  overflow-y: auto;
+}
+
+.screen--today,
+.screen--week,
+.screen--profile {
+  overflow: hidden;
+}
+
+/* ─── Session complete screen ───────────────────────────────── */
+
+.sc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 24px;
+  gap: 24px;
+}
+
+.sc__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sc__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1.5px solid rgba(52, 211, 153, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #34d399;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.sc__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e6e6e6;
+  letter-spacing: -0.01em;
+}
+
+.sc__subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+}
+
+.sc__stats {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.sc-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px 8px;
+}
+
+.sc-stat__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e6e6e6;
+  letter-spacing: -0.02em;
+}
+
+.sc-stat__label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  font-weight: 500;
+}
+
+.sc__commits {
+  width: 100%;
+}
+
+.sc__section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 10px;
+}
+
+.sc__commit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sc__commit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.sc__commit-hash {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 11px;
+  color: #ff6b6b;
+  flex-shrink: 0;
+}
+
+.sc__commit-msg {
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.sc__no-commits {
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+}
+
+.sc__close {
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* ─── Profile screen ────────────────────────────────────────── */
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.profile::-webkit-scrollbar { width: 4px; }
+.profile::-webkit-scrollbar-track { background: transparent; }
+.profile::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+.profile__level-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.profile__level-badge {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.profile__level-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e6e6e6;
+  letter-spacing: -0.01em;
+}
+
+.profile__level-xp {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 2px;
+}
+
+.profile__section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.3);
+}
+
+.profile__stats {
+  display: flex;
+  gap: 10px;
+}
+
+.profile__stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 12px 8px;
+}
+
+.profile__stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e6e6e6;
+  letter-spacing: -0.02em;
+}
+
+.profile__stat-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  font-weight: 500;
+  text-align: center;
+}
+
 /* ─── Day timeline (Today tab) ──────────────────────────────── */
 
 .day-timeline {
@@ -335,7 +550,7 @@ body {
 .day-timeline__list {
   overflow-y: auto;
   flex: 1;
-  padding: 10px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -438,7 +653,7 @@ body {
 .session-card__commit {
   display: flex;
   gap: 6px;
-  align-items: baseline;
+  align-items: center;
 }
 
 .session-card__hash {
@@ -464,6 +679,123 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+}
+
+/* ─── RepoCommitList ────────────────────────────────────────── */
+
+.rcl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rcl-repo {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.03);
+}
+
+.rcl-repo__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.rcl-repo__header:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.rcl-repo__icon {
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.rcl-repo__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6e6e6;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rcl-repo__meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+
+.rcl-repo__chevron {
+  font-size: 9px;
+  color: rgba(255,255,255,0.25);
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.rcl-commits {
+  list-style: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 4px 0;
+}
+
+.rcl-commit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  transition: background 0.1s;
+}
+
+.rcl-commit:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.rcl-commit__hash {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 11px;
+  color: #ff6b6b;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.rcl-commit__hash--link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rcl-commit__hash--link:hover {
+  color: #ff4d4d;
+}
+
+.rcl-commit__message {
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.rcl-commit__badge {
+  flex-shrink: 0;
+  font-size: 12px;
+  opacity: 0.7;
+  cursor: default;
+  line-height: 1;
 }
 
 /* ─── Empty state ───────────────────────────────────────────── */
@@ -588,33 +920,6 @@ body {
   letter-spacing: 0.08em;
   color: rgba(255,255,255,0.3);
   margin-bottom: 10px;
-}
-
-.week-repos__row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 10px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 8px;
-  margin-bottom: 6px;
-}
-
-.week-repos__name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #e6e6e6;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.week-repos__meta {
-  font-size: 12px;
-  color: rgba(255,255,255,0.4);
-  flex-shrink: 0;
-  margin-left: 8px;
 }
 
 /* ─── Settings window ───────────────────────────────────────── */

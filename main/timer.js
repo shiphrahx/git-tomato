@@ -3,6 +3,7 @@ const EventEmitter = require('events');
 const { CHANNELS } = require('./ipc');
 const scanner = require('./scanner');
 const store = require('./store');
+const xp = require('./xp');
 const { sendSessionCompleteNotification } = require('./notifications');
 
 // Emits 'tick' and 'sessionComplete' for main/index.js to subscribe to
@@ -14,10 +15,11 @@ const DEFAULT_DURATIONS = {
 };
 
 let state = {
-  status: 'idle',     // 'idle' | 'running' | 'paused'
-  type: 'focus',      // 'focus' | 'break'
+  status: 'idle',       // 'idle' | 'running' | 'paused'
+  type: 'focus',        // 'focus' | 'break'
   timeLeft: DEFAULT_DURATIONS.focus,
-  startedAt: null,    // ms timestamp, set on first start of this session
+  startedAt: null,      // ms timestamp, set on first start of this session
+  sessionRowId: null,   // sessions.id of the current in_progress row
   intervalId: null,
   pollId: null,
   seenHashes: new Set(),
@@ -91,19 +93,34 @@ function completeSession() {
 
   const endedAt = Date.now();
   const startedAt = state.startedAt;
+  const sessionRowId = state.sessionRowId;
+  const completedType = state.type;
 
   // Scan git repos (synchronous — runs in main process, acceptable)
   const repos = scanner.getCommitsSince(new Date(startedAt).toISOString(), state.repoPaths);
 
+  // Transition session row to xp_pending
+  store.completeSession({ id: sessionRowId, endedAt, repos });
+
+  // Award XP only for naturally completed focus sessions (C-1)
+  let xpResult = null;
+  if (completedType === 'focus') {
+    // Commit bonuses passed as [] until Section D analyser is implemented
+    xpResult = xp.awardSessionXp(sessionRowId, []);
+  } else {
+    // Break sessions: just mark done, no XP
+    store.markSessionXpDone(sessionRowId);
+  }
+
   const session = {
+    id: sessionRowId,
     startedAt,
     endedAt,
-    durationMinutes: Math.round(state.settings[state.type] / 60),
-    type: state.type,
+    durationMinutes: Math.round(state.settings[completedType] / 60),
+    type: completedType,
     repos,
+    xpResult,
   };
-
-  store.saveSession(session);
 
   sendToAll(CHANNELS.SESSION_COMPLETE, session);
 
@@ -111,10 +128,11 @@ function completeSession() {
   timerEvents.emit('sessionComplete', session);
 
   // Auto-transition to next type, but don't auto-start
-  const nextType = state.type === 'focus' ? 'break' : 'focus';
+  const nextType = completedType === 'focus' ? 'break' : 'focus';
   state.type = nextType;
   state.timeLeft = state.settings[nextType];
   state.startedAt = null;
+  state.sessionRowId = null;
 
   pushTick(); // push idle state with next timer loaded
 }
@@ -128,6 +146,11 @@ function registerHandlers() {
     if (!state.startedAt) {
       state.startedAt = Date.now();
       state.seenHashes = new Set();
+      state.sessionRowId = store.beginSession({
+        startedAt: state.startedAt,
+        type: state.type,
+        durationMinutes: Math.round(state.settings[state.type] / 60),
+      });
     }
     state.status = 'running';
     state.intervalId = setInterval(tick, 1000);
@@ -151,8 +174,15 @@ function registerHandlers() {
     clearInterval(state.pollId);
     state.intervalId = null;
     state.pollId = null;
+    // Abort the in_progress session row if one exists (no XP — C-1)
+    if (state.sessionRowId) {
+      store.getDb()
+        .prepare(`UPDATE sessions SET status = 'aborted' WHERE id = ?`)
+        .run(state.sessionRowId);
+    }
     state.status = 'idle';
     state.startedAt = null;
+    state.sessionRowId = null;
     state.seenHashes = new Set();
     state.timeLeft = state.settings[state.type];
     pushTick();

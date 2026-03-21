@@ -113,4 +113,63 @@ function getCommitsSince(isoTimestamp, repoPaths) {
   return results;
 }
 
-module.exports = { getCommitsSince, findGitRepos };
+function getAllCommitsForDay(dateStr, repoPaths) {
+  // dateStr is 'YYYY-MM-DD' — scan from local midnight to end of day
+  const dayStart = new Date(dateStr);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dateStr);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const searchPaths =
+    repoPaths && repoPaths.length > 0
+      ? repoPaths
+      : findGitRepos(DEFAULT_SCAN_DIRS);
+
+  const results = [];
+
+  for (const repoPath of searchPaths) {
+    if (!fs.existsSync(path.join(repoPath, '.git'))) continue;
+
+    try {
+      const output = execSync(
+        `${GIT_BIN} log --after="${dayStart.toISOString()}" --before="${dayEnd.toISOString()}" --format="%H|%s|%ae|%ct" --all`,
+        {
+          cwd: repoPath,
+          timeout: 5000,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        }
+      ).trim();
+
+      if (!output) continue;
+
+      const commits = output
+        .split('\n')
+        .map(line => {
+          const parts = line.split('|');
+          if (parts.length < 4) return null;
+          const hash = parts[0].trim();
+          const timestamp = parseInt(parts[parts.length - 1].trim(), 10) * 1000; // to ms
+          const author = parts[parts.length - 2].trim();
+          const message = parts.slice(1, parts.length - 2).join('|').trim();
+          return { hash, message, author, timestamp, repo: path.basename(repoPath) };
+        })
+        .filter(c => c && c.hash);
+
+      if (commits.length > 0) {
+        results.push({
+          repo: path.basename(repoPath),
+          repoPath,
+          remoteUrl: getRemoteUrl(repoPath),
+          commits,
+        });
+      }
+    } catch (_) {
+      // repo inaccessible or git not available — skip
+    }
+  }
+
+  return results;
+}
+
+module.exports = { getCommitsSince, findGitRepos, getAllCommitsForDay };

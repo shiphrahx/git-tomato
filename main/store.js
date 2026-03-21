@@ -17,16 +17,91 @@ function getDb() {
         duration_minutes INTEGER NOT NULL,
         type TEXT NOT NULL CHECK(type IN ('focus', 'break')),
         repos TEXT NOT NULL DEFAULT '[]'
-      )
+      );
+
+      CREATE TABLE IF NOT EXISTS xp_state (
+        id INTEGER PRIMARY KEY CHECK(id = 1),
+        total_xp INTEGER NOT NULL DEFAULT 0,
+        level_index INTEGER NOT NULL DEFAULT 0,
+        xp_since_level INTEGER NOT NULL DEFAULT 0,
+        xp_to_next_level INTEGER,
+        last_event_at TEXT
+      );
+
+      INSERT OR IGNORE INTO xp_state (id, total_xp, level_index, xp_since_level, xp_to_next_level, last_event_at)
+      VALUES (1, 0, 0, 0, 100, NULL);
+
+      CREATE TABLE IF NOT EXISTS xp_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        event_type TEXT NOT NULL CHECK(event_type IN ('SESSION_COMPLETE','COMMIT_BONUS','FIRST_SESSION_OF_DAY','STREAK_BONUS','LEVEL_UP')),
+        xp_amount INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        session_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL
+      );
     `);
+
+    // Migration: add status column to sessions if it doesn't exist yet.
+    // Values: 'in_progress' | 'completed' | 'aborted' | 'xp_pending'
+    const cols = db.prepare(`PRAGMA table_info(sessions)`).all();
+    if (!cols.find(c => c.name === 'status')) {
+      db.exec(`ALTER TABLE sessions ADD COLUMN status TEXT NOT NULL DEFAULT 'completed'`);
+    }
   }
   return db;
 }
 
+// Insert an in_progress row when a session starts. Returns the new row id.
+function beginSession({ startedAt, type, durationMinutes }) {
+  return getDb()
+    .prepare(
+      `INSERT INTO sessions (started_at, ended_at, duration_minutes, type, repos, status)
+       VALUES (@startedAt, 0, @durationMinutes, @type, '[]', 'in_progress')`
+    )
+    .run({ startedAt, durationMinutes, type }).lastInsertRowid;
+}
+
+// Mark a session as completed and store its data; transitions to xp_pending.
+function completeSession({ id, endedAt, repos }) {
+  getDb()
+    .prepare(
+      `UPDATE sessions SET ended_at = @endedAt, repos = @repos, status = 'xp_pending' WHERE id = @id`
+    )
+    .run({ id, endedAt, repos: JSON.stringify(repos) });
+}
+
+// Mark a session as fully done after XP has been committed.
+function markSessionXpDone(id) {
+  getDb()
+    .prepare(`UPDATE sessions SET status = 'completed' WHERE id = ?`)
+    .run(id);
+}
+
+// On startup: abort any session that was still in_progress (app was killed).
+function abortInProgressSessions() {
+  getDb()
+    .prepare(`UPDATE sessions SET status = 'aborted' WHERE status = 'in_progress'`)
+    .run();
+}
+
+// Return sessions that completed but whose XP was never committed.
+function getPendingXpSessions() {
+  return getDb()
+    .prepare(`SELECT * FROM sessions WHERE status = 'xp_pending' ORDER BY started_at ASC`)
+    .all()
+    .map(r => ({ ...r, repos: JSON.parse(r.repos) }));
+}
+
+function getSessionById(id) {
+  const r = getDb().prepare(`SELECT * FROM sessions WHERE id = ?`).get(id);
+  if (!r) return null;
+  return { ...r, repos: JSON.parse(r.repos) };
+}
+
 function saveSession(session) {
   const stmt = getDb().prepare(
-    `INSERT INTO sessions (started_at, ended_at, duration_minutes, type, repos)
-     VALUES (@started_at, @ended_at, @duration_minutes, @type, @repos)`
+    `INSERT INTO sessions (started_at, ended_at, duration_minutes, type, repos, status)
+     VALUES (@started_at, @ended_at, @duration_minutes, @type, @repos, 'completed')`
   );
   return stmt.run({
     started_at: session.startedAt,
@@ -62,4 +137,75 @@ function getAllSessions() {
     .map(r => ({ ...r, repos: JSON.parse(r.repos) }));
 }
 
-module.exports = { saveSession, getSessionsForDate, getAllSessions };
+function getSessionWindowsForDate(dateStr) {
+  const dayStart = new Date(dateStr);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dateStr);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  return getDb()
+    .prepare(
+      `SELECT started_at, ended_at FROM sessions
+       WHERE started_at >= ? AND started_at <= ?
+       ORDER BY started_at ASC`
+    )
+    .all(dayStart.getTime(), dayEnd.getTime());
+}
+
+function getXpState() {
+  const row = getDb()
+    .prepare(`SELECT * FROM xp_state WHERE id = 1`)
+    .get();
+  return {
+    totalXp: row.total_xp,
+    levelIndex: row.level_index,
+    xpSinceLevel: row.xp_since_level,
+    xpToNextLevel: row.xp_to_next_level,
+    lastEventAt: row.last_event_at,
+  };
+}
+
+function setXpState({ totalXp, levelIndex, xpSinceLevel, xpToNextLevel, lastEventAt }) {
+  getDb()
+    .prepare(
+      `UPDATE xp_state
+       SET total_xp = @totalXp,
+           level_index = @levelIndex,
+           xp_since_level = @xpSinceLevel,
+           xp_to_next_level = @xpToNextLevel,
+           last_event_at = @lastEventAt
+       WHERE id = 1`
+    )
+    .run({ totalXp, levelIndex, xpSinceLevel, xpToNextLevel: xpToNextLevel ?? null, lastEventAt: lastEventAt ?? null });
+}
+
+// Append a single XP event. Never modifies or deletes existing rows.
+function appendXpEvent({ eventType, xpAmount, reason, sessionId, createdAt }) {
+  getDb()
+    .prepare(
+      `INSERT INTO xp_events (event_type, xp_amount, reason, session_id, created_at)
+       VALUES (@eventType, @xpAmount, @reason, @sessionId, @createdAt)`
+    )
+    .run({ eventType, xpAmount, reason, sessionId, createdAt });
+}
+
+function getXpEvents({ sessionId } = {}) {
+  if (sessionId != null) {
+    return getDb()
+      .prepare(`SELECT * FROM xp_events WHERE session_id = ? ORDER BY id ASC`)
+      .all(sessionId);
+  }
+  return getDb()
+    .prepare(`SELECT * FROM xp_events ORDER BY id ASC`)
+    .all();
+}
+
+module.exports = {
+  getDb,
+  saveSession,
+  beginSession, completeSession, markSessionXpDone, abortInProgressSessions,
+  getPendingXpSessions, getSessionById,
+  getSessionsForDate, getAllSessions, getSessionWindowsForDate,
+  getXpState, setXpState,
+  appendXpEvent, getXpEvents,
+};

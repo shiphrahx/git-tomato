@@ -22,6 +22,9 @@ const CHANNELS = {
 
   // Renderer → Main (open URL in default browser)
   OPEN_URL: 'shell:openUrl',
+
+  // Renderer → Main (all commits for a calendar day, with session windows)
+  STORE_GET_DAY_COMMITS: 'store:getDayCommits',
 };
 
 module.exports = { CHANNELS };
