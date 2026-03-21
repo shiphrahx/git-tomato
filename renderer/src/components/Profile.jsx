@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const LEVEL_BADGES  = ['🌱', '🔨', '🚢', '🔧', '⭐', '🎯', '🏆'];
 const LEVEL_TITLES  = ['Seedling', 'Committer', 'Shipper', 'Maintainer', 'Staff', 'Principal', 'Legend'];
+const PRODUCTIVE_DAYS_REQUIRED = 5;
 
 function localDateStr(d) {
   const y = d.getFullYear();
@@ -24,6 +25,7 @@ function getWeekDays() {
 export function Profile() {
   const [stats, setStats] = useState(null);
   const [xpState, setXpState] = useState(null);
+  const [streakState, setStreakState] = useState(null);
 
   useEffect(() => {
     if (!window.electronAPI) return;
@@ -39,22 +41,6 @@ export function Profile() {
       const totalSessions = focusSessions.length;
       const totalFocusMinutes = focusSessions.reduce((sum, s) => sum + s.duration_minutes, 0);
 
-      // Streak: count consecutive days with at least one focus session up to today
-      const sessionDays = new Set(
-        focusSessions.map(s => localDateStr(new Date(s.started_at)))
-      );
-      let streak = 0;
-      const today = new Date();
-      for (let i = 0; i < 365; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        if (sessionDays.has(localDateStr(d))) {
-          streak++;
-        } else {
-          break;
-        }
-      }
-
       // Total commits this week (rough approximation from session repos)
       const weekSessions = weekResults.flat();
       const weekCommits = weekSessions.reduce(
@@ -64,7 +50,7 @@ export function Profile() {
         0
       );
 
-      setStats({ totalSessions, totalFocusMinutes, streak, weekCommits });
+      setStats({ totalSessions, totalFocusMinutes, weekCommits });
     }
 
     async function loadXp() {
@@ -72,11 +58,18 @@ export function Profile() {
       setXpState(state);
     }
 
+    async function loadStreak() {
+      const state = await window.electronAPI.getStreakState();
+      setStreakState(state);
+    }
+
     load();
     loadXp();
+    loadStreak();
 
-    const unsub = window.electronAPI.onXpStateUpdated((state) => {
-      setXpState(state);
+    const unsub = window.electronAPI.onXpStateUpdated((payload) => {
+      setXpState(payload);
+      if (payload.streakState) setStreakState(payload.streakState);
     });
     return unsub;
   }, []);
@@ -96,6 +89,15 @@ export function Profile() {
   const progressPct = isLegend
     ? 100
     : Math.min(100, Math.round((xpState.xpSinceLevel / xpState.xpToNextLevel) * 100));
+
+  // Streak display values
+  const dailyStreak = streakState?.dailyStreak ?? 0;
+  const weeklyStreak = streakState?.weeklyStreak ?? 0;
+  const longestDaily = streakState?.longestDailyStreak ?? 0;
+  const longestWeekly = streakState?.longestWeeklyStreak ?? 0;
+  const productiveDaysThisWeek = streakState?.productiveDaysThisWeek ?? 0;
+  const isDailyAtRisk = streakState?.isDailyAtRisk ?? false;
+  const isWeeklyAtRisk = streakState?.isWeeklyAtRisk ?? false;
 
   return (
     <div className="profile">
@@ -121,6 +123,40 @@ export function Profile() {
         </div>
       </div>
 
+      {/* G-1, G-2: Streak section */}
+      <div className="profile__section-title">Streaks</div>
+      <div className="profile__stats">
+        <div className={`profile__stat${isDailyAtRisk ? ' profile__stat--at-risk' : ''}`}>
+          <span className="profile__stat-value">{dailyStreak}</span>
+          <span className="profile__stat-label">
+            Day streak{isDailyAtRisk ? ' ⚠' : ''}
+          </span>
+        </div>
+        <div className={`profile__stat${isWeeklyAtRisk ? ' profile__stat--at-risk' : ''}`}>
+          <span className="profile__stat-value">{weeklyStreak}</span>
+          <span className="profile__stat-label">
+            Week streak{isWeeklyAtRisk ? ' ⚠' : ''}
+          </span>
+        </div>
+        <div className="profile__stat">
+          <span className="profile__stat-value">{productiveDaysThisWeek}/{PRODUCTIVE_DAYS_REQUIRED}</span>
+          <span className="profile__stat-label">Days this week</span>
+        </div>
+      </div>
+
+      {/* G-3: Longest streaks */}
+      <div className="profile__section-title">Personal bests</div>
+      <div className="profile__stats">
+        <div className="profile__stat">
+          <span className="profile__stat-value">{longestDaily}</span>
+          <span className="profile__stat-label">Longest day streak</span>
+        </div>
+        <div className="profile__stat">
+          <span className="profile__stat-value">{longestWeekly}</span>
+          <span className="profile__stat-label">Longest week streak</span>
+        </div>
+      </div>
+
       <div className="profile__section-title">All-time stats</div>
       <div className="profile__stats">
         <div className="profile__stat">
@@ -130,10 +166,6 @@ export function Profile() {
         <div className="profile__stat">
           <span className="profile__stat-value">{focusLabel}</span>
           <span className="profile__stat-label">Focus time</span>
-        </div>
-        <div className="profile__stat">
-          <span className="profile__stat-value">{stats.streak}</span>
-          <span className="profile__stat-label">Day streak</span>
         </div>
       </div>
     </div>
