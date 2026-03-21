@@ -4,6 +4,7 @@ const { CHANNELS } = require('./ipc');
 const scanner = require('./scanner');
 const store = require('./store');
 const xp = require('./xp');
+const { analyseCommits } = require('./commitAnalyser');
 const { sendSessionCompleteNotification } = require('./notifications');
 
 // Emits 'tick' and 'sessionComplete' for main/index.js to subscribe to
@@ -105,8 +106,8 @@ function completeSession() {
   // Award XP only for naturally completed focus sessions (C-1)
   let xpResult = null;
   if (completedType === 'focus') {
-    // Commit bonuses passed as [] until Section D analyser is implemented
-    xpResult = xp.awardSessionXp(sessionRowId, []);
+    const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
+    xpResult = xp.awardSessionXp(sessionRowId, commitBonuses);
   } else {
     // Break sessions: just mark done, no XP
     store.markSessionXpDone(sessionRowId);
