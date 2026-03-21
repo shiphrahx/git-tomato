@@ -5,6 +5,7 @@ const scanner = require('./scanner');
 const store = require('./store');
 const xp = require('./xp');
 const { analyseCommits } = require('./commitAnalyser');
+const { evaluateStreak } = require('./streaks');
 const { sendSessionCompleteNotification } = require('./notifications');
 const { LEVELS } = require('./levels');
 
@@ -108,7 +109,11 @@ function completeSession() {
   let xpResult = null;
   if (completedType === 'focus') {
     const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
-    xpResult = xp.awardSessionXp(sessionRowId, commitBonuses);
+    // C-1: evaluate streak before awarding XP so dailyStreak feeds into streak bonus
+    const qualifyingCommitCount = commitBonuses.length;
+    const streakResult = evaluateStreak(qualifyingCommitCount, endedAt);
+    xpResult = xp.awardSessionXp(sessionRowId, commitBonuses, streakResult.dailyStreak);
+    xpResult.streakResult = streakResult;
 
     // F-4: staggered level-up notifications
     if (xpResult && xpResult.levelAfter > xpResult.levelBefore) {

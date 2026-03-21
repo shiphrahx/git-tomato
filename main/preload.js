@@ -50,4 +50,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('xp:stateUpdated', handler);
     return () => ipcRenderer.removeListener('xp:stateUpdated', handler);
   },
+
+  // Streak state (D-1, D-2, D-3: at-risk is computed in renderer from this)
+  getStreakState: () => ipcRenderer.invoke('streak:getState'),
 });
