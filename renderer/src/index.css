@@ -73,37 +73,136 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 160px;
-  height: 160px;
+  width: 280px;
+  height: 280px;
+}
+
+.timer-ring-container {
+  position: relative;
 }
 
 .timer-glow {
   position: absolute;
-  inset: 0;
+  inset: -20px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,77,77,0) 40%, rgba(255,77,77,0) 100%);
-  transition: background 0.4s ease;
+  background: radial-gradient(circle, rgba(255,140,0,0) 40%, rgba(255,140,0,0) 100%);
+  transition: background 0.5s ease;
   pointer-events: none;
+  z-index: 0;
 }
 
 .timer-glow--active {
-  background: radial-gradient(circle, rgba(255,77,77,0.12) 40%, rgba(255,77,77,0) 100%);
+  background: radial-gradient(circle, rgba(255,140,0,0.18) 30%, rgba(255,200,0,0.06) 60%, transparent 80%);
 }
 
 .timer-svg {
-  position: relative;
   z-index: 1;
+}
+
+/* Inner content centered inside the ring */
+.timer-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+/* Tomato sprite wrapper */
+.timer-tomato {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes tomato-bob {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.timer-tomato--bobbing {
+  animation: tomato-bob 1.4s ease-in-out infinite;
+}
+
+/* Time pill label */
+.timer-time-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 5px 16px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  backdrop-filter: blur(4px);
 }
 
 /* ─── Controls ──────────────────────────────────────────────── */
 
 .panel__controls {
+  margin-top: 16px;
   margin-bottom: 8px;
 }
 
 .controls {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Icon control buttons */
+.ctrl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s, background 0.15s, box-shadow 0.15s;
+  color: #fff;
+}
+
+.ctrl-btn:active {
+  transform: scale(0.92);
+}
+
+.ctrl-btn--primary {
+  background: linear-gradient(135deg, #ff8c00, #ffcc00);
+  box-shadow: 0 0 14px rgba(255, 160, 0, 0.45);
+  width: 56px;
+  height: 56px;
+}
+
+.ctrl-btn--primary:hover {
+  box-shadow: 0 0 22px rgba(255, 160, 0, 0.65);
+  opacity: 0.95;
+}
+
+.ctrl-btn--secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.ctrl-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.ctrl-btn--ghost {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.ctrl-btn--ghost:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .btn {
@@ -291,7 +390,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 0;
-  padding: 24px;
+  padding: 12px 24px 24px;
 }
 
 .timer-type-label {

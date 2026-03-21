@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDayCommits: (date) => ipcRenderer.invoke('store:getDayCommits', { date }),
 
   // Settings
+  openSettings: () => ipcRenderer.invoke('settings:open'),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (settings) => ipcRenderer.invoke('settings:set', settings),
 

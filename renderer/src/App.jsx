@@ -106,7 +106,7 @@ export default function App() {
                 <p className="timer-type-label">{type === 'focus' ? 'Focus' : 'Break'}</p>
                 <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
                 <div className="panel__controls">
-                  <Controls status={status} onStart={start} onPause={pause} onReset={reset} />
+                  <Controls status={status} onStart={start} onPause={pause} onReset={reset} onConfig={() => window.electronAPI?.openSettings()} />
                 </div>
               </div>
             </div>

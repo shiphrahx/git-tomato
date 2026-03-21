@@ -256,6 +256,7 @@ app.whenReady().then(() => {
   });
 
   // Settings handlers
+  ipcMain.handle(CHANNELS.SETTINGS_OPEN, () => openSettingsWindow());
   ipcMain.handle(CHANNELS.SETTINGS_GET, () => readSettings());
   ipcMain.handle(CHANNELS.SETTINGS_SET, (_, s) => {
     writeSettings(s);
