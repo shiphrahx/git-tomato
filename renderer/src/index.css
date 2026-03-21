@@ -1194,3 +1194,145 @@ body {
   color: rgba(255,255,255,0.35);
   margin-top: 10px;
 }
+
+/* ─── Badge header strip (E-4, E-5) ─────────────────────────── */
+
+.badge-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 215, 0, 0.06);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.badge-header__count {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 215, 0, 0.8);
+}
+
+.badge-header__recent {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Badges screen ──────────────────────────────────────────── */
+
+.screen--badges {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.badges {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.badges::-webkit-scrollbar { width: 4px; }
+.badges::-webkit-scrollbar-track { background: transparent; }
+.badges::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+.badges__category-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 8px;
+}
+
+.badges__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.badge-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.03);
+}
+
+.badge-card--unlocked {
+  border-color: rgba(255, 215, 0, 0.25);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.badge-card--locked {
+  opacity: 0.45;
+}
+
+.badge-card__icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.badge-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.badge-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6e6e6;
+}
+
+.badge-card--locked .badge-card__name {
+  color: rgba(255,255,255,0.5);
+}
+
+.badge-card__desc {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.4;
+}
+
+.badge-card__date {
+  font-size: 10px;
+  color: rgba(255, 215, 0, 0.5);
+  margin-top: 2px;
+}
+
+/* ─── Session complete — badge rows (E-3) ────────────────────── */
+
+.sc__badges {
+  margin-top: 12px;
+}
+
+.sc__badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.sc__badge-icon {
+  font-size: 14px;
+}
+
+.sc__badge-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 215, 0, 0.9);
+}

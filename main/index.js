@@ -7,6 +7,7 @@ const store = require('./store');
 const xp = require('./xp');
 const scanner = require('./scanner');
 const { dailyStreakStatus, weeklyStreakStatus, toDateStr, weekMonday } = require('./streakDefs');
+const { runHistoricalEvaluation, invalidateSettingsCache } = require('./badges');
 
 const isDev = process.env.ELECTRON_DEV === '1';
 
@@ -207,6 +208,9 @@ app.whenReady().then(() => {
   // Abort orphaned sessions and retry pending XP awards from last run
   xp.processSessionsOnLaunch();
 
+  // B-5: one-time historical badge evaluation pass (runs only on first launch after install)
+  runHistoricalEvaluation();
+
   // Apply saved settings to timer
   const settings = readSettings();
   timer.updateSettings(settings);
@@ -233,6 +237,9 @@ app.whenReady().then(() => {
 
   ipcMain.handle(CHANNELS.XP_STATE_GET, () => store.getXpState());
 
+  // Badges: return all unlocks with badge def metadata attached
+  ipcMain.handle(CHANNELS.BADGES_GET, () => store.getBadgeUnlocks());
+
   // D-1, D-2, D-3: streak state with computed at-risk fields (never persisted)
   ipcMain.handle(CHANNELS.STREAK_STATE_GET, () => {
     return buildStreakPayload();
@@ -242,6 +249,8 @@ app.whenReady().then(() => {
     const payload = { ...xpState, streakState: buildStreakPayload() };
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send(CHANNELS.XP_STATE_UPDATED, payload);
+      // Push fresh badge unlocks so renderer header count + collection update (E-4)
+      mainWindow.webContents.send(CHANNELS.BADGES_UPDATED, store.getBadgeUnlocks());
     }
     tray.setToolTip(`git-tomato — ${xpState.levelTitle}`);
   });
@@ -251,6 +260,7 @@ app.whenReady().then(() => {
   ipcMain.handle(CHANNELS.SETTINGS_SET, (_, s) => {
     writeSettings(s);
     timer.updateSettings(s);
+    invalidateSettingsCache();
     return true;
   });
 

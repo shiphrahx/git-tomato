@@ -53,4 +53,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Streak state (D-1, D-2, D-3: at-risk is computed in renderer from this)
   getStreakState: () => ipcRenderer.invoke('streak:getState'),
+
+  // Badge unlocks
+  getBadgeUnlocks: () => ipcRenderer.invoke('badges:get'),
+  onBadgesUpdated: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('badges:updated', handler);
+    return () => ipcRenderer.removeListener('badges:updated', handler);
+  },
 });

@@ -61,6 +61,20 @@ function getDb() {
         day TEXT NOT NULL UNIQUE,
         qualifying_commits INTEGER NOT NULL DEFAULT 0
       );
+
+      CREATE TABLE IF NOT EXISTS badge_unlocks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT NOT NULL UNIQUE,
+        session_id INTEGER NOT NULL,
+        unlocked_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS badges_meta (
+        id INTEGER PRIMARY KEY CHECK(id = 1),
+        historical_pass_done INTEGER NOT NULL DEFAULT 0
+      );
+
+      INSERT OR IGNORE INTO badges_meta (id, historical_pass_done) VALUES (1, 0);
     `);
 
     // Migration: add status column to sessions if it doesn't exist yet.
@@ -68,6 +82,9 @@ function getDb() {
     const cols = db.prepare(`PRAGMA table_info(sessions)`).all();
     if (!cols.find(c => c.name === 'status')) {
       db.exec(`ALTER TABLE sessions ADD COLUMN status TEXT NOT NULL DEFAULT 'completed'`);
+    }
+    if (!cols.find(c => c.name === 'pause_count')) {
+      db.exec(`ALTER TABLE sessions ADD COLUMN pause_count INTEGER NOT NULL DEFAULT 0`);
     }
   }
   return db;
@@ -81,6 +98,13 @@ function beginSession({ startedAt, type, durationMinutes }) {
        VALUES (@startedAt, 0, @durationMinutes, @type, '[]', 'in_progress')`
     )
     .run({ startedAt, durationMinutes, type }).lastInsertRowid;
+}
+
+// Increment the pause counter for a session.
+function incrementSessionPauseCount(id) {
+  getDb()
+    .prepare(`UPDATE sessions SET pause_count = pause_count + 1 WHERE id = ?`)
+    .run(id);
 }
 
 // Mark a session as completed and store its data; transitions to xp_pending.
@@ -301,6 +325,49 @@ function getProductiveDaysInWeek(mondayStr, sundayStr) {
     .all(mondayStr, sundayStr);
 }
 
+// ─── Badge unlocks (A-2) ──────────────────────────────────────────────────────
+
+// Return all unlock records, ordered by unlock time ascending.
+function getBadgeUnlocks() {
+  return getDb()
+    .prepare(`SELECT * FROM badge_unlocks ORDER BY unlocked_at ASC`)
+    .all();
+}
+
+// Return the unlock record for a single slug, or null.
+function getBadgeUnlock(slug) {
+  return getDb()
+    .prepare(`SELECT * FROM badge_unlocks WHERE slug = ?`)
+    .get(slug) ?? null;
+}
+
+// Insert a batch of unlock records in one transaction (B-4).
+function insertBadgeUnlocks(entries) {
+  // entries: [{ slug, sessionId, unlockedAt }]
+  const stmt = getDb().prepare(
+    `INSERT OR IGNORE INTO badge_unlocks (slug, session_id, unlocked_at)
+     VALUES (@slug, @sessionId, @unlockedAt)`
+  );
+  const tx = getDb().transaction(() => {
+    for (const e of entries) stmt.run(e);
+  });
+  tx();
+}
+
+// ─── Badges meta (B-5) ────────────────────────────────────────────────────────
+
+function isHistoricalPassDone() {
+  return getDb()
+    .prepare(`SELECT historical_pass_done FROM badges_meta WHERE id = 1`)
+    .get()?.historical_pass_done === 1;
+}
+
+function markHistoricalPassDone() {
+  getDb()
+    .prepare(`UPDATE badges_meta SET historical_pass_done = 1 WHERE id = 1`)
+    .run();
+}
+
 module.exports = {
   getDb,
   saveSession,
@@ -311,4 +378,7 @@ module.exports = {
   appendXpEvent, getXpEvents,
   getStreakState, setStreakState,
   getProductiveDay, upsertProductiveDay, getAllProductiveDays, getProductiveDaysInWeek,
+  getBadgeUnlocks, getBadgeUnlock, insertBadgeUnlocks,
+  isHistoricalPassDone, markHistoricalPassDone,
+  incrementSessionPauseCount,
 };
