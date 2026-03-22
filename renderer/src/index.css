@@ -188,76 +188,84 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  border: 1px solid transparent;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s, background 0.15s, box-shadow 0.15s;
+  transition: opacity 0.15s, transform 0.1s, background 0.15s, box-shadow 0.15s, border-color 0.15s;
   color: #fff;
+  background: #16192a;
 }
 
 .ctrl-btn:active {
   transform: scale(0.92);
 }
 
+/* Play/Pause — solid white, max contrast */
 .ctrl-btn--primary {
-  background: linear-gradient(135deg, #3f5efb, #fc466b);
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: #ffffff;
+  color: #16192a;
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.25);
 }
 
 .ctrl-btn--primary:hover {
-  box-shadow: 0 0 26px rgba(99, 102, 241, 0.7);
-  opacity: 0.92;
+  background: #f0f0ff;
+  box-shadow: 0 0 28px rgba(255, 255, 255, 0.4);
 }
 
+/* Restart — dark base, subtle white border */
 .ctrl-btn--secondary {
-  background: rgba(63, 94, 251, 0.12);
-  border-color: rgba(63, 94, 251, 0.3);
-  color: rgba(180, 190, 255, 0.9);
+  background: #1e2235;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .ctrl-btn--secondary:hover {
-  background: rgba(63, 94, 251, 0.22);
-  border-color: rgba(63, 94, 251, 0.5);
+  background: #252840;
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
 }
 
+/* Config — same dark base, dimmer */
 .ctrl-btn--ghost {
-  background: rgba(255, 255, 255, 0.05);
+  background: #1e2235;
   border-color: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.4);
 }
 
 .ctrl-btn--ghost:hover {
+  background: #252840;
+  border-color: rgba(255, 255, 255, 0.25);
   color: rgba(255, 255, 255, 0.75);
-  background: rgba(255, 255, 255, 0.1);
 }
 
+/* Mode buttons — Focus / Short / Long */
 .ctrl-btn--mode {
-  background: rgba(63, 94, 251, 0.08);
-  border: 1px solid rgba(63, 94, 251, 0.25);
-  color: rgba(180, 190, 255, 0.6);
-  font-size: 9px;
+  background: #1e2235;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
   font-family: var(--font-pixel);
   width: auto;
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 10px;
+  height: 52px;
+  padding: 0 22px;
+  border-radius: 14px;
   letter-spacing: 0.05em;
 }
 
 .ctrl-btn--mode:hover {
-  background: rgba(63, 94, 251, 0.18);
-  border-color: rgba(63, 94, 251, 0.45);
-  color: rgba(200, 210, 255, 0.9);
+  background: #252840;
+  border-color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .ctrl-btn--mode-active {
-  background: linear-gradient(135deg, rgba(63, 94, 251, 0.3), rgba(252, 70, 107, 0.3));
-  border-color: rgba(180, 130, 255, 0.6);
-  color: #c8b8ff;
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+  background: #16192a;
+  border-color: rgba(255, 255, 255, 0.75);
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
 .ctrl-btn:disabled {
