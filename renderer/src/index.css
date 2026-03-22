@@ -104,7 +104,7 @@ body {
 }
 
 .timer-glow--active {
-  background: radial-gradient(circle, rgba(255,140,0,0.18) 30%, rgba(255,200,0,0.06) 60%, transparent 80%);
+  background: radial-gradient(circle, rgba(63,94,251,0.18) 0%, rgba(252,70,107,0.1) 50%, transparent 80%);
 }
 
 .timer-svg {
@@ -188,10 +188,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid transparent;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.1s, background 0.15s, box-shadow 0.15s;
   color: #fff;
@@ -202,57 +202,62 @@ body {
 }
 
 .ctrl-btn--primary {
-  background: linear-gradient(135deg, #ff8c00, #ffcc00);
-  box-shadow: 0 0 14px rgba(255, 160, 0, 0.45);
-  width: 56px;
-  height: 56px;
+  background: linear-gradient(135deg, #3f5efb, #fc466b);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .ctrl-btn--primary:hover {
-  box-shadow: 0 0 22px rgba(255, 160, 0, 0.65);
-  opacity: 0.95;
+  box-shadow: 0 0 26px rgba(99, 102, 241, 0.7);
+  opacity: 0.92;
 }
 
 .ctrl-btn--secondary {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(63, 94, 251, 0.12);
+  border-color: rgba(63, 94, 251, 0.3);
+  color: rgba(180, 190, 255, 0.9);
 }
 
 .ctrl-btn--secondary:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(63, 94, 251, 0.22);
+  border-color: rgba(63, 94, 251, 0.5);
 }
 
 .ctrl-btn--ghost {
-  background: transparent;
-  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .ctrl-btn--ghost:hover {
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .ctrl-btn--mode {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.5);
+  background: rgba(63, 94, 251, 0.08);
+  border: 1px solid rgba(63, 94, 251, 0.25);
+  color: rgba(180, 190, 255, 0.6);
   font-size: 9px;
   font-family: var(--font-pixel);
   width: auto;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  letter-spacing: 0.05em;
 }
 
 .ctrl-btn--mode:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(63, 94, 251, 0.18);
+  border-color: rgba(63, 94, 251, 0.45);
+  color: rgba(200, 210, 255, 0.9);
 }
 
 .ctrl-btn--mode-active {
-  background: rgba(255, 160, 0, 0.15);
-  border-color: rgba(255, 160, 0, 0.45);
-  color: #ffb347;
+  background: linear-gradient(135deg, rgba(63, 94, 251, 0.3), rgba(252, 70, 107, 0.3));
+  border-color: rgba(180, 130, 255, 0.6);
+  color: #c8b8ff;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
 }
 
 .ctrl-btn:disabled {

@@ -66,9 +66,9 @@ export function Timer({ timeLeft, totalSeconds, status }) {
           />
 
           <defs>
-            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ff8c00" />
-              <stop offset="100%" stopColor="#ffcc00" />
+            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3f5efb" />
+              <stop offset="100%" stopColor="#fc466b" />
             </linearGradient>
           </defs>
         </svg>
