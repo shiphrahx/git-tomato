@@ -27,7 +27,8 @@ export function Timer({ timeLeft, totalSeconds, status }) {
           height={SIZE}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="timer-svg"
-          style={{ position: 'absolute', top: 0, left: 0 }}
+          style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}
+          overflow="visible"
         >
           <defs>
             <filter id="ring-glow" x="-50%" y="-50%" width="200%" height="200%">
