@@ -8,6 +8,7 @@ const xp = require('./xp');
 const scanner = require('./scanner');
 const { dailyStreakStatus, weeklyStreakStatus, toDateStr, weekMonday } = require('./streakDefs');
 const { runHistoricalEvaluation, invalidateSettingsCache } = require('./badges');
+const { expireStaleSlates, getTodaySlate } = require('./quests');
 
 const isDev = process.env.ELECTRON_DEV === '1';
 
@@ -21,6 +22,7 @@ const SETTINGS_PATH = () => path.join(app.getPath('userData'), 'settings.json');
 const DEFAULT_SETTINGS = {
   focusDuration: 25,
   shortBreak: 5,
+  longBreak: 15,
   repoPaths: [],
   githubToken: '',
 };
@@ -211,6 +213,9 @@ app.whenReady().then(() => {
   // B-5: one-time historical badge evaluation pass (runs only on first launch after install)
   runHistoricalEvaluation();
 
+  // D-6: expire any incomplete quests from prior days
+  expireStaleSlates();
+
   // Apply saved settings to timer
   const settings = readSettings();
   timer.updateSettings(settings);
@@ -251,9 +256,15 @@ app.whenReady().then(() => {
       mainWindow.webContents.send(CHANNELS.XP_STATE_UPDATED, payload);
       // Push fresh badge unlocks so renderer header count + collection update (E-4)
       mainWindow.webContents.send(CHANNELS.BADGES_UPDATED, store.getBadgeUnlocks());
+      // Push fresh quest slate so renderer updates progress
+      mainWindow.webContents.send(CHANNELS.QUESTS_UPDATED, getTodaySlate());
     }
     tray.setToolTip(`git-tomato — ${xpState.levelTitle}`);
   });
+
+  // Quest handlers
+  ipcMain.handle(CHANNELS.QUESTS_GET, () => getTodaySlate());
+  ipcMain.handle(CHANNELS.QUESTS_HISTORY_GET, () => store.getAllQuestSlates());
 
   // Settings handlers
   ipcMain.handle(CHANNELS.SETTINGS_OPEN, () => openSettingsWindow());

@@ -7,6 +7,7 @@ const xp = require('./xp');
 const { analyseCommits, analyseCommitsRich } = require('./commitAnalyser');
 const { evaluateStreak } = require('./streaks');
 const { evaluateBadges } = require('./badges');
+const { evaluateQuests, sendQuestNotifications, expireStaleSlates } = require('./quests');
 const { sendSessionCompleteNotification } = require('./notifications');
 const { LEVELS } = require('./levels');
 
@@ -15,12 +16,13 @@ const timerEvents = new EventEmitter();
 
 const DEFAULT_DURATIONS = {
   focus: 25 * 60,
-  break: 5 * 60,
+  shortBreak: 5 * 60,
+  longBreak: 15 * 60,
 };
 
 let state = {
   status: 'idle',       // 'idle' | 'running' | 'paused'
-  type: 'focus',        // 'focus' | 'break'
+  type: 'focus',        // 'focus' | 'shortBreak' | 'longBreak'
   timeLeft: DEFAULT_DURATIONS.focus,
   startedAt: null,      // ms timestamp, set on first start of this session
   sessionRowId: null,   // sessions.id of the current in_progress row
@@ -46,7 +48,8 @@ function sendToAll(channel, payload) {
 
 function updateSettings(settings) {
   if (settings.focusDuration) state.settings.focus = settings.focusDuration * 60;
-  if (settings.shortBreak) state.settings.break = settings.shortBreak * 60;
+  if (settings.shortBreak) state.settings.shortBreak = settings.shortBreak * 60;
+  if (settings.longBreak) state.settings.longBreak = settings.longBreak * 60;
   if (settings.repoPaths) state.repoPaths = settings.repoPaths;
   // Reset timeLeft if not running and push update to renderer
   if (state.status === 'idle') {
@@ -109,6 +112,7 @@ function completeSession() {
   // Award XP only for naturally completed focus sessions (C-1)
   let xpResult = null;
   let newBadgeSlugs = [];
+  let newCompletedQuests = [];
   if (completedType === 'focus') {
     // Run rich commit analysis once — used by both XP (via commitBonuses) and badges
     const richCommits = analyseCommitsRich(state.repoPaths, startedAt, endedAt);
@@ -131,6 +135,14 @@ function completeSession() {
       xpResult,
       streakResult,
     });
+
+    // D-1: evaluate quests after XP and Badges
+    const { newlyCompleted: completedQuests } = evaluateQuests({
+      session: completedSession,
+      richCommits,
+      streakState: store.getStreakState(),
+    });
+    newCompletedQuests = completedQuests;
 
     // G-4: streak broken notification — fires once when streak resets after a gap
     // isComeback means previousDailyStreak > 0 AND gap >= 2 → streak was broken
@@ -187,6 +199,13 @@ function completeSession() {
       });
     }
 
+    // F-3: quest completion notifications — staggered 1s, after all badge notifications
+    if (newCompletedQuests.length > 0) {
+      const levelUpDuration = levelUpCount * 2000;
+      const badgeDuration = newBadgeSlugs.length * 1500;
+      sendQuestNotifications(newCompletedQuests, levelUpDuration + badgeDuration);
+    }
+
     const newXpState = store.getXpState();
     newXpState.levelTitle = LEVELS[newXpState.levelIndex].title;
     timerEvents.emit('xpStateUpdated', newXpState);
@@ -208,6 +227,7 @@ function completeSession() {
     repos,
     xpResult,
     newBadgeSlugs, // E-3: newly unlocked badge slugs for session-end summary
+    newCompletedQuests, // F-4: quests completed this session
   };
 
   sendToAll(CHANNELS.SESSION_COMPLETE, session);
@@ -215,10 +235,9 @@ function completeSession() {
   sendSessionCompleteNotification(session);
   timerEvents.emit('sessionComplete', session);
 
-  // Auto-transition to next type, but don't auto-start
-  const nextType = completedType === 'focus' ? 'break' : 'focus';
-  state.type = nextType;
-  state.timeLeft = state.settings[nextType];
+  // Reset to focus timer after any completed session — don't auto-switch to break
+  state.type = 'focus';
+  state.timeLeft = state.settings.focus;
   state.startedAt = null;
   state.sessionRowId = null;
 
@@ -234,9 +253,11 @@ function registerHandlers() {
     if (!state.startedAt) {
       state.startedAt = Date.now();
       state.seenHashes = new Set();
+      // DB only supports 'focus' | 'break' — map shortBreak/longBreak to 'break'
+      const dbType = state.type === 'focus' ? 'focus' : 'break';
       state.sessionRowId = store.beginSession({
         startedAt: state.startedAt,
-        type: state.type,
+        type: dbType,
         durationMinutes: Math.round(state.settings[state.type] / 60),
       });
     }
@@ -274,6 +295,48 @@ function registerHandlers() {
     state.sessionRowId = null;
     state.seenHashes = new Set();
     state.timeLeft = state.settings[state.type];
+    pushTick();
+  });
+
+  // Stop: abort session (no XP), reset to focus idle
+  ipcMain.on(CHANNELS.TIMER_STOP, () => {
+    clearInterval(state.intervalId);
+    clearInterval(state.pollId);
+    state.intervalId = null;
+    state.pollId = null;
+    if (state.sessionRowId) {
+      store.getDb()
+        .prepare(`UPDATE sessions SET status = 'aborted' WHERE id = ?`)
+        .run(state.sessionRowId);
+    }
+    state.status = 'idle';
+    state.type = 'focus';
+    state.startedAt = null;
+    state.sessionRowId = null;
+    state.seenHashes = new Set();
+    state.timeLeft = state.settings.focus;
+    pushTick();
+  });
+
+  // Load break: switch to break type idle (ready to start), abort any active session
+  ipcMain.on(CHANNELS.TIMER_START_BREAK, (_, { type }) => {
+    // type: 'shortBreak' | 'longBreak'
+    clearInterval(state.intervalId);
+    clearInterval(state.pollId);
+    state.intervalId = null;
+    state.pollId = null;
+    if (state.sessionRowId) {
+      store.getDb()
+        .prepare(`UPDATE sessions SET status = 'aborted' WHERE id = ?`)
+        .run(state.sessionRowId);
+      state.sessionRowId = null;
+    }
+    const breakType = (type === 'longBreak') ? 'longBreak' : 'shortBreak';
+    state.type = breakType;
+    state.timeLeft = state.settings[breakType];
+    state.startedAt = null;
+    state.seenHashes = new Set();
+    state.status = 'idle';
     pushTick();
   });
 }

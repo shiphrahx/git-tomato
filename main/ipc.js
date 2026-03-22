@@ -7,6 +7,8 @@ const CHANNELS = {
   TIMER_START: 'timer:start',
   TIMER_PAUSE: 'timer:pause',
   TIMER_RESET: 'timer:reset',
+  TIMER_STOP: 'timer:stop',
+  TIMER_START_BREAK: 'timer:startBreak', // payload: { durationSeconds }
 
   // Main → Renderer (webContents.send — push)
   TIMER_TICK: 'timer:tick',
@@ -39,6 +41,11 @@ const CHANNELS = {
 
   // Open settings window
   SETTINGS_OPEN: 'settings:open',
+
+  // Daily quests — invoke + push
+  QUESTS_GET: 'quests:get',
+  QUESTS_UPDATED: 'quests:updated',
+  QUESTS_HISTORY_GET: 'quests:historyGet',
 };
 
 module.exports = { CHANNELS };

@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   timerStart: () => ipcRenderer.send('timer:start'),
   timerPause: () => ipcRenderer.send('timer:pause'),
   timerReset: () => ipcRenderer.send('timer:reset'),
+  timerStop: () => ipcRenderer.send('timer:stop'),
+  timerStartBreak: (type) => ipcRenderer.send('timer:startBreak', { type }),
 
   // Timer state push from main — returns a cleanup function
   onTimerTick: (callback) => {
@@ -61,5 +63,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const handler = (_, data) => callback(data);
     ipcRenderer.on('badges:updated', handler);
     return () => ipcRenderer.removeListener('badges:updated', handler);
+  },
+
+  // Daily quests
+  getQuestSlate: () => ipcRenderer.invoke('quests:get'),
+  getQuestHistory: () => ipcRenderer.invoke('quests:historyGet'),
+  onQuestsUpdated: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('quests:updated', handler);
+    return () => ipcRenderer.removeListener('quests:updated', handler);
   },
 });

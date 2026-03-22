@@ -78,6 +78,21 @@ export function Settings() {
             <span className="settings__unit">min</span>
           </div>
         </div>
+
+        <div className="settings__field">
+          <label className="settings__label">Long break</label>
+          <div className="settings__input-row">
+            <input
+              className="settings__input settings__input--number"
+              type="number"
+              min="1"
+              max="60"
+              value={settings.longBreak ?? 15}
+              onChange={e => handleChange('longBreak', parseInt(e.target.value) || 15)}
+            />
+            <span className="settings__unit">min</span>
+          </div>
+        </div>
       </section>
 
       {/* GitHub */}

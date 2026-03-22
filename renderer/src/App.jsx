@@ -7,7 +7,8 @@ import { WeekDigest } from './components/WeekDigest';
 import { Settings } from './components/Settings';
 import { SessionComplete } from './components/SessionComplete';
 import { Profile } from './components/Profile';
-import { Badges, BADGES as BADGE_DEFS } from './components/Badges';
+import { BADGES as BADGE_DEFS } from './components/Badges';
+import { Quests } from './components/Quests';
 
 const TOTAL_BADGES = BADGE_DEFS.length; // 25
 
@@ -19,7 +20,7 @@ const TABS = [
   { id: 'today',   label: 'Today',   icon: '📅' },
   { id: 'week',    label: 'Week',    icon: '📊' },
   { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'badges',  label: 'Badges',  icon: '🏅' },
+  { id: 'quests',  label: 'Quests',  icon: '⚔' },
 ];
 
 export default function App() {
@@ -31,7 +32,7 @@ export default function App() {
     );
   }
 
-  const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer } = useTimer();
+  const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer, stop, startShortBreak, startLongBreak } = useTimer();
   const [tab, setTab] = useState('timer');
   const [completedSession, setCompletedSession] = useState(null);
 
@@ -103,10 +104,10 @@ export default function App() {
           {tab === 'timer' && !showSessionComplete && (
             <div className="screen screen--timer">
               <div className="screen__timer-inner">
-                <p className="timer-type-label">{type === 'focus' ? 'Focus' : 'Break'}</p>
+                <p className="timer-type-label">{type === 'focus' ? 'Focus' : type === 'longBreak' ? 'Long Break' : 'Short Break'}</p>
                 <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
                 <div className="panel__controls">
-                  <Controls status={status} onStart={start} onPause={pause} onReset={reset} onConfig={() => window.electronAPI?.openSettings()} />
+                  <Controls status={status} type={type} onStart={start} onPause={pause} onStop={stop} onReset={reset} onStartShortBreak={startShortBreak} onStartLongBreak={startLongBreak} onConfig={() => window.electronAPI?.openSettings()} />
                 </div>
               </div>
             </div>
@@ -136,9 +137,9 @@ export default function App() {
             </div>
           )}
 
-          {tab === 'badges' && (
-            <div className="screen screen--badges">
-              <Badges />
+          {tab === 'quests' && (
+            <div className="screen screen--quests">
+              <Quests />
             </div>
           )}
         </div>

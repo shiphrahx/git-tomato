@@ -35,6 +35,9 @@ export function useTimer() {
   const start = useCallback(() => window.electronAPI?.timerStart(), []);
   const pause = useCallback(() => window.electronAPI?.timerPause(), []);
   const reset = useCallback(() => window.electronAPI?.timerReset(), []);
+  const stop = useCallback(() => window.electronAPI?.timerStop(), []);
+  const startShortBreak = useCallback(() => window.electronAPI?.timerStartBreak('shortBreak'), []);
+  const startLongBreak = useCallback(() => window.electronAPI?.timerStartBreak('longBreak'), []);
 
-  return { timeLeft, totalSeconds, status, type, start, pause, reset };
+  return { timeLeft, totalSeconds, status, type, start, pause, reset, stop, startShortBreak, startLongBreak };
 }
