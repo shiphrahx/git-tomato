@@ -8,6 +8,7 @@ import { Settings } from './components/Settings';
 import { SessionComplete } from './components/SessionComplete';
 import { Profile } from './components/Profile';
 import { Badges, BADGES as BADGE_DEFS } from './components/Badges';
+import { Quests } from './components/Quests';
 
 const TOTAL_BADGES = BADGE_DEFS.length; // 25
 
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'week',    label: 'Week',    icon: '📊' },
   { id: 'profile', label: 'Profile', icon: '👤' },
   { id: 'badges',  label: 'Badges',  icon: '🏅' },
+  { id: 'quests',  label: 'Quests',  icon: '⚔' },
 ];
 
 export default function App() {
@@ -139,6 +141,12 @@ export default function App() {
           {tab === 'badges' && (
             <div className="screen screen--badges">
               <Badges />
+            </div>
+          )}
+
+          {tab === 'quests' && (
+            <div className="screen screen--quests">
+              <Quests />
             </div>
           )}
         </div>

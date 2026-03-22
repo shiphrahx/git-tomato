@@ -47,6 +47,9 @@ export function SessionComplete({ session, onDismiss }) {
     .map(slug => BADGE_DEFS.find(b => b.slug === slug))
     .filter(Boolean);
 
+  // F-4: quests completed this session
+  const newCompletedQuests = session.newCompletedQuests ?? [];
+
   return (
     <div className="sc">
       <div className="sc__header">
@@ -91,6 +94,20 @@ export function SessionComplete({ session, onDismiss }) {
             <div key={badge.slug} className="sc__badge-row">
               <span className="sc__badge-icon">🏅</span>
               <span className="sc__badge-name">{badge.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* F-4: quest completions */}
+      {newCompletedQuests.length > 0 && (
+        <div className="sc__quests">
+          <div className="sc__section-title">Quests completed</div>
+          {newCompletedQuests.map(q => (
+            <div key={q.slug} className="sc__quest-row">
+              <span className="sc__quest-icon">⚔</span>
+              <span className="sc__quest-name">{q.name}</span>
+              <span className="sc__quest-xp">+{q.xpReward} XP</span>
             </div>
           ))}
         </div>
