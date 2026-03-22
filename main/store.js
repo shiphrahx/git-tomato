@@ -33,7 +33,7 @@ function getDb() {
 
       CREATE TABLE IF NOT EXISTS xp_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        event_type TEXT NOT NULL CHECK(event_type IN ('SESSION_COMPLETE','COMMIT_BONUS','FIRST_SESSION_OF_DAY','STREAK_BONUS','LEVEL_UP','COMEBACK_BONUS')),
+        event_type TEXT NOT NULL CHECK(event_type IN ('SESSION_COMPLETE','COMMIT_BONUS','FIRST_SESSION_OF_DAY','STREAK_BONUS','LEVEL_UP','COMEBACK_BONUS','QUEST_COMPLETE')),
         xp_amount INTEGER NOT NULL,
         reason TEXT NOT NULL,
         session_id INTEGER NOT NULL,
@@ -75,6 +75,25 @@ function getDb() {
       );
 
       INSERT OR IGNORE INTO badges_meta (id, historical_pass_done) VALUES (1, 0);
+
+      -- A-2: one slate per calendar day
+      CREATE TABLE IF NOT EXISTS quest_slates (
+        date TEXT PRIMARY KEY,
+        quests TEXT NOT NULL DEFAULT '[]',
+        is_fallback INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL
+      );
+
+      -- A-3: append-only quest completion log
+      CREATE TABLE IF NOT EXISTS quest_completions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT NOT NULL,
+        target_value INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        session_id INTEGER NOT NULL,
+        xp_awarded INTEGER NOT NULL,
+        completed_at TEXT NOT NULL
+      );
     `);
 
     // Migration: add status column to sessions if it doesn't exist yet.
@@ -85,6 +104,25 @@ function getDb() {
     }
     if (!cols.find(c => c.name === 'pause_count')) {
       db.exec(`ALTER TABLE sessions ADD COLUMN pause_count INTEGER NOT NULL DEFAULT 0`);
+    }
+
+    // Migration: add QUEST_COMPLETE to xp_events CHECK constraint.
+    // SQLite can't ALTER a CHECK constraint, so we recreate the table if needed.
+    const xpEventsSchema = db.prepare(`SELECT sql FROM sqlite_master WHERE type='table' AND name='xp_events'`).get();
+    if (xpEventsSchema && !xpEventsSchema.sql.includes('QUEST_COMPLETE')) {
+      db.exec(`
+        ALTER TABLE xp_events RENAME TO xp_events_old;
+        CREATE TABLE xp_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          event_type TEXT NOT NULL CHECK(event_type IN ('SESSION_COMPLETE','COMMIT_BONUS','FIRST_SESSION_OF_DAY','STREAK_BONUS','LEVEL_UP','COMEBACK_BONUS','QUEST_COMPLETE')),
+          xp_amount INTEGER NOT NULL,
+          reason TEXT NOT NULL,
+          session_id INTEGER NOT NULL,
+          created_at TEXT NOT NULL
+        );
+        INSERT INTO xp_events SELECT * FROM xp_events_old;
+        DROP TABLE xp_events_old;
+      `);
     }
   }
   return db;
@@ -368,6 +406,57 @@ function markHistoricalPassDone() {
     .run();
 }
 
+// ─── Quest slates (A-2) ───────────────────────────────────────────────────────
+
+// Return the slate for a given ISO date string, or null if none exists.
+function getQuestSlate(dateStr) {
+  const row = getDb().prepare(`SELECT * FROM quest_slates WHERE date = ?`).get(dateStr);
+  if (!row) return null;
+  return { ...row, quests: JSON.parse(row.quests), is_fallback: !!row.is_fallback };
+}
+
+// Write the initial slate for a day (called once, on first session completion).
+function insertQuestSlate({ date, quests, isFallback, createdAt }) {
+  getDb()
+    .prepare(
+      `INSERT OR IGNORE INTO quest_slates (date, quests, is_fallback, created_at)
+       VALUES (@date, @quests, @isFallback, @createdAt)`
+    )
+    .run({ date, quests: JSON.stringify(quests), isFallback: isFallback ? 1 : 0, createdAt });
+}
+
+// Update the quests array in-place (for progress/completion/expiry updates).
+function updateQuestSlate(dateStr, quests) {
+  getDb()
+    .prepare(`UPDATE quest_slates SET quests = ? WHERE date = ?`)
+    .run(JSON.stringify(quests), dateStr);
+}
+
+// Return all slates ordered by date descending (for history view).
+function getAllQuestSlates() {
+  return getDb()
+    .prepare(`SELECT * FROM quest_slates ORDER BY date DESC`)
+    .all()
+    .map(r => ({ ...r, quests: JSON.parse(r.quests), is_fallback: !!r.is_fallback }));
+}
+
+// ─── Quest completions (A-3) ──────────────────────────────────────────────────
+
+function appendQuestCompletion({ slug, targetValue, date, sessionId, xpAwarded, completedAt }) {
+  getDb()
+    .prepare(
+      `INSERT INTO quest_completions (slug, target_value, date, session_id, xp_awarded, completed_at)
+       VALUES (@slug, @targetValue, @date, @sessionId, @xpAwarded, @completedAt)`
+    )
+    .run({ slug, targetValue, date, sessionId, xpAwarded, completedAt });
+}
+
+function getQuestCompletions() {
+  return getDb()
+    .prepare(`SELECT * FROM quest_completions ORDER BY completed_at ASC`)
+    .all();
+}
+
 module.exports = {
   getDb,
   saveSession,
@@ -381,4 +470,6 @@ module.exports = {
   getBadgeUnlocks, getBadgeUnlock, insertBadgeUnlocks,
   isHistoricalPassDone, markHistoricalPassDone,
   incrementSessionPauseCount,
+  getQuestSlate, insertQuestSlate, updateQuestSlate, getAllQuestSlates,
+  appendQuestCompletion, getQuestCompletions,
 };
