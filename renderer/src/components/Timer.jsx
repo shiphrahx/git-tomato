@@ -58,9 +58,9 @@ export function Timer({ timeLeft, totalSeconds, status }) {
             stroke="url(#ringGradient)"
             strokeWidth={STROKE}
             strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={offset}
+            strokeDashoffset={-offset}
             strokeLinecap="round"
-            transform={`rotate(90 ${SIZE / 2} ${SIZE / 2}) scale(1, -1) translate(0, -${SIZE})`}
+            transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
             filter="url(#ring-glow)"
             style={{ transition: 'stroke-dashoffset 0.8s ease' }}
           />
