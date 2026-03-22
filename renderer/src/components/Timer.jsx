@@ -30,10 +30,12 @@ export function Timer({ timeLeft, totalSeconds, status }) {
           style={{ position: 'absolute', top: 0, left: 0 }}
         >
           <defs>
-            <filter id="ring-glow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="4" result="blur1" />
-              <feGaussianBlur stdDeviation="10" result="blur2" />
+            <filter id="ring-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur1" />
+              <feGaussianBlur stdDeviation="8" result="blur2" />
+              <feGaussianBlur stdDeviation="18" result="blur3" />
               <feMerge>
+                <feMergeNode in="blur3" />
                 <feMergeNode in="blur2" />
                 <feMergeNode in="blur1" />
                 <feMergeNode in="SourceGraphic" />
