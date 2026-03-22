@@ -27,13 +27,18 @@ export function Timer({ timeLeft, totalSeconds, status }) {
           height={SIZE}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="timer-svg"
-          style={{ position: 'absolute', top: 0, left: 0 }}
+          style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}
+          overflow="visible"
         >
           <defs>
-            <filter id="ring-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="5" result="blur" />
+            <filter id="ring-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur1" />
+              <feGaussianBlur stdDeviation="8" result="blur2" />
+              <feGaussianBlur stdDeviation="18" result="blur3" />
               <feMerge>
-                <feMergeNode in="blur" />
+                <feMergeNode in="blur3" />
+                <feMergeNode in="blur2" />
+                <feMergeNode in="blur1" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
@@ -58,7 +63,7 @@ export function Timer({ timeLeft, totalSeconds, status }) {
             stroke="url(#ringGradient)"
             strokeWidth={STROKE}
             strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={offset}
+            strokeDashoffset={-offset}
             strokeLinecap="round"
             transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
             filter="url(#ring-glow)"
@@ -66,9 +71,9 @@ export function Timer({ timeLeft, totalSeconds, status }) {
           />
 
           <defs>
-            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ff8c00" />
-              <stop offset="100%" stopColor="#ffcc00" />
+            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3f5efb" />
+              <stop offset="100%" stopColor="#fc466b" />
             </linearGradient>
           </defs>
         </svg>

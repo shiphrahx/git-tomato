@@ -107,7 +107,7 @@ export default function App() {
                 <p className="timer-type-label">{type === 'focus' ? 'Focus' : type === 'longBreak' ? 'Long Break' : 'Short Break'}</p>
                 <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
                 <div className="panel__controls">
-                  <Controls status={status} type={type} onStart={start} onPause={pause} onStop={stop} onReset={reset} onStartShortBreak={startShortBreak} onStartLongBreak={startLongBreak} onConfig={() => window.electronAPI?.openSettings()} />
+                  <Controls status={status} type={type} onStart={start} onPause={pause} onReset={reset} onSelectFocus={stop} onSelectShortBreak={startShortBreak} onSelectLongBreak={startLongBreak} onConfig={() => window.electronAPI?.openSettings()} />
                 </div>
               </div>
             </div>
