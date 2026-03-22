@@ -62,4 +62,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('badges:updated', handler);
     return () => ipcRenderer.removeListener('badges:updated', handler);
   },
+
+  // Daily quests
+  getQuestSlate: () => ipcRenderer.invoke('quests:get'),
+  getQuestHistory: () => ipcRenderer.invoke('quests:historyGet'),
+  onQuestsUpdated: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('quests:updated', handler);
+    return () => ipcRenderer.removeListener('quests:updated', handler);
+  },
 });

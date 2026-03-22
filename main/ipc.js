@@ -39,6 +39,11 @@ const CHANNELS = {
 
   // Open settings window
   SETTINGS_OPEN: 'settings:open',
+
+  // Daily quests — invoke + push
+  QUESTS_GET: 'quests:get',
+  QUESTS_UPDATED: 'quests:updated',
+  QUESTS_HISTORY_GET: 'quests:historyGet',
 };
 
 module.exports = { CHANNELS };

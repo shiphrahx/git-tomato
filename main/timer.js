@@ -7,6 +7,7 @@ const xp = require('./xp');
 const { analyseCommits, analyseCommitsRich } = require('./commitAnalyser');
 const { evaluateStreak } = require('./streaks');
 const { evaluateBadges } = require('./badges');
+const { evaluateQuests, sendQuestNotifications, expireStaleSlates } = require('./quests');
 const { sendSessionCompleteNotification } = require('./notifications');
 const { LEVELS } = require('./levels');
 
@@ -109,6 +110,7 @@ function completeSession() {
   // Award XP only for naturally completed focus sessions (C-1)
   let xpResult = null;
   let newBadgeSlugs = [];
+  let newCompletedQuests = [];
   if (completedType === 'focus') {
     // Run rich commit analysis once — used by both XP (via commitBonuses) and badges
     const richCommits = analyseCommitsRich(state.repoPaths, startedAt, endedAt);
@@ -131,6 +133,14 @@ function completeSession() {
       xpResult,
       streakResult,
     });
+
+    // D-1: evaluate quests after XP and Badges
+    const { newlyCompleted: completedQuests } = evaluateQuests({
+      session: completedSession,
+      richCommits,
+      streakState: store.getStreakState(),
+    });
+    newCompletedQuests = completedQuests;
 
     // G-4: streak broken notification — fires once when streak resets after a gap
     // isComeback means previousDailyStreak > 0 AND gap >= 2 → streak was broken
@@ -187,6 +197,13 @@ function completeSession() {
       });
     }
 
+    // F-3: quest completion notifications — staggered 1s, after all badge notifications
+    if (newCompletedQuests.length > 0) {
+      const levelUpDuration = levelUpCount * 2000;
+      const badgeDuration = newBadgeSlugs.length * 1500;
+      sendQuestNotifications(newCompletedQuests, levelUpDuration + badgeDuration);
+    }
+
     const newXpState = store.getXpState();
     newXpState.levelTitle = LEVELS[newXpState.levelIndex].title;
     timerEvents.emit('xpStateUpdated', newXpState);
@@ -208,6 +225,7 @@ function completeSession() {
     repos,
     xpResult,
     newBadgeSlugs, // E-3: newly unlocked badge slugs for session-end summary
+    newCompletedQuests, // F-4: quests completed this session
   };
 
   sendToAll(CHANNELS.SESSION_COMPLETE, session);
