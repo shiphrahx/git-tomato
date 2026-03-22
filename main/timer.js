@@ -233,10 +233,9 @@ function completeSession() {
   sendSessionCompleteNotification(session);
   timerEvents.emit('sessionComplete', session);
 
-  // Auto-transition to next type, but don't auto-start
-  const nextType = completedType === 'focus' ? 'break' : 'focus';
-  state.type = nextType;
-  state.timeLeft = state.settings[nextType];
+  // Reset to focus timer after any completed session — don't auto-switch to break
+  state.type = 'focus';
+  state.timeLeft = state.settings.focus;
   state.startedAt = null;
   state.sessionRowId = null;
 
