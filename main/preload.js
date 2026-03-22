@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   timerStart: () => ipcRenderer.send('timer:start'),
   timerPause: () => ipcRenderer.send('timer:pause'),
   timerReset: () => ipcRenderer.send('timer:reset'),
+  timerStop: () => ipcRenderer.send('timer:stop'),
+  timerStartBreak: (type) => ipcRenderer.send('timer:startBreak', { type }),
 
   // Timer state push from main — returns a cleanup function
   onTimerTick: (callback) => {

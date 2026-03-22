@@ -32,7 +32,7 @@ export default function App() {
     );
   }
 
-  const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer } = useTimer();
+  const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer, stop, startShortBreak, startLongBreak } = useTimer();
   const [tab, setTab] = useState('timer');
   const [completedSession, setCompletedSession] = useState(null);
 
@@ -104,10 +104,10 @@ export default function App() {
           {tab === 'timer' && !showSessionComplete && (
             <div className="screen screen--timer">
               <div className="screen__timer-inner">
-                <p className="timer-type-label">{type === 'focus' ? 'Focus' : 'Break'}</p>
+                <p className="timer-type-label">{type === 'focus' ? 'Focus' : type === 'longBreak' ? 'Long Break' : 'Short Break'}</p>
                 <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
                 <div className="panel__controls">
-                  <Controls status={status} onStart={start} onPause={pause} onReset={reset} onConfig={() => window.electronAPI?.openSettings()} />
+                  <Controls status={status} type={type} onStart={start} onPause={pause} onStop={stop} onReset={reset} onStartShortBreak={startShortBreak} onStartLongBreak={startLongBreak} onConfig={() => window.electronAPI?.openSettings()} />
                 </div>
               </div>
             </div>

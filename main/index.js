@@ -22,6 +22,7 @@ const SETTINGS_PATH = () => path.join(app.getPath('userData'), 'settings.json');
 const DEFAULT_SETTINGS = {
   focusDuration: 25,
   shortBreak: 5,
+  longBreak: 15,
   repoPaths: [],
   githubToken: '',
 };

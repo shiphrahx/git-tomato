@@ -7,6 +7,8 @@ const CHANNELS = {
   TIMER_START: 'timer:start',
   TIMER_PAUSE: 'timer:pause',
   TIMER_RESET: 'timer:reset',
+  TIMER_STOP: 'timer:stop',
+  TIMER_START_BREAK: 'timer:startBreak', // payload: { durationSeconds }
 
   // Main → Renderer (webContents.send — push)
   TIMER_TICK: 'timer:tick',

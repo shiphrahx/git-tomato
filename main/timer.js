@@ -16,12 +16,13 @@ const timerEvents = new EventEmitter();
 
 const DEFAULT_DURATIONS = {
   focus: 25 * 60,
-  break: 5 * 60,
+  shortBreak: 5 * 60,
+  longBreak: 15 * 60,
 };
 
 let state = {
   status: 'idle',       // 'idle' | 'running' | 'paused'
-  type: 'focus',        // 'focus' | 'break'
+  type: 'focus',        // 'focus' | 'shortBreak' | 'longBreak'
   timeLeft: DEFAULT_DURATIONS.focus,
   startedAt: null,      // ms timestamp, set on first start of this session
   sessionRowId: null,   // sessions.id of the current in_progress row
@@ -47,7 +48,8 @@ function sendToAll(channel, payload) {
 
 function updateSettings(settings) {
   if (settings.focusDuration) state.settings.focus = settings.focusDuration * 60;
-  if (settings.shortBreak) state.settings.break = settings.shortBreak * 60;
+  if (settings.shortBreak) state.settings.shortBreak = settings.shortBreak * 60;
+  if (settings.longBreak) state.settings.longBreak = settings.longBreak * 60;
   if (settings.repoPaths) state.repoPaths = settings.repoPaths;
   // Reset timeLeft if not running and push update to renderer
   if (state.status === 'idle') {
@@ -251,9 +253,11 @@ function registerHandlers() {
     if (!state.startedAt) {
       state.startedAt = Date.now();
       state.seenHashes = new Set();
+      // DB only supports 'focus' | 'break' — map shortBreak/longBreak to 'break'
+      const dbType = state.type === 'focus' ? 'focus' : 'break';
       state.sessionRowId = store.beginSession({
         startedAt: state.startedAt,
-        type: state.type,
+        type: dbType,
         durationMinutes: Math.round(state.settings[state.type] / 60),
       });
     }
@@ -291,6 +295,48 @@ function registerHandlers() {
     state.sessionRowId = null;
     state.seenHashes = new Set();
     state.timeLeft = state.settings[state.type];
+    pushTick();
+  });
+
+  // Stop: abort session (no XP), reset to focus idle
+  ipcMain.on(CHANNELS.TIMER_STOP, () => {
+    clearInterval(state.intervalId);
+    clearInterval(state.pollId);
+    state.intervalId = null;
+    state.pollId = null;
+    if (state.sessionRowId) {
+      store.getDb()
+        .prepare(`UPDATE sessions SET status = 'aborted' WHERE id = ?`)
+        .run(state.sessionRowId);
+    }
+    state.status = 'idle';
+    state.type = 'focus';
+    state.startedAt = null;
+    state.sessionRowId = null;
+    state.seenHashes = new Set();
+    state.timeLeft = state.settings.focus;
+    pushTick();
+  });
+
+  // Load break: switch to break type idle (ready to start), abort any active session
+  ipcMain.on(CHANNELS.TIMER_START_BREAK, (_, { type }) => {
+    // type: 'shortBreak' | 'longBreak'
+    clearInterval(state.intervalId);
+    clearInterval(state.pollId);
+    state.intervalId = null;
+    state.pollId = null;
+    if (state.sessionRowId) {
+      store.getDb()
+        .prepare(`UPDATE sessions SET status = 'aborted' WHERE id = ?`)
+        .run(state.sessionRowId);
+      state.sessionRowId = null;
+    }
+    const breakType = (type === 'longBreak') ? 'longBreak' : 'shortBreak';
+    state.type = breakType;
+    state.timeLeft = state.settings[breakType];
+    state.startedAt = null;
+    state.seenHashes = new Set();
+    state.status = 'idle';
     pushTick();
   });
 }
