@@ -81,37 +81,9 @@ function QuestCard({ quest }) {
   );
 }
 
-function HistoryView({ onBack }) {
-  const [history, setHistory] = useState([]);
-
-  useEffect(() => {
-    if (!window.electronAPI) return;
-    window.electronAPI.getQuestHistory().then(slates => setHistory(slates ?? []));
-  }, []);
-
-  return (
-    <div className="quests-history">
-      <button className="quests-history__back" onClick={onBack}>← Back</button>
-      <div className="quests__section-title">Quest history</div>
-      {history.length === 0 && (
-        <p className="quests__empty">No quest history yet.</p>
-      )}
-      {history.map(slate => (
-        <div key={slate.date} className="quests-history__slate">
-          <div className="quests-history__date">{slate.date}</div>
-          {(slate.quests ?? []).map(q => (
-            <QuestCard key={q.slug} quest={q} />
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function DailyQuests() {
   const [slate, setSlate] = useState(undefined);
   const [now, setNow] = useState(Date.now());
-  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (!window.electronAPI) return;
@@ -120,10 +92,6 @@ function DailyQuests() {
     const ticker = setInterval(() => setNow(Date.now()), 60000);
     return () => { unsub(); clearInterval(ticker); };
   }, []);
-
-  if (showHistory) {
-    return <HistoryView onBack={() => setShowHistory(false)} />;
-  }
 
   return (
     <div className="dp__section">
@@ -147,10 +115,6 @@ function DailyQuests() {
       {slate && (slate.quests ?? []).map(q => (
         <QuestCard key={q.slug} quest={q} />
       ))}
-
-      <button className="quests__history-btn" onClick={() => setShowHistory(true)}>
-        Quest history
-      </button>
     </div>
   );
 }
