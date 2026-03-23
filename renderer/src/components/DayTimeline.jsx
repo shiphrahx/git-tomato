@@ -66,7 +66,7 @@ export function DayTimeline() {
     .map(u => BADGE_DEFS.find(b => b.slug === u.slug))
     .filter(Boolean);
 
-  const isEmpty = repos.length === 0 && sessions.length === 0;
+  const isEmpty = sessions.length === 0;
 
   if (isEmpty) {
     return (
