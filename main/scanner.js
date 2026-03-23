@@ -115,10 +115,10 @@ function getCommitsSince(isoTimestamp, repoPaths) {
 
 function getAllCommitsForDay(dateStr, repoPaths) {
   // dateStr is 'YYYY-MM-DD' — scan from local midnight to end of day
-  const dayStart = new Date(dateStr);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dateStr);
-  dayEnd.setHours(23, 59, 59, 999);
+  // Parse by parts to avoid UTC-offset day shift from ISO string parsing
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dayStart = new Date(y, m - 1, d, 0, 0, 0, 0);
+  const dayEnd   = new Date(y, m - 1, d, 23, 59, 59, 999);
 
   const searchPaths =
     repoPaths && repoPaths.length > 0
