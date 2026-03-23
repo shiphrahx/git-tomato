@@ -284,6 +284,26 @@ function getXpEvents({ sessionId } = {}) {
     .all();
 }
 
+// Sum all XP earned from sessions that started on a given calendar day (YYYY-MM-DD).
+function getXpForDate(dateStr) {
+  const dayStart = new Date(dateStr);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dateStr);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const rows = getDb()
+    .prepare(
+      `SELECT e.xp_amount
+       FROM xp_events e
+       JOIN sessions s ON s.id = e.session_id
+       WHERE s.started_at >= ? AND s.started_at <= ?
+         AND e.event_type != 'LEVEL_UP'`
+    )
+    .all(dayStart.getTime(), dayEnd.getTime());
+
+  return rows.reduce((sum, r) => sum + r.xp_amount, 0);
+}
+
 // ─── Streak state (B-1) ───────────────────────────────────────────────────────
 
 function getStreakState() {
@@ -464,7 +484,7 @@ module.exports = {
   getPendingXpSessions, getSessionById,
   getSessionsForDate, getAllSessions, getSessionWindowsForDate,
   getXpState, setXpState,
-  appendXpEvent, getXpEvents,
+  appendXpEvent, getXpEvents, getXpForDate,
   getStreakState, setStreakState,
   getProductiveDay, upsertProductiveDay, getAllProductiveDays, getProductiveDaysInWeek,
   getBadgeUnlocks, getBadgeUnlock, insertBadgeUnlocks,

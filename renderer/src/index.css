@@ -838,159 +838,143 @@ body {
   color: rgba(255, 180, 0, 0.7);
 }
 
-/* ─── Day timeline (Today tab) ──────────────────────────────── */
+/* ─── Daily Progress (Today tab) ────────────────────────────── */
 
-.day-timeline {
+.dp {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
-}
-
-.day-timeline__summary {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 16px;
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.4);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  flex-shrink: 0;
-}
-
-.day-timeline__list {
   overflow-y: auto;
+  padding: 16px;
+  gap: 14px;
+}
+
+.dp::-webkit-scrollbar { width: 4px; }
+.dp::-webkit-scrollbar-track { background: transparent; }
+.dp::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+.dp--empty {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: rgba(255,255,255,0.25);
+  gap: 8px;
+}
+
+.dp-empty__icon { font-size: 36px; }
+.dp-empty__title { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.35); }
+.dp-empty__hint { font-size: 12px; color: rgba(255,255,255,0.15); }
+
+/* Header */
+.dp__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.dp__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0f0f0;
+  letter-spacing: -0.01em;
+}
+
+.dp__xp {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+/* Stat cards row */
+.dp__stats {
+  display: flex;
+  gap: 8px;
+}
+
+.dp-stat {
   flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-/* Scrollbar */
-.day-timeline__list::-webkit-scrollbar {
-  width: 4px;
-}
-.day-timeline__list::-webkit-scrollbar-track {
-  background: transparent;
-}
-.day-timeline__list::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.12);
-  border-radius: 2px;
-}
-
-/* ─── Session card (in timeline) ────────────────────────────── */
-
-.session-card {
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  overflow: hidden;
-  border-left-width: 3px;
-  background: rgba(255,255,255,0.04);
-}
-
-.session-card--focus {
-  border-left-color: #ff4d4d;
-}
-
-.session-card--break {
-  border-left-color: #34d399;
-}
-
-.session-card__header {
-  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  color: inherit;
+  gap: 3px;
 }
 
-.session-card__type {
+.dp-stat__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #f59e0b;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.dp-stat__plus {
+  font-size: 15px;
   font-weight: 700;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #e6e6e6;
-  flex-shrink: 0;
+  opacity: 0.7;
 }
 
-.session-card__time {
+.dp-stat__label {
+  font-size: 11px;
   color: rgba(255,255,255,0.4);
-  font-size: 12px;
-  flex: 1;
-}
-
-.session-card__commits {
-  color: rgba(255,255,255,0.55);
-  font-size: 12px;
   font-weight: 500;
-  flex-shrink: 0;
+  text-align: center;
 }
 
-.session-card__body {
-  border-top: 1px solid rgba(255,255,255,0.07);
-  padding: 8px 12px;
-  background: rgba(0,0,0,0.15);
-}
-
-.session-card__repo {
-  margin-bottom: 8px;
-}
-
-.session-card__repo:last-child {
-  margin-bottom: 0;
-}
-
-.session-card__repo-name {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.45);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
-}
-
-.session-card__commits-list {
-  list-style: none;
+/* Section */
+.dp__section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
-.session-card__commit {
+.dp__section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.3);
+}
+
+/* Badges */
+.dp__badges {
   display: flex;
+  flex-direction: column;
   gap: 6px;
-  align-items: center;
 }
 
-.session-card__hash {
-  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+.dp-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 215, 0, 0.06);
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.dp-badge__icon { font-size: 18px; flex-shrink: 0; }
+
+.dp-badge__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dp-badge__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 215, 0, 0.9);
+}
+
+.dp-badge__desc {
   font-size: 11px;
-  color: #ff6b6b;
-  flex-shrink: 0;
-}
-
-.session-card__hash--link {
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.session-card__hash--link:hover {
-  color: #ff4d4d;
-}
-
-.session-card__message {
-  font-size: 12px;
-  color: #c9c9c9;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.4;
 }
 
 /* ─── RepoCommitList ────────────────────────────────────────── */
@@ -1002,8 +986,8 @@ body {
 }
 
 .rcl-repo {
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
   overflow: hidden;
   background: rgba(255,255,255,0.03);
 }
@@ -1011,9 +995,9 @@ body {
 .rcl-repo__header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   width: 100%;
-  padding: 10px 12px;
+  padding: 11px 14px;
   background: none;
   border: none;
   cursor: pointer;
@@ -1026,11 +1010,13 @@ body {
   background: rgba(255,255,255,0.04);
 }
 
-.rcl-repo__icon {
-  font-size: 12px;
-  color: rgba(255,255,255,0.25);
+.rcl-repo__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
   flex-shrink: 0;
-  line-height: 1;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
 }
 
 .rcl-repo__name {
@@ -1043,17 +1029,24 @@ body {
   white-space: nowrap;
 }
 
-.rcl-repo__meta {
+.rcl-repo__count {
   font-size: 11px;
-  color: rgba(255,255,255,0.35);
+  font-weight: 700;
+  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.07);
+  border-radius: 20px;
+  padding: 1px 8px;
   flex-shrink: 0;
 }
 
 .rcl-repo__chevron {
-  font-size: 9px;
-  color: rgba(255,255,255,0.25);
   flex-shrink: 0;
-  margin-left: 2px;
+  color: rgba(255,255,255,0.3);
+  transition: transform 0.2s;
+}
+
+.rcl-repo__chevron--open {
+  transform: rotate(180deg);
 }
 
 .rcl-commits {
@@ -1066,7 +1059,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   transition: background 0.1s;
 }
 
@@ -1076,10 +1069,11 @@ body {
 
 .rcl-commit__hash {
   font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-  font-size: 11px;
-  color: #ff6b6b;
+  font-size: 10px;
+  color: #f59e0b;
   flex-shrink: 0;
   letter-spacing: 0.02em;
+  opacity: 0.8;
 }
 
 .rcl-commit__hash--link {
@@ -1089,7 +1083,7 @@ body {
 }
 
 .rcl-commit__hash--link:hover {
-  color: #ff4d4d;
+  opacity: 1;
 }
 
 .rcl-commit__message {
@@ -1101,36 +1095,11 @@ body {
   flex: 1;
 }
 
-.rcl-commit__badge {
+.rcl-commit__tomato {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 11px;
   opacity: 0.7;
-  cursor: default;
   line-height: 1;
-}
-
-/* ─── Empty state ───────────────────────────────────────────── */
-
-.timeline-empty {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: rgba(255,255,255,0.25);
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.timeline-empty__icon {
-  font-size: 36px;
-  margin-bottom: 4px;
-}
-
-.timeline-empty__hint {
-  font-size: 12px;
-  color: rgba(255,255,255,0.15);
 }
 
 /* ─── Week digest ───────────────────────────────────────────── */
