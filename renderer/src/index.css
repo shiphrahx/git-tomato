@@ -22,12 +22,13 @@ html, body, #root {
 }
 
 body {
-  font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 14px;
+  font-family: var(--font-pixel);
+  font-size: 18px;
   /* Match the panel background so no white shows through before paint */
   background: #0f1115;
   color: #e6e6e6;
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
   user-select: none;
   overflow: hidden;
 }
@@ -276,7 +277,7 @@ body {
 .btn {
   padding: 9px 26px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 22px;
   font-weight: 600;
   cursor: pointer;
   border: none;
@@ -378,7 +379,7 @@ body {
 }
 
 .commit-card__repo {
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 600;
   color: #e6e6e6;
   white-space: nowrap;
@@ -387,7 +388,7 @@ body {
 }
 
 .commit-card__message {
-  font-size: 12px;
+  font-size: 18px;
   color: #c9c9c9;
   font-weight: 400;
   white-space: nowrap;
@@ -870,7 +871,7 @@ body {
 }
 
 .profile__badge-item-desc {
-  font-size: 10px;
+  font-size: 16px;
   color: rgba(255,255,255,0.3);
   line-height: 1.4;
 }
@@ -922,7 +923,7 @@ body {
 }
 
 .dp-empty__hint {
-  font-size: 11px;
+  font-size: 18px;
   color: rgba(255,255,255,0.2);
 }
 
@@ -1055,7 +1056,7 @@ body {
 }
 
 .dp-badge__desc {
-  font-size: 11px;
+  font-size: 18px;
   color: rgba(255,255,255,0.4);
   line-height: 1.4;
 }
@@ -1103,7 +1104,7 @@ body {
 }
 
 .rcl-repo__name {
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 600;
   color: #e6e6e6;
   flex: 1;
@@ -1113,7 +1114,7 @@ body {
 }
 
 .rcl-repo__count {
-  font-size: 11px;
+  font-size: 18px;
   font-weight: 700;
   color: rgba(255,255,255,0.4);
   background: rgba(255,255,255,0.07);
@@ -1151,8 +1152,8 @@ body {
 }
 
 .rcl-commit__hash {
-  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-  font-size: 10px;
+  font-family: var(--font-pixel);
+  font-size: 16px;
   color: #f59e0b;
   flex-shrink: 0;
   letter-spacing: 0.02em;
@@ -1170,7 +1171,7 @@ body {
 }
 
 .rcl-commit__message {
-  font-size: 12px;
+  font-size: 18px;
   color: rgba(255,255,255,0.65);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1310,7 +1311,7 @@ body {
 }
 
 .timeline-empty__hint {
-  font-size: 11px;
+  font-size: 18px;
   color: rgba(255,255,255,0.2);
 }
 
@@ -1344,7 +1345,7 @@ body {
 }
 
 .settings__title {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 600;
   color: #e6e6e6;
   margin-bottom: 24px;
@@ -1356,7 +1357,7 @@ body {
 }
 
 .settings__section-title {
-  font-size: 11px;
+  font-size: 20px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -1372,7 +1373,7 @@ body {
 
 .settings__label {
   display: block;
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 500;
   color: #e6e6e6;
   margin-bottom: 6px;
@@ -1391,7 +1392,7 @@ body {
   border-radius: 8px;
   padding: 8px 12px;
   color: #e6e6e6;
-  font-size: 13px;
+  font-size: 20px;
   outline: none;
   transition: border-color 0.15s;
 }
@@ -1405,18 +1406,18 @@ body {
 }
 
 .settings__input--path {
-  font-family: 'SF Mono', 'Cascadia Code', monospace;
-  font-size: 12px;
+  font-family: var(--font-pixel);
+  font-size: 16px;
 }
 
 .settings__unit {
-  font-size: 13px;
+  font-size: 20px;
   color: rgba(255,255,255,0.4);
   flex-shrink: 0;
 }
 
 .settings__hint {
-  font-size: 12px;
+  font-size: 18px;
   color: rgba(255,255,255,0.35);
   margin-top: 6px;
   line-height: 1.5;
@@ -1424,7 +1425,7 @@ body {
 
 .settings__hint code {
   color: #ff6b6b;
-  font-family: 'SF Mono', 'Cascadia Code', monospace;
+  font-family: var(--font-pixel);
 }
 
 .settings__repo-list {
@@ -1445,7 +1446,7 @@ body {
   border: none;
   color: rgba(255,255,255,0.3);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 20px;
   padding: 4px 6px;
   border-radius: 4px;
   flex-shrink: 0;
@@ -1462,7 +1463,7 @@ body {
   border: 1px dashed rgba(255,255,255,0.15);
   border-radius: 8px;
   color: rgba(255,255,255,0.4);
-  font-size: 13px;
+  font-size: 20px;
   padding: 7px 14px;
   cursor: pointer;
   width: 100%;
@@ -1554,13 +1555,13 @@ body {
 }
 
 .badge-header__count {
-  font-size: 12px;
+  font-size: 20px;
   font-weight: 600;
   color: rgba(255, 215, 0, 0.8);
 }
 
 .badge-header__recent {
-  font-size: 11px;
+  font-size: 18px;
   color: rgba(255,255,255,0.35);
   white-space: nowrap;
   overflow: hidden;
@@ -1590,7 +1591,7 @@ body {
 .badges::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 
 .badges__category-title {
-  font-size: 11px;
+  font-size: 20px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1638,7 +1639,7 @@ body {
 }
 
 .badge-card__name {
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 600;
   color: #e6e6e6;
 }
@@ -1648,13 +1649,13 @@ body {
 }
 
 .badge-card__desc {
-  font-size: 11px;
+  font-size: 18px;
   color: rgba(255,255,255,0.4);
   line-height: 1.4;
 }
 
 .badge-card__date {
-  font-size: 10px;
+  font-size: 16px;
   color: rgba(255, 215, 0, 0.5);
   margin-top: 2px;
 }
@@ -1805,7 +1806,7 @@ body {
 }
 
 .quest-card__name {
-  font-size: 12px;
+  font-size: 20px;
   font-weight: 500;
   color: rgba(255,255,255,0.88);
   line-height: 1.5;
