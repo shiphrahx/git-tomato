@@ -81,16 +81,18 @@ function QuestCard({ quest }) {
   );
 }
 
-function DailyQuests() {
-  const [slate, setSlate] = useState(undefined);
+function DailyQuests({ initialSlate }) {
+  const [slate, setSlate] = useState(initialSlate);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
+    setSlate(initialSlate);
+  }, [initialSlate]);
+
+  useEffect(() => {
     if (!window.electronAPI) return;
-    window.electronAPI.getQuestSlate().then(s => setSlate(s ?? null));
-    const unsub = window.electronAPI.onQuestsUpdated(s => setSlate(s ?? null));
     const ticker = setInterval(() => setNow(Date.now()), 60000);
-    return () => { unsub(); clearInterval(ticker); };
+    return () => clearInterval(ticker);
   }, []);
 
   return (
@@ -119,7 +121,7 @@ function DailyQuests() {
   );
 }
 
-export function DayTimeline() {
+export function DayTimeline({ questSlate }) {
   const [sessions, setSessions] = useState([]);
   const [repos, setRepos] = useState([]);
   const [sessionWindows, setSessionWindows] = useState([]);
@@ -174,7 +176,7 @@ export function DayTimeline() {
           <div className="dp-empty__title">No sessions yet today.</div>
           <div className="dp-empty__hint">Start a Pomodoro to get going!</div>
         </div>
-        <DailyQuests />
+        <DailyQuests initialSlate={questSlate} />
       </div>
     );
   }
