@@ -113,9 +113,11 @@ function completeSession() {
   let xpResult = null;
   let newBadgeSlugs = [];
   let newCompletedQuests = [];
+  let sessionRichCommits = [];
   if (completedType === 'focus') {
     // Run rich commit analysis once — used by both XP (via commitBonuses) and badges
     const richCommits = analyseCommitsRich(state.repoPaths, startedAt, endedAt);
+    sessionRichCommits = richCommits;
     const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
     // H-5, H-6: only qualifying sessions (at least one commit bonus) update streak state
     // C-1: evaluate streak before awarding XP so dailyStreak and isComeback feed in
@@ -218,6 +220,8 @@ function completeSession() {
     timerEvents.emit('xpStateUpdated', newXpState);
   }
 
+  const totalLines = sessionRichCommits.reduce((sum, c) => sum + (c.totalLines ?? 0), 0);
+
   const session = {
     id: sessionRowId,
     startedAt,
@@ -226,6 +230,7 @@ function completeSession() {
     type: completedType,
     repos,
     xpResult,
+    totalLines,
     newBadgeSlugs, // E-3: newly unlocked badge slugs for session-end summary
     newCompletedQuests, // F-4: quests completed this session
   };
