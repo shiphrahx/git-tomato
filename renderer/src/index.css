@@ -132,12 +132,14 @@ body {
 
 @keyframes tomato-bob {
   0%   { transform: translateY(0px); }
-  40%  { transform: translateY(-12px); }
+  25%  { transform: translateY(-10px); }
+  50%  { transform: translateY(-14px); }
+  75%  { transform: translateY(-4px); }
   100% { transform: translateY(0px); }
 }
 
 .timer-tomato--bobbing {
-  animation: tomato-bob 0.7s cubic-bezier(0.33, 0, 0.66, 1) infinite;
+  animation: tomato-bob 0.5s steps(1, end) infinite;
 }
 
 /* Time pill label */
