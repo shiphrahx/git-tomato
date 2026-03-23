@@ -82,12 +82,8 @@ function QuestCard({ quest }) {
 }
 
 function DailyQuests({ initialSlate }) {
-  const [slate, setSlate] = useState(initialSlate);
   const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    setSlate(initialSlate);
-  }, [initialSlate]);
+  const slate = initialSlate;
 
   useEffect(() => {
     if (!window.electronAPI) return;
