@@ -117,38 +117,11 @@ function DailyQuests({ initialSlate }) {
   );
 }
 
-export function DayTimeline({ questSlate }) {
-  const [sessions, setSessions] = useState([]);
-  const [repos, setRepos] = useState([]);
-  const [sessionWindows, setSessionWindows] = useState([]);
-  const [todayXp, setTodayXp] = useState(0);
-  const [todayLines, setTodayLines] = useState(0);
-  const [badgeUnlocks, setBadgeUnlocks] = useState([]);
-
-  async function loadToday() {
-    if (!window.electronAPI) return;
-    const today = getTodayStr();
-    const [sessionData, dayCommits, xp, badges] = await Promise.all([
-      window.electronAPI.getSessions(today),
-      window.electronAPI.getDayCommits(today),
-      window.electronAPI.getDayXp(today),
-      window.electronAPI.getBadgeUnlocks(),
-    ]);
-    setSessions(sessionData);
-    setRepos(dayCommits.repos);
-    setSessionWindows(dayCommits.sessionWindows);
-    setTodayXp(xp?.xp ?? 0);
-    setTodayLines(xp?.totalLines ?? 0);
-    setBadgeUnlocks(badges ?? []);
-  }
-
-  useEffect(() => { loadToday(); }, []);
-
-  useEffect(() => {
-    if (!window.electronAPI) return;
-    const cleanup = window.electronAPI.onSessionComplete(() => loadToday());
-    return cleanup;
-  }, []);
+export function DayTimeline({ questSlate, badgeUnlocks = [], sessions = [], dayCommits, dayXp }) {
+  const repos = dayCommits?.repos ?? [];
+  const sessionWindows = dayCommits?.sessionWindows ?? [];
+  const todayXp = dayXp?.xp ?? 0;
+  const todayLines = dayXp?.totalLines ?? 0;
 
   const focusSessions = sessions.filter(s => s.type === 'focus');
   const totalFocusMinutes = focusSessions.reduce((sum, s) => sum + s.duration_minutes, 0);

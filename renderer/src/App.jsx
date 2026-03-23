@@ -38,14 +38,36 @@ export default function App() {
   const [badgeUnlocks, setBadgeUnlocks] = useState([]);
   const [questSlate, setQuestSlate] = useState(undefined);
 
+  // Today tab data — fetched eagerly so Today tab renders instantly
+  const [todaySessions, setTodaySessions] = useState(undefined);
+  const [todayCommits, setTodayCommits] = useState(undefined);
+  const [todayXp, setTodayXp] = useState(undefined);
+
+  function getTodayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  async function loadTodayData() {
+    if (!window.electronAPI) return;
+    const today = getTodayStr();
+    const [sessions, dayCommits, xp] = await Promise.all([
+      window.electronAPI.getSessions(today),
+      window.electronAPI.getDayCommits(today),
+      window.electronAPI.getDayXp(today),
+    ]);
+    setTodaySessions(sessions);
+    setTodayCommits(dayCommits);
+    setTodayXp(xp);
+  }
+
   useEffect(() => {
     if (!window.electronAPI) return;
 
-    // Load initial badge unlocks and quest slate eagerly
-    window.electronAPI.getBadgeUnlocks().then(records => {
-      setBadgeUnlocks(records ?? []);
-    });
+    // Load all startup data eagerly
+    window.electronAPI.getBadgeUnlocks().then(records => setBadgeUnlocks(records ?? []));
     window.electronAPI.getQuestSlate().then(s => setQuestSlate(s ?? null));
+    loadTodayData();
 
     // Subscribe to badge and quest updates
     const unsubBadges = window.electronAPI.onBadgesUpdated((records) => {
@@ -62,6 +84,7 @@ export default function App() {
     const cleanup = window.electronAPI.onSessionComplete((session) => {
       setCompletedSession(session);
       setTab('timer'); // ensure we're on timer tab so sc screen shows
+      loadTodayData();
     });
     return cleanup;
   }, []);
@@ -122,7 +145,13 @@ export default function App() {
 
           {tab === 'today' && (
             <div className="screen screen--today">
-              <DayTimeline questSlate={questSlate} />
+              <DayTimeline
+                questSlate={questSlate}
+                badgeUnlocks={badgeUnlocks}
+                sessions={todaySessions}
+                dayCommits={todayCommits}
+                dayXp={todayXp}
+              />
             </div>
           )}
 
