@@ -6,7 +6,7 @@
 
 /* ─── Pixel font ─────────────────────────────────────────────── */
 :root {
-  --font-pixel: 'Press Start 2P', 'Courier New', monospace;
+  --font-pixel: 'VT323', 'Courier New', monospace;
 }
 
 .pixel {
@@ -149,7 +149,7 @@ body {
   border-radius: 12px;
   padding: 8px 18px;
   font-family: var(--font-pixel);
-  font-size: 22px;
+  font-size: 42px;
   color: #fff;
   letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
@@ -248,7 +248,7 @@ body {
   background: #1e2235;
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.45);
-  font-size: 11px;
+  font-size: 20px;
   font-family: var(--font-pixel);
   width: auto;
   height: 52px;
@@ -437,7 +437,7 @@ body {
 
 .tab-bar__label {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 16px;
   letter-spacing: 0.04em;
   -webkit-font-smoothing: none;
   font-smooth: never;
@@ -468,7 +468,7 @@ body {
 
 .timer-type-label {
   font-family: var(--font-pixel);
-  font-size: 9px;
+  font-size: 22px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgba(255,255,255,0.35);
@@ -691,7 +691,7 @@ body {
 
 .profile__level-title {
   font-family: var(--font-pixel);
-  font-size: 11px;
+  font-size: 26px;
   color: #e6e6e6;
   letter-spacing: 0.02em;
   -webkit-font-smoothing: none;
@@ -700,7 +700,7 @@ body {
 
 .profile__level-xp {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   color: #f59e0b;
   margin-top: 6px;
   -webkit-font-smoothing: none;
@@ -712,7 +712,7 @@ body {
   align-items: center;
   justify-content: space-between;
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgba(255,255,255,0.3);
@@ -722,7 +722,7 @@ body {
 
 .profile__badge-count {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 18px;
   color: rgba(255,215,0,0.6);
   text-transform: none;
   letter-spacing: 0;
@@ -750,7 +750,7 @@ body {
 
 .profile__stat-value {
   font-family: var(--font-pixel);
-  font-size: 16px;
+  font-size: 32px;
   color: #e6e6e6;
   line-height: 1;
   -webkit-font-smoothing: none;
@@ -759,7 +759,7 @@ body {
 
 .profile__stat-label {
   font-family: var(--font-pixel);
-  font-size: 6px;
+  font-size: 16px;
   color: rgba(255,255,255,0.3);
   font-weight: 400;
   text-align: center;
@@ -792,7 +792,7 @@ body {
 
 .profile__badge-category-label {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 18px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgba(255,255,255,0.2);
@@ -842,7 +842,7 @@ body {
 
 .profile__badge-item-name {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 18px;
   color: rgba(255,255,255,0.9);
   letter-spacing: 0.02em;
   -webkit-font-smoothing: none;
@@ -861,7 +861,7 @@ body {
 
 .profile__badge-item-date {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 16px;
   color: rgba(255,215,0,0.55);
   -webkit-font-smoothing: none;
   font-smooth: never;
@@ -898,7 +898,7 @@ body {
 
 .dp-empty__title {
   font-family: var(--font-pixel);
-  font-size: 9px;
+  font-size: 22px;
   color: rgba(255,255,255,0.4);
   letter-spacing: 0.05em;
   -webkit-font-smoothing: none;
@@ -919,7 +919,7 @@ body {
 
 .dp__title {
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: 24px;
   color: #f0f0f0;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -929,7 +929,7 @@ body {
 
 .dp__xp {
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: 22px;
   color: #f59e0b;
   -webkit-font-smoothing: none;
   font-smooth: never;
@@ -956,7 +956,7 @@ body {
 
 .dp-stat__value {
   font-family: var(--font-pixel);
-  font-size: 18px;
+  font-size: 36px;
   color: #f59e0b;
   line-height: 1;
   -webkit-font-smoothing: none;
@@ -970,7 +970,7 @@ body {
 
 .dp-stat__label {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 16px;
   color: rgba(255,255,255,0.35);
   text-align: center;
   letter-spacing: 0.04em;
@@ -993,7 +993,7 @@ body {
 
 .dp__section-title {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -1031,7 +1031,7 @@ body {
 
 .dp-badge__name {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   color: rgba(255, 215, 0, 0.95);
   letter-spacing: 0.03em;
   -webkit-font-smoothing: none;
@@ -1189,7 +1189,7 @@ body {
 
 .week-digest__summary span {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   color: rgba(255,255,255,0.45);
   letter-spacing: 0.04em;
   -webkit-font-smoothing: none;
@@ -1250,7 +1250,7 @@ body {
 
 .week-chart__label {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 16px;
   color: rgba(255,255,255,0.25);
   white-space: nowrap;
   -webkit-font-smoothing: none;
@@ -1263,7 +1263,7 @@ body {
 
 .week-chart__commits {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 16px;
   color: rgba(255,255,255,0.3);
   -webkit-font-smoothing: none;
   font-smooth: never;
@@ -1286,7 +1286,7 @@ body {
 
 .timeline-empty > div:not(.timeline-empty__icon):not(.timeline-empty__hint) {
   font-family: var(--font-pixel);
-  font-size: 9px;
+  font-size: 22px;
   color: rgba(255,255,255,0.35);
   letter-spacing: 0.04em;
   -webkit-font-smoothing: none;
@@ -1302,7 +1302,7 @@ body {
 
 .week-repos__title {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgba(255,255,255,0.3);
@@ -1471,7 +1471,7 @@ body {
   height: 100%;
   color: rgba(255,255,255,0.3);
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   letter-spacing: 0.06em;
   -webkit-font-smoothing: none;
   font-smooth: never;
@@ -1502,7 +1502,7 @@ body {
 
 .xp-legend-label {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   color: rgba(255,255,255,0.4);
   margin-top: 8px;
   text-align: center;
@@ -1517,7 +1517,7 @@ body {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 16px;
   color: rgba(255,255,255,0.3);
   margin-top: 10px;
   letter-spacing: 0.02em;
@@ -1672,7 +1672,7 @@ body {
 
 .quests__countdown {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 18px;
   color: rgba(255,255,255,0.35);
   letter-spacing: 0.03em;
   -webkit-font-smoothing: none;
@@ -1686,7 +1686,7 @@ body {
 
 .quests__placeholder-text {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   color: rgba(255,255,255,0.35);
   line-height: 2;
   letter-spacing: 0.02em;
@@ -1755,7 +1755,7 @@ body {
 
 .quest-card__tier {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 18px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 3px 8px;
@@ -1782,7 +1782,7 @@ body {
 
 .quest-card__xp {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 20px;
   color: #34d399;
   -webkit-font-smoothing: none;
   font-smooth: never;
@@ -1804,7 +1804,7 @@ body {
 
 .quest-card__status--complete {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 18px;
   color: #34d399;
   letter-spacing: 0.04em;
   -webkit-font-smoothing: none;
@@ -1813,7 +1813,7 @@ body {
 
 .quest-card__status--expired {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 18px;
   color: rgba(255,255,255,0.25);
   -webkit-font-smoothing: none;
   font-smooth: never;
@@ -1821,7 +1821,7 @@ body {
 
 .quest-card__progress {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 18px;
   color: rgba(255,255,255,0.4);
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: none;
