@@ -8,7 +8,6 @@ import { Settings } from './components/Settings';
 import { SessionComplete } from './components/SessionComplete';
 import { Profile } from './components/Profile';
 import { BADGES as BADGE_DEFS } from './components/Badges';
-import { Quests } from './components/Quests';
 
 const TOTAL_BADGES = BADGE_DEFS.length; // 25
 
@@ -20,7 +19,6 @@ const TABS = [
   { id: 'today',   label: 'Today',   icon: '📅' },
   { id: 'week',    label: 'Week',    icon: '📊' },
   { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'quests',  label: 'Quests',  icon: '⚔' },
 ];
 
 export default function App() {
@@ -38,21 +36,24 @@ export default function App() {
 
   // E-4, E-5: badge unlock state for header
   const [badgeUnlocks, setBadgeUnlocks] = useState([]);
+  const [questSlate, setQuestSlate] = useState(undefined);
 
   useEffect(() => {
     if (!window.electronAPI) return;
 
-    // Load initial badge unlocks
+    // Load initial badge unlocks and quest slate eagerly
     window.electronAPI.getBadgeUnlocks().then(records => {
       setBadgeUnlocks(records ?? []);
     });
+    window.electronAPI.getQuestSlate().then(s => setQuestSlate(s ?? null));
 
-    // Subscribe to badge updates
+    // Subscribe to badge and quest updates
     const unsubBadges = window.electronAPI.onBadgesUpdated((records) => {
       setBadgeUnlocks(records ?? []);
     });
+    const unsubQuests = window.electronAPI.onQuestsUpdated(s => setQuestSlate(s ?? null));
 
-    return unsubBadges;
+    return () => { unsubBadges(); unsubQuests(); };
   }, []);
 
   // When a session completes, capture it and switch to the session-complete screen
@@ -121,7 +122,7 @@ export default function App() {
 
           {tab === 'today' && (
             <div className="screen screen--today">
-              <DayTimeline />
+              <DayTimeline questSlate={questSlate} />
             </div>
           )}
 
@@ -137,11 +138,7 @@ export default function App() {
             </div>
           )}
 
-          {tab === 'quests' && (
-            <div className="screen screen--quests">
-              <Quests />
-            </div>
-          )}
+
         </div>
 
         {/* Bottom tab bar */}

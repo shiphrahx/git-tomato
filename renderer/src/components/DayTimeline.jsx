@@ -21,7 +21,103 @@ function StatCard({ icon, value, label }) {
   );
 }
 
-export function DayTimeline() {
+// --- Quest helpers ---
+const TIER_LABELS = { standard: 'Standard', stretch: 'Stretch', elite: 'Elite' };
+const TIER_XP = { standard: 20, stretch: 35, elite: 50 };
+
+function formatQuestName(q) {
+  return (q.nameTemplate ?? '')
+    .replace('{n}', q.targetValue ?? '')
+    .replace('{time}', q.targetValue != null ? `${String(q.targetValue).padStart(2, '0')}:00` : '');
+}
+
+function formatCountdown(nowMs) {
+  const d = new Date(nowMs);
+  const midnight = new Date(d);
+  midnight.setHours(24, 0, 0, 0);
+  const diffMs = midnight.getTime() - nowMs;
+  const h = Math.floor(diffMs / 3600000);
+  const m = Math.floor((diffMs % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function isBinaryQuest(slug) {
+  return ['deletion_day', 'beat_yesterday', 'golden_hour', 'consistency_window', 'morning_session', 'streak_extend'].includes(slug);
+}
+
+function QuestCard({ quest }) {
+  const name = formatQuestName(quest);
+  const isComplete = quest.status === 'complete';
+  const isExpired = quest.status === 'expired';
+  const isBinary = isBinaryQuest(quest.slug);
+
+  return (
+    <div className={`quest-card quest-card--${quest.status} quest-card--${quest.tier}`}>
+      <div className="quest-card__header">
+        <span className={`quest-card__tier quest-card__tier--${quest.tier}`}>
+          {TIER_LABELS[quest.tier]}
+        </span>
+        <span className="quest-card__xp">+{quest.xpReward ?? TIER_XP[quest.tier]} XP</span>
+      </div>
+      <div className="quest-card__name">{name}</div>
+      <div className="quest-card__footer">
+        {isComplete && (
+          <span className="quest-card__status quest-card__status--complete">✓ Complete</span>
+        )}
+        {isExpired && (
+          <span className="quest-card__status quest-card__status--expired">Expired</span>
+        )}
+        {!isComplete && !isExpired && !isBinary && quest.targetValue > 0 && (
+          <span className="quest-card__progress">
+            {quest.progress ?? 0} / {quest.targetValue}
+          </span>
+        )}
+        {!isComplete && !isExpired && isBinary && (
+          <span className="quest-card__progress quest-card__progress--binary">—</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DailyQuests({ initialSlate }) {
+  const [now, setNow] = useState(Date.now());
+  const slate = initialSlate;
+
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    const ticker = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(ticker);
+  }, []);
+
+  return (
+    <div className="dp__section">
+      <div className="dp__section-header">
+        <span className="dp__section-title">Daily Quests</span>
+        {slate && (
+          <span className="quests__countdown">Resets in {formatCountdown(now)}</span>
+        )}
+      </div>
+
+      {slate === undefined && (
+        <p className="quests__placeholder-text">Loading...</p>
+      )}
+
+      {slate === null && (
+        <p className="quests__placeholder-text">
+          Quests will be generated after your first session of the day.
+        </p>
+      )}
+
+      {slate && (slate.quests ?? []).map(q => (
+        <QuestCard key={q.slug} quest={q} />
+      ))}
+    </div>
+  );
+}
+
+export function DayTimeline({ questSlate }) {
   const [sessions, setSessions] = useState([]);
   const [repos, setRepos] = useState([]);
   const [sessionWindows, setSessionWindows] = useState([]);
@@ -70,10 +166,13 @@ export function DayTimeline() {
 
   if (isEmpty) {
     return (
-      <div className="dp dp--empty">
-        <div className="dp-empty__icon">🍅</div>
-        <div className="dp-empty__title">No sessions yet today.</div>
-        <div className="dp-empty__hint">Start a Pomodoro to get going!</div>
+      <div className="dp">
+        <div className="dp--empty">
+          <div className="dp-empty__icon">🍅</div>
+          <div className="dp-empty__title">No sessions yet today.</div>
+          <div className="dp-empty__hint">Start a Pomodoro to get going!</div>
+        </div>
+        <DailyQuests initialSlate={questSlate} />
       </div>
     );
   }
@@ -112,6 +211,9 @@ export function DayTimeline() {
           </div>
         </div>
       )}
+
+      {/* Daily quests */}
+      <DailyQuests />
 
       {/* Commits by repo */}
       {repos.length > 0 && (
