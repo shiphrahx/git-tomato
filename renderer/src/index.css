@@ -523,19 +523,22 @@ body {
 }
 
 .sc__title {
-  font-size: 20px;
-  font-weight: 700;
+  font-family: var(--font-pixel);
+  font-size: 32px;
   color: #f0f0f0;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.02em;
   text-align: center;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .sc__xp-gained {
-  font-size: 28px;
-  font-weight: 800;
+  font-family: var(--font-pixel);
+  font-size: 48px;
   color: #4ade80;
-  letter-spacing: -0.02em;
   text-align: center;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .sc__stats {
@@ -568,16 +571,19 @@ body {
 }
 
 .sc-stat__value {
-  font-size: 20px;
-  font-weight: 700;
+  font-family: var(--font-pixel);
+  font-size: 36px;
   color: #e6e6e6;
-  letter-spacing: -0.02em;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .sc-stat__label {
-  font-size: 12px;
+  font-family: var(--font-pixel);
+  font-size: 18px;
   color: rgba(255,255,255,0.4);
-  font-weight: 500;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .sc__xp-row-total {
@@ -597,16 +603,21 @@ body {
 }
 
 .sc__xp-total-label {
-  font-size: 18px;
-  font-weight: 700;
+  font-family: var(--font-pixel);
+  font-size: 32px;
   color: #f59e0b;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .sc__close {
   width: 100%;
   margin-top: 4px;
+  font-family: var(--font-pixel);
+  font-size: 24px;
   letter-spacing: 0.08em;
-  font-weight: 700;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .sc__xp-bar-wrap {
@@ -623,14 +634,19 @@ body {
 }
 
 .sc__xp-bar-level {
-  font-size: 12px;
-  font-weight: 600;
+  font-family: var(--font-pixel);
+  font-size: 20px;
   color: rgba(255,255,255,0.7);
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .sc__xp-bar-next {
-  font-size: 11px;
+  font-family: var(--font-pixel);
+  font-size: 18px;
   color: rgba(255,255,255,0.35);
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 .sc__xp-bar {
@@ -649,9 +665,12 @@ body {
 }
 
 .sc__xp-bar-meta {
-  font-size: 11px;
+  font-family: var(--font-pixel);
+  font-size: 16px;
   color: rgba(255,255,255,0.35);
   text-align: right;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
 }
 
 /* ─── Profile screen ────────────────────────────────────────── */
