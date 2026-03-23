@@ -196,11 +196,17 @@ function saveSession(session) {
   });
 }
 
+function parseDateLocal(dateStr) {
+  // Parse 'YYYY-MM-DD' as local time to avoid UTC-offset day shift
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 function getSessionsForDate(dateStr) {
   // dateStr is 'YYYY-MM-DD', use local-midnight boundaries
-  const dayStart = new Date(dateStr);
+  const dayStart = parseDateLocal(dateStr);
   dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dateStr);
+  const dayEnd = parseDateLocal(dateStr);
   dayEnd.setHours(23, 59, 59, 999);
 
   const rows = getDb()
@@ -222,9 +228,9 @@ function getAllSessions() {
 }
 
 function getSessionWindowsForDate(dateStr) {
-  const dayStart = new Date(dateStr);
+  const dayStart = parseDateLocal(dateStr);
   dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dateStr);
+  const dayEnd = parseDateLocal(dateStr);
   dayEnd.setHours(23, 59, 59, 999);
 
   return getDb()
@@ -282,6 +288,26 @@ function getXpEvents({ sessionId } = {}) {
   return getDb()
     .prepare(`SELECT * FROM xp_events ORDER BY id ASC`)
     .all();
+}
+
+// Sum all XP earned from sessions that started on a given calendar day (YYYY-MM-DD).
+function getXpForDate(dateStr) {
+  const dayStart = parseDateLocal(dateStr);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = parseDateLocal(dateStr);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const rows = getDb()
+    .prepare(
+      `SELECT e.xp_amount
+       FROM xp_events e
+       JOIN sessions s ON s.id = e.session_id
+       WHERE s.started_at >= ? AND s.started_at <= ?
+         AND e.event_type != 'LEVEL_UP'`
+    )
+    .all(dayStart.getTime(), dayEnd.getTime());
+
+  return rows.reduce((sum, r) => sum + r.xp_amount, 0);
 }
 
 // ─── Streak state (B-1) ───────────────────────────────────────────────────────
@@ -464,7 +490,7 @@ module.exports = {
   getPendingXpSessions, getSessionById,
   getSessionsForDate, getAllSessions, getSessionWindowsForDate,
   getXpState, setXpState,
-  appendXpEvent, getXpEvents,
+  appendXpEvent, getXpEvents, getXpForDate,
   getStreakState, setStreakState,
   getProductiveDay, upsertProductiveDay, getAllProductiveDays, getProductiveDaysInWeek,
   getBadgeUnlocks, getBadgeUnlock, insertBadgeUnlocks,

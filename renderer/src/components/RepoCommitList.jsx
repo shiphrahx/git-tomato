@@ -11,12 +11,16 @@ function RepoSection({ repoData, sessionWindows }) {
   return (
     <div className="rcl-repo">
       <button className="rcl-repo__header" onClick={() => setExpanded(e => !e)}>
-        <span className="rcl-repo__icon">⎇</span>
+        <span className="rcl-repo__dot" />
         <span className="rcl-repo__name">{repo}</span>
-        <span className="rcl-repo__meta">
-          {commits.length} commit{commits.length !== 1 ? 's' : ''}
-        </span>
-        <span className="rcl-repo__chevron">{expanded ? '▲' : '▼'}</span>
+        <span className="rcl-repo__count">{commits.length}</span>
+        <svg
+          className={`rcl-repo__chevron${expanded ? ' rcl-repo__chevron--open' : ''}`}
+          width="12" height="12" viewBox="0 0 12 12"
+          fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+        >
+          <polyline points="2,4 6,8 10,4" />
+        </svg>
       </button>
 
       {expanded && (
@@ -34,9 +38,7 @@ function RepoSection({ repoData, sessionWindows }) {
                 </code>
                 <span className="rcl-commit__message">{c.message}</span>
                 {duringSession && (
-                  <span className="rcl-commit__badge" title="Committed while the timer was running">
-                    🍅
-                  </span>
+                  <span className="rcl-commit__tomato" title="Committed during a session">🍅</span>
                 )}
               </li>
             );

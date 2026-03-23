@@ -282,6 +282,19 @@ app.whenReady().then(() => {
   // Open URL in default browser
   ipcMain.handle(CHANNELS.OPEN_URL, (_, url) => shell.openExternal(url));
 
+  // XP and lines earned on a calendar day
+  ipcMain.handle(CHANNELS.STORE_GET_DAY_XP, (_, { date } = {}) => {
+    if (!date) return { xp: 0, totalLines: 0 };
+    const { analyseCommitsRich } = require('./commitAnalyser');
+    const settings = readSettings();
+    const sessions = store.getSessionsForDate(date).filter(s => s.type === 'focus' && s.status === 'completed');
+    const totalLines = sessions.reduce((sum, s) => {
+      const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
+      return sum + rich.reduce((rs, c) => rs + (c.totalLines ?? 0), 0);
+    }, 0);
+    return { xp: store.getXpForDate(date), totalLines };
+  });
+
   // All commits for a calendar day + session windows for that day
   ipcMain.handle(CHANNELS.STORE_GET_DAY_COMMITS, (_, { date } = {}) => {
     if (!date) return { repos: [], sessionWindows: [] };

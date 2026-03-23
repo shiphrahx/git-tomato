@@ -42,6 +42,9 @@ const CHANNELS = {
   // Open settings window
   SETTINGS_OPEN: 'settings:open',
 
+  // XP earned for a calendar day
+  STORE_GET_DAY_XP: 'store:getDayXp',
+
   // Daily quests — invoke + push
   QUESTS_GET: 'quests:get',
   QUESTS_UPDATED: 'quests:updated',
