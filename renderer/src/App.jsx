@@ -8,7 +8,6 @@ import { Settings } from './components/Settings';
 import { SessionComplete } from './components/SessionComplete';
 import { Profile } from './components/Profile';
 import { BADGES as BADGE_DEFS } from './components/Badges';
-import { Quests } from './components/Quests';
 
 const TOTAL_BADGES = BADGE_DEFS.length; // 25
 
@@ -20,7 +19,6 @@ const TABS = [
   { id: 'today',   label: 'Today',   icon: '📅' },
   { id: 'week',    label: 'Week',    icon: '📊' },
   { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'quests',  label: 'Quests',  icon: '⚔' },
 ];
 
 export default function App() {
@@ -137,11 +135,7 @@ export default function App() {
             </div>
           )}
 
-          {tab === 'quests' && (
-            <div className="screen screen--quests">
-              <Quests />
-            </div>
-          )}
+
         </div>
 
         {/* Bottom tab bar */}

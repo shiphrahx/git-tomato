@@ -856,11 +856,14 @@ body {
 .dp::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 
 .dp--empty {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
   color: rgba(255,255,255,0.25);
   gap: 8px;
+  padding: 24px 0;
 }
 
 .dp-empty__icon { font-size: 36px; }
@@ -931,6 +934,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.dp__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .dp__section-title {
