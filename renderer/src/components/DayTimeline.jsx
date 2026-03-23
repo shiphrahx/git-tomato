@@ -250,6 +250,9 @@ export function DayTimeline() {
         </div>
       )}
 
+      {/* Daily quests */}
+      <DailyQuests />
+
       {/* Commits by repo */}
       {repos.length > 0 && (
         <div className="dp__section dp__section--commits">
@@ -257,9 +260,6 @@ export function DayTimeline() {
           <RepoCommitList repos={repos} sessionWindows={sessionWindows} />
         </div>
       )}
-
-      {/* Daily quests */}
-      <DailyQuests />
     </div>
   );
 }
