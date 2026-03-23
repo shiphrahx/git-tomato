@@ -213,7 +213,7 @@ export function DayTimeline({ questSlate }) {
       )}
 
       {/* Daily quests */}
-      <DailyQuests />
+      <DailyQuests initialSlate={questSlate} />
 
       {/* Commits by repo */}
       {repos.length > 0 && (
