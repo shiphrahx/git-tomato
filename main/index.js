@@ -123,6 +123,8 @@ app.whenReady().then(() => {
     frame: true,
   });
 
+  mainWindow.maximize();
+
   mainWindow.loadURL(RENDERER_URL);
   mainWindow.setMenuBarVisibility(false);
   mainWindow.on('closed', () => { mainWindow = null; });
@@ -199,6 +201,7 @@ app.whenReady().then(() => {
       });
       mainWindow.loadURL(RENDERER_URL);
       mainWindow.setMenuBarVisibility(false);
+      mainWindow.maximize();
       mainWindow.on('closed', () => { mainWindow = null; });
       timer.setWindow(mainWindow);
     }

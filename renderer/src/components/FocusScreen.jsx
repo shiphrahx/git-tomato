@@ -1,0 +1,186 @@
+import React from 'react';
+import { TomatoSprite, getTomatoState } from './TomatoSprite';
+
+// Flatten all commits from dayCommits into a flat list with repo name attached
+function flatCommits(dayCommits) {
+  if (!dayCommits?.repos) return [];
+  const all = [];
+  for (const r of dayCommits.repos) {
+    for (const c of r.commits ?? []) {
+      all.push({ ...c, repo: r.repo, remoteUrl: r.remoteUrl });
+    }
+  }
+  // Sort newest first
+  return all.sort((a, b) => b.timestamp - a.timestamp);
+}
+
+function isInSession(timestamp, sessionWindows) {
+  return (sessionWindows ?? []).some(w => timestamp >= w.started_at && timestamp <= w.ended_at);
+}
+
+export function FocusScreen({
+  timeLeft, totalSeconds, status, type,
+  onStart, onPause, onReset, onSelectFocus, onSelectShortBreak, onSelectLongBreak, onConfig,
+  todaySessions, todayCommits, todayXp,
+}) {
+  const progress = totalSeconds > 0 ? timeLeft / totalSeconds : 1;
+  const spriteState = getTomatoState(progress);
+  const isRunning = status === 'running';
+
+  const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+  const secs = (timeLeft % 60).toString().padStart(2, '0');
+
+  const focusSessions = (todaySessions ?? []).filter(s => s.type === 'focus');
+  const totalFocusMin = focusSessions.reduce((sum, s) => sum + s.duration_minutes, 0);
+  const repos = todayCommits?.repos ?? [];
+  const sessionWindows = todayCommits?.sessionWindows ?? [];
+  const totalCommits = repos.reduce((sum, r) => sum + r.commits.length, 0);
+  const todayLines = todayXp?.totalLines ?? 0;
+  const xpToday = todayXp?.xp ?? 0;
+
+  const commits = flatCommits(todayCommits);
+
+  const phaseLabel = type === 'focus'
+    ? '▶ Deep Focus Mode'
+    : type === 'shortBreak'
+    ? '— Short Break'
+    : '— Long Break';
+
+  return (
+    <div className="focus-layout">
+      {/* ── LEFT: main timer card ── */}
+      <div className="focus-main">
+        <div className="card focus-timer-card">
+          {/* Tomato mascot */}
+          <div className={`focus-tomato${isRunning ? ' focus-tomato--bobbing' : ''}`}>
+            <TomatoSprite state={spriteState} />
+          </div>
+
+          {/* Timer digits */}
+          <div className="focus-digits num">{mins}:{secs}</div>
+
+          {/* Phase label */}
+          <div className={`focus-phase${isRunning ? '' : ' focus-phase--idle'}`}
+               style={isRunning ? {} : { animationPlayState: 'paused', opacity: 0.5 }}>
+            {phaseLabel}
+          </div>
+
+          {/* Energy bar */}
+          <div className="focus-energy">
+            <div className="focus-energy__bar">
+              <div className="focus-energy__fill" style={{ width: `${Math.round(progress * 100)}%` }} />
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="focus-controls">
+            <div className="focus-modes">
+              <button
+                className={`focus-mode-btn${type === 'focus' ? ' focus-mode-btn--active' : ''}`}
+                onClick={onSelectFocus}
+                disabled={isRunning}
+              >Focus</button>
+              <button
+                className={`focus-mode-btn${type === 'shortBreak' ? ' focus-mode-btn--active' : ''}`}
+                onClick={onSelectShortBreak}
+                disabled={isRunning}
+              >Short</button>
+              <button
+                className={`focus-mode-btn${type === 'longBreak' ? ' focus-mode-btn--active' : ''}`}
+                onClick={onSelectLongBreak}
+                disabled={isRunning}
+              >Long</button>
+            </div>
+
+            <div className="focus-actions">
+              {/* Restart */}
+              <button className="focus-action-btn" onClick={onReset} title="Restart">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8" />
+                  <polyline points="3,3 3,8 8,8" />
+                </svg>
+              </button>
+
+              {/* Play / Pause */}
+              {isRunning ? (
+                <button className="focus-action-btn focus-action-btn--play" onClick={onPause} title="Pause">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <rect x="4" y="3" width="4" height="14" rx="1" />
+                    <rect x="12" y="3" width="4" height="14" rx="1" />
+                  </svg>
+                </button>
+              ) : (
+                <button className="focus-action-btn focus-action-btn--play" onClick={onStart} title={status === 'paused' ? 'Resume' : 'Start'}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <polygon points="5,3 18,10 5,17" />
+                  </svg>
+                </button>
+              )}
+
+              {/* Settings */}
+              <button className="focus-action-btn" onClick={onConfig} title="Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT: side panel ── */}
+      <div className="focus-side">
+        {/* Quick stats */}
+        <div className="focus-stats">
+          <div className="card focus-stat">
+            <span className="focus-stat__val num">{focusSessions.length}</span>
+            <span className="focus-stat__lbl">Pomodoros</span>
+          </div>
+          <div className="card focus-stat">
+            <span className="focus-stat__val num">{totalCommits}</span>
+            <span className="focus-stat__lbl">Commits</span>
+          </div>
+          <div className="card focus-stat">
+            <span className="focus-stat__val num">{todayLines}</span>
+            <span className="focus-stat__lbl">Lines</span>
+          </div>
+        </div>
+
+        {/* XP card */}
+        <div className="card card--gold focus-xp-card">
+          <div className="focus-xp__label">XP Today</div>
+          <div className="focus-xp__gained">+{xpToday} XP</div>
+        </div>
+
+        {/* Git activity feed */}
+        <div className="card focus-git" style={{ flex: 1, minHeight: 0 }}>
+          <div className="focus-git__title">Git Activity — Today</div>
+          <div className="focus-git__scroll">
+            {commits.length === 0 ? (
+              <div className="focus-git__empty">No commits yet today.</div>
+            ) : (
+              commits.map(c => {
+                const duringSession = isInSession(c.timestamp, sessionWindows);
+                return (
+                  <div key={c.hash} className="focus-commit">
+                    <code
+                      className={`focus-commit__hash${c.remoteUrl ? ' focus-commit__hash--link' : ''}`}
+                      onClick={() => c.remoteUrl && window.electronAPI?.openUrl(`${c.remoteUrl}/commit/${c.hash}`)}
+                      title={c.remoteUrl ? 'Open on GitHub' : undefined}
+                    >
+                      {c.hash.slice(0, 7)}
+                    </code>
+                    <span className="focus-commit__msg">{c.message}</span>
+                    <span className="focus-commit__repo">{c.repo}</span>
+                    {duringSession && <span className="focus-commit__tomato">🍅</span>}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
