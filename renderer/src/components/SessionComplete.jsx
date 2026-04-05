@@ -70,7 +70,9 @@ function XpBar({ xpResult }) {
       </div>
       {!isLegend && (
         <div className="sc__xp-bar-meta">
-          {Math.round(xpPctWithinLevel(newTotalXp, levelAfter))}% to {LEVELS[levelAfter + 1]?.title}
+          <span className="num" style={{ fontFamily: 'var(--font-num)', fontSize: '16px' }}>
+            {LEVELS[levelAfter + 1].totalXpRequired - newTotalXp}
+          </span> XP to next level
         </div>
       )}
     </div>

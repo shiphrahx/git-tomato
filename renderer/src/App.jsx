@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useTimer } from './hooks/useTimer';
-import { Timer } from './components/Timer';
-import { Controls } from './components/Controls';
 import { DayTimeline } from './components/DayTimeline';
 import { WeekDigest } from './components/WeekDigest';
 import { Settings } from './components/Settings';
 import { SessionComplete } from './components/SessionComplete';
-import { Profile } from './components/Profile';
-import { BADGES as BADGE_DEFS } from './components/Badges';
-
-const TOTAL_BADGES = BADGE_DEFS.length; // 25
+import { BackgroundScene } from './components/BackgroundScene';
+import { FocusScreen } from './components/FocusScreen';
+import { QuestsScreen } from './components/QuestsScreen';
 
 // Settings window loads the same renderer with ?view=settings
 const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
 
 const TABS = [
-  { id: 'timer',   label: 'Timer',   icon: '⏱' },
-  { id: 'today',   label: 'Today',   icon: '📅' },
-  { id: 'week',    label: 'Week',    icon: '📊' },
-  { id: 'profile', label: 'Profile', icon: '👤' },
+  { id: 'timer',  label: 'Focus',  icon: '🍅' },
+  { id: 'today',  label: 'Stats',  icon: '📊' },
+  { id: 'week',   label: 'Week',   icon: '📅' },
+  { id: 'quests', label: 'Quests', icon: '⚔' },
 ];
+
+function getInitialTheme() {
+  try { return localStorage.getItem('gt-theme') || 'twilight'; } catch { return 'twilight'; }
+}
 
 export default function App() {
   if (isSettingsWindow) {
@@ -33,84 +34,97 @@ export default function App() {
   const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer, stop, startShortBreak, startLongBreak } = useTimer();
   const [tab, setTab] = useState('timer');
   const [completedSession, setCompletedSession] = useState(null);
+  const [theme, setTheme] = useState(getInitialTheme);
 
-  // E-4, E-5: badge unlock state for header
   const [badgeUnlocks, setBadgeUnlocks] = useState([]);
   const [questSlate, setQuestSlate] = useState(undefined);
 
+  // Today tab data fetched eagerly
+  const [todaySessions, setTodaySessions] = useState(undefined);
+  const [todayCommits, setTodayCommits] = useState(undefined);
+  const [todayXp, setTodayXp] = useState(undefined);
+
+  function getTodayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  async function loadTodayData() {
+    if (!window.electronAPI) return;
+    const today = getTodayStr();
+    const [sessions, dayCommits, xp] = await Promise.all([
+      window.electronAPI.getSessions(today),
+      window.electronAPI.getDayCommits(today),
+      window.electronAPI.getDayXp(today),
+    ]);
+    setTodaySessions(sessions);
+    setTodayCommits(dayCommits);
+    setTodayXp(xp);
+  }
+
   useEffect(() => {
     if (!window.electronAPI) return;
-
-    // Load initial badge unlocks and quest slate eagerly
-    window.electronAPI.getBadgeUnlocks().then(records => {
-      setBadgeUnlocks(records ?? []);
-    });
+    window.electronAPI.getBadgeUnlocks().then(records => setBadgeUnlocks(records ?? []));
     window.electronAPI.getQuestSlate().then(s => setQuestSlate(s ?? null));
-
-    // Subscribe to badge and quest updates
-    const unsubBadges = window.electronAPI.onBadgesUpdated((records) => {
-      setBadgeUnlocks(records ?? []);
-    });
+    loadTodayData();
+    const unsubBadges = window.electronAPI.onBadgesUpdated(records => setBadgeUnlocks(records ?? []));
     const unsubQuests = window.electronAPI.onQuestsUpdated(s => setQuestSlate(s ?? null));
-
     return () => { unsubBadges(); unsubQuests(); };
   }, []);
 
-  // When a session completes, capture it and switch to the session-complete screen
   useEffect(() => {
     if (!window.electronAPI) return;
     const cleanup = window.electronAPI.onSessionComplete((session) => {
       setCompletedSession(session);
-      setTab('timer'); // ensure we're on timer tab so sc screen shows
+      setTab('timer');
+      loadTodayData();
     });
     return cleanup;
   }, []);
 
-  function handleDismissComplete() {
-    setCompletedSession(null);
+  // Apply theme to root element
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('gt-theme', theme); } catch {}
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme(t => t === 'morning' ? 'twilight' : 'morning');
   }
 
-  function reset() {
-    setCompletedSession(null);
-    resetTimer();
-  }
+  function handleDismissComplete() { setCompletedSession(null); }
+  function reset() { setCompletedSession(null); resetTimer(); }
 
   const showSessionComplete = tab === 'timer' && completedSession !== null;
 
-  // E-4: badge count
-  const unlockedCount = badgeUnlocks.length;
-
-  // E-5: most recently unlocked badge
-  const mostRecent = badgeUnlocks.length > 0
-    ? badgeUnlocks.reduce((a, b) => (a.unlocked_at > b.unlocked_at ? a : b))
-    : null;
-  const mostRecentDef = mostRecent
-    ? BADGE_DEFS.find(b => b.slug === mostRecent.slug)
-    : null;
-
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-theme={theme}>
+      <BackgroundScene theme={theme} />
+
       <div className="panel">
-        {/* E-4, E-5: badge header strip */}
-        {(unlockedCount > 0 || mostRecentDef) && (
-          <div className="badge-header">
-            <span className="badge-header__count">🏅 {unlockedCount} / {TOTAL_BADGES}</span>
-            {mostRecentDef && (
-              <span className="badge-header__recent">{mostRecentDef.name}</span>
-            )}
-          </div>
-        )}
+        <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
+          {theme === 'morning' ? '[ ☀ ]' : '[ ☽ ]'}
+        </button>
 
         <div className="panel__body">
           {tab === 'timer' && !showSessionComplete && (
             <div className="screen screen--timer">
-              <div className="screen__timer-inner">
-                <p className="timer-type-label">{type === 'focus' ? 'Focus' : type === 'longBreak' ? 'Long Break' : 'Short Break'}</p>
-                <Timer timeLeft={timeLeft} totalSeconds={totalSeconds} status={status} />
-                <div className="panel__controls">
-                  <Controls status={status} type={type} onStart={start} onPause={pause} onReset={reset} onSelectFocus={stop} onSelectShortBreak={startShortBreak} onSelectLongBreak={startLongBreak} onConfig={() => window.electronAPI?.openSettings()} />
-                </div>
-              </div>
+              <FocusScreen
+                timeLeft={timeLeft}
+                totalSeconds={totalSeconds}
+                status={status}
+                type={type}
+                onStart={start}
+                onPause={pause}
+                onReset={reset}
+                onSelectFocus={stop}
+                onSelectShortBreak={startShortBreak}
+                onSelectLongBreak={startLongBreak}
+                onConfig={() => window.electronAPI?.openSettings()}
+                todaySessions={todaySessions}
+                todayCommits={todayCommits}
+                todayXp={todayXp}
+              />
             </div>
           )}
 
@@ -122,7 +136,13 @@ export default function App() {
 
           {tab === 'today' && (
             <div className="screen screen--today">
-              <DayTimeline questSlate={questSlate} />
+              <DayTimeline
+                questSlate={questSlate}
+                badgeUnlocks={badgeUnlocks}
+                sessions={todaySessions}
+                dayCommits={todayCommits}
+                dayXp={todayXp}
+              />
             </div>
           )}
 
@@ -132,16 +152,13 @@ export default function App() {
             </div>
           )}
 
-          {tab === 'profile' && (
-            <div className="screen screen--profile">
-              <Profile />
+          {tab === 'quests' && (
+            <div className="screen screen--quests">
+              <QuestsScreen questSlate={questSlate} badgeUnlocks={badgeUnlocks} />
             </div>
           )}
-
-
         </div>
 
-        {/* Bottom tab bar */}
         <nav className="tab-bar">
           {TABS.map(t => (
             <button
