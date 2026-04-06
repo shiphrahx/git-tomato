@@ -150,11 +150,18 @@ export function FocusScreen({
         {/* XP card */}
         <div className="card card--gold focus-xp-card">
           <div className="focus-xp__label">XP Today</div>
-          <div className="focus-xp__gained">+{xpToday} XP</div>
+          <div className="focus-xp__gained num">+{xpToday}</div>
+          <div className="bar-wrap" style={{ height: '9px', marginTop: '4px' }}>
+            <div className="bar-fill" style={{ width: `${Math.min(100, xpToday / 5)}%`, background: 'var(--gold)' }} />
+          </div>
+          <div className="focus-xp__bar-row">
+            <span className="focus-xp__bar-label">{xpToday} XP</span>
+            <span className="focus-xp__bar-next">Today's haul</span>
+          </div>
         </div>
 
         {/* Git activity feed */}
-        <div className="card focus-git" style={{ flex: 1, minHeight: 0 }}>
+        <div className="card focus-git">
           <div className="focus-git__title">Git Activity — Today</div>
           <div className="focus-git__scroll">
             {commits.length === 0 ? (
@@ -171,9 +178,13 @@ export function FocusScreen({
                     >
                       {c.hash.slice(0, 7)}
                     </code>
-                    <span className="focus-commit__msg">{c.message}</span>
-                    <span className="focus-commit__repo">{c.repo}</span>
-                    {duringSession && <span className="focus-commit__tomato">🍅</span>}
+                    <div className="focus-commit__body">
+                      <span className="focus-commit__msg">{c.message}</span>
+                      <span className="focus-commit__meta">
+                        <span style={{ color: 'var(--muted)' }}>{c.repo}</span>
+                        {duringSession && <span style={{ color: 'var(--accent)' }}>🍅</span>}
+                      </span>
+                    </div>
                   </div>
                 );
               })

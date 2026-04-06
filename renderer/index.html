@@ -9,8 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet" />
     <script>
       try {
-        var t = localStorage.getItem('gt-theme') || 'twilight';
-        document.documentElement.setAttribute('data-theme', t);
+        var h = new Date().getHours();
+        var auto = (h >= 6 && h < 18) ? 'morning' : 'twilight';
+        var manual = localStorage.getItem('gt-theme-manual');
+        document.documentElement.setAttribute('data-theme', manual || auto);
       } catch(e) {
         document.documentElement.setAttribute('data-theme', 'twilight');
       }

@@ -1,197 +1,243 @@
 import React, { useState, useEffect } from 'react';
 import { RepoCommitList } from './RepoCommitList';
 import { BADGES as BADGE_DEFS } from './Badges';
+import { LEVELS } from './SessionComplete';
 
 function getTodayStr() {
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function StatCard({ icon, value, label }) {
-  return (
-    <div className="dp-stat">
-      <div className="dp-stat__value">
-        <span className="dp-stat__plus">+</span>{value}
-      </div>
-      <div className="dp-stat__label">{label}</div>
-    </div>
-  );
+function formatCountdown(nowMs) {
+  const midnight = new Date(nowMs);
+  midnight.setHours(24, 0, 0, 0);
+  const diff = midnight.getTime() - nowMs;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
-// --- Quest helpers ---
-const TIER_LABELS = { standard: 'Standard', stretch: 'Stretch', elite: 'Elite' };
-const TIER_XP = { standard: 20, stretch: 35, elite: 50 };
+function isBinaryQuest(slug) {
+  return ['deletion_day','beat_yesterday','golden_hour','consistency_window','morning_session','streak_extend'].includes(slug);
+}
 
 function formatQuestName(q) {
   return (q.nameTemplate ?? '')
     .replace('{n}', q.targetValue ?? '')
-    .replace('{time}', q.targetValue != null ? `${String(q.targetValue).padStart(2, '0')}:00` : '');
+    .replace('{time}', q.targetValue != null ? `${String(q.targetValue).padStart(2,'0')}:00` : '');
 }
 
-function formatCountdown(nowMs) {
-  const d = new Date(nowMs);
-  const midnight = new Date(d);
-  midnight.setHours(24, 0, 0, 0);
-  const diffMs = midnight.getTime() - nowMs;
-  const h = Math.floor(diffMs / 3600000);
-  const m = Math.floor((diffMs % 3600000) / 60000);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
+// Determine level info from total XP
+function getLevelInfo(totalXp) {
+  let levelIdx = 0;
+  for (let i = 0; i < LEVELS.length - 1; i++) {
+    if (totalXp >= LEVELS[i].totalXpRequired) levelIdx = i;
+    else break;
+  }
+  const level = LEVELS[levelIdx];
+  const nextLevel = LEVELS[Math.min(levelIdx + 1, LEVELS.length - 1)];
+  const xpIntoLevel = totalXp - level.totalXpRequired;
+  const xpNeeded = nextLevel.totalXpRequired - level.totalXpRequired;
+  const pct = xpNeeded > 0 ? Math.min(100, (xpIntoLevel / xpNeeded) * 100) : 100;
+  return { level, nextLevel, levelNum: levelIdx + 1, totalXp, xpIntoLevel, xpNeeded, pct };
 }
 
-function isBinaryQuest(slug) {
-  return ['deletion_day', 'beat_yesterday', 'golden_hour', 'consistency_window', 'morning_session', 'streak_extend'].includes(slug);
-}
+const HM_CLASSES = ['', 'hm1', 'hm2', 'hm3', 'hm4'];
 
-function QuestCard({ quest }) {
-  const name = formatQuestName(quest);
-  const isComplete = quest.status === 'complete';
-  const isExpired = quest.status === 'expired';
-  const isBinary = isBinaryQuest(quest.slug);
-
+function HeatmapGrid({ sessions }) {
+  // Build 12 weeks of day cells
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const days = [];
+  for (let i = 83; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    days.push(key);
+  }
+  // Count sessions per day
+  const counts = {};
+  (sessions ?? []).forEach(s => {
+    if (s.type !== 'focus') return;
+    const day = s.started_at?.slice(0, 10);
+    if (day) counts[day] = (counts[day] || 0) + 1;
+  });
   return (
-    <div className={`quest-card quest-card--${quest.status} quest-card--${quest.tier}`}>
-      <div className="quest-card__header">
-        <span className={`quest-card__tier quest-card__tier--${quest.tier}`}>
-          {TIER_LABELS[quest.tier]}
-        </span>
-        <span className="quest-card__xp">+{quest.xpReward ?? TIER_XP[quest.tier]} XP</span>
-      </div>
-      <div className="quest-card__name">{name}</div>
-      <div className="quest-card__footer">
-        {isComplete && (
-          <span className="quest-card__status quest-card__status--complete">✓ Complete</span>
-        )}
-        {isExpired && (
-          <span className="quest-card__status quest-card__status--expired">Expired</span>
-        )}
-        {!isComplete && !isExpired && !isBinary && quest.targetValue > 0 && (
-          <span className="quest-card__progress">
-            {quest.progress ?? 0} / {quest.targetValue}
-          </span>
-        )}
-        {!isComplete && !isExpired && isBinary && (
-          <span className="quest-card__progress quest-card__progress--binary">—</span>
-        )}
-      </div>
+    <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '8px' }}>
+      {days.map(d => {
+        const n = counts[d] || 0;
+        const cls = n === 0 ? 'hm' : n <= 1 ? 'hm hm1' : n <= 3 ? 'hm hm2' : n <= 5 ? 'hm hm3' : 'hm hm4';
+        return <div key={d} className={cls} title={d} />;
+      })}
     </div>
   );
 }
 
-function DailyQuests({ initialSlate }) {
+export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, dayCommits, dayXp, xpState, streakState }) {
   const [now, setNow] = useState(Date.now());
-  const slate = initialSlate;
-
   useEffect(() => {
-    if (!window.electronAPI) return;
-    const ticker = setInterval(() => setNow(Date.now()), 60000);
-    return () => clearInterval(ticker);
+    const t = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(t);
   }, []);
 
-  return (
-    <div className="dp__section">
-      <div className="dp__section-header">
-        <span className="dp__section-title">Daily Quests</span>
-        {slate && (
-          <span className="quests__countdown">Resets in {formatCountdown(now)}</span>
-        )}
-      </div>
-
-      {slate === undefined && (
-        <p className="quests__placeholder-text">Loading...</p>
-      )}
-
-      {slate === null && (
-        <p className="quests__placeholder-text">
-          Quests will be generated after your first session of the day.
-        </p>
-      )}
-
-      {slate && (slate.quests ?? []).map(q => (
-        <QuestCard key={q.slug} quest={q} />
-      ))}
-    </div>
-  );
-}
-
-export function DayTimeline({ questSlate, badgeUnlocks = [], sessions = [], dayCommits, dayXp }) {
   const repos = dayCommits?.repos ?? [];
   const sessionWindows = dayCommits?.sessionWindows ?? [];
+  const totalXpEver = xpState?.totalXp ?? 0;
   const todayXp = dayXp?.xp ?? 0;
   const todayLines = dayXp?.totalLines ?? 0;
 
-  const focusSessions = sessions.filter(s => s.type === 'focus');
-  const totalFocusMinutes = focusSessions.reduce((sum, s) => sum + s.duration_minutes, 0);
+  const todayStr = getTodayStr();
+  const focusSessions = (sessions ?? []).filter(s => s.type === 'focus');
+  const totalFocusMin = focusSessions.reduce((sum, s) => sum + s.duration_minutes, 0);
   const totalCommits = repos.reduce((sum, r) => sum + r.commits.length, 0);
-  const totalLines = todayLines;
+
+  // Level info
+  const lvl = totalXpEver > 0 ? getLevelInfo(totalXpEver) : getLevelInfo(0);
+  const streak = streakState?.dailyStreak ?? streakState?.streakState?.dailyStreak ?? 0;
 
   // Badges unlocked today
-  const todayStr = getTodayStr();
   const todayBadges = badgeUnlocks
-    .filter(u => u.unlocked_at && u.unlocked_at.startsWith(todayStr))
-    .map(u => BADGE_DEFS.find(b => b.slug === u.slug))
-    .filter(Boolean);
+    .filter(u => u.unlocked_at?.startsWith(todayStr))
+    .map(u => ({ ...u, def: BADGE_DEFS.find(b => b.slug === u.slug) }))
+    .filter(u => u.def);
 
-  const isEmpty = sessions.length === 0;
+  // All unlocked badges for the grid
+  const unlockedSlugs = new Set(badgeUnlocks.map(u => u.slug));
 
-  if (isEmpty) {
-    return (
-      <div className="dp">
-        <div className="dp--empty">
-          <div className="dp-empty__icon">🍅</div>
-          <div className="dp-empty__title">No sessions yet today.</div>
-          <div className="dp-empty__hint">Start a Pomodoro to get going!</div>
-        </div>
-        <DailyQuests initialSlate={questSlate} />
-      </div>
-    );
-  }
+  // Quests
+  const quests = questSlate?.quests ?? [];
 
   return (
-    <div className="dp">
-      {/* Header */}
-      <div className="dp__header">
-        <span className="dp__title">Daily Progress</span>
-        {todayXp > 0 && (
-          <span className="dp__xp">+{todayXp} XP</span>
-        )}
-      </div>
-
-      {/* Stat cards */}
-      <div className="dp__stats">
-        <StatCard value={totalFocusMinutes} label="Focus min" />
-        <StatCard value={totalCommits} label={totalCommits === 1 ? 'Commit' : 'Commits'} />
-        <StatCard value={totalLines} label="Lines" />
-      </div>
-
-      {/* Badges earned today */}
-      {todayBadges.length > 0 && (
-        <div className="dp__section">
-          <div className="dp__section-title">Badges earned</div>
-          <div className="dp__badges">
-            {todayBadges.map(badge => (
-              <div key={badge.slug} className="dp-badge">
-                <span className="dp-badge__icon">🏅</span>
-                <div className="dp-badge__body">
-                  <span className="dp-badge__name">{badge.name}</span>
-                  <span className="dp-badge__desc">{badge.description}</span>
-                </div>
-              </div>
-            ))}
+    <div className="dash">
+      {/* ── Level + Streak header ── */}
+      <div className="card card--gold dash-level">
+        <div className="dash-level__box">
+          <div className="num dash-level__num">{lvl ? lvl.levelNum : 1}</div>
+          <div className="dash-level__lbl">LVL</div>
+        </div>
+        <div className="dash-level__info">
+          <div className="dash-level__name">{lvl ? lvl.level.title : 'Seedling'}</div>
+          <div className="lbl" style={{ marginBottom: '6px' }}>
+            XP — Level {lvl ? lvl.levelNum : 1} → {lvl ? lvl.levelNum + 1 : 2}
+          </div>
+          <div className="bar-wrap" style={{ height: '9px' }}>
+            <div className="bar-fill" style={{ width: `${lvl ? lvl.pct : 0}%`, background: 'var(--gold)' }} />
+          </div>
+          <div className="dash-level__xp-row">
+            <span style={{ fontSize: '8px', color: 'var(--muted)' }}>{totalXpEver.toLocaleString()} XP</span>
+            <span style={{ fontSize: '8px', color: 'var(--gold)' }}>
+              {lvl ? (lvl.xpNeeded - lvl.xpIntoLevel).toLocaleString() : '—'} to Level {lvl ? lvl.levelNum + 1 : 2}
+            </span>
           </div>
         </div>
-      )}
+        <div className="dash-streak">
+          <div className="dash-streak__fire" style={{ fontSize: '14px', animation: 'blink 0.9s step-end infinite alternate' }}>🔥</div>
+          <div className="num dash-streak__num">{streak}</div>
+          <div className="lbl" style={{ margin: 0 }}>day streak</div>
+        </div>
+      </div>
 
-      {/* Daily quests */}
-      <DailyQuests initialSlate={questSlate} />
+      {/* ── 4-column metrics ── */}
+      <div className="dash-metrics">
+        {[
+          { val: focusSessions.length, label: 'Pomodoros', delta: `▲ +${focusSessions.length} today`, positive: true },
+          { val: totalCommits, label: 'Commits', delta: `▲ +${totalCommits} today`, positive: true },
+          { val: todayLines >= 1000 ? `${(todayLines/1000).toFixed(1)}K` : todayLines, label: 'Lines', delta: `▲ +${todayLines} today`, positive: true },
+          { val: repos.length, label: 'Repos', delta: `${repos.length} active`, positive: true },
+        ].map(({ val, label, delta, positive }) => (
+          <div key={label} className="card dash-metric">
+            <div className="num dash-metric__val">{val}</div>
+            <div className="lbl" style={{ marginTop: '3px' }}>{label}</div>
+            <div className="num" style={{ fontSize: '13px', color: positive ? 'var(--sage)' : 'var(--accent)', marginTop: '5px' }}>{delta}</div>
+          </div>
+        ))}
+      </div>
 
-      {/* Commits by repo */}
+      {/* ── Bottom 2-column: Heatmap + Badges ── */}
+      <div className="dash-bottom">
+        {/* Heatmap */}
+        <div className="card" style={{ padding: '14px' }}>
+          <div className="sec-title">Focus Heatmap — 12 Weeks</div>
+          <HeatmapGrid sessions={sessions} />
+          <div style={{ display: 'flex', gap: '5px', alignItems: 'center', marginTop: '8px' }}>
+            <span style={{ fontSize: '8px', color: 'var(--muted)' }}>Less</span>
+            {['hm','hm hm1','hm hm2','hm hm3','hm hm4'].map((c,i) => (
+              <div key={i} className={c} style={{ width: '9px', height: '9px' }} />
+            ))}
+            <span style={{ fontSize: '8px', color: 'var(--muted)' }}>More</span>
+          </div>
+        </div>
+
+        {/* Badge grid */}
+        <div className="card" style={{ padding: '14px' }}>
+          <div className="sec-title">Badges Earned</div>
+          <div className="dash-badge-grid">
+            {BADGE_DEFS.slice(0, 6).map(b => {
+              const earned = unlockedSlugs.has(b.slug);
+              return (
+                <div key={b.slug} className={`gb${earned ? ' earned' : ' locked'}`}>
+                  <div className="gb-ico">{b.icon ?? '🏅'}</div>
+                  <div className="gb-name">{b.name}</div>
+                  <div className="gb-xp num">{b.xp ?? 50} XP</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Daily quests ── */}
+      <div className="card" style={{ padding: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px dashed rgba(90,55,130,0.10)' }}>
+          <span className="sec-title" style={{ margin: 0 }}>Daily Quests</span>
+          {questSlate && (
+            <span className="num" style={{ fontSize: '14px', color: 'var(--muted)' }}>Resets in {formatCountdown(now)}</span>
+          )}
+        </div>
+
+        {questSlate === undefined && <p className="quests__placeholder-text">Loading...</p>}
+        {questSlate === null && <p className="quests__placeholder-text">Quests appear after your first session today.</p>}
+
+        {quests.map(q => {
+          const name = formatQuestName(q);
+          const isComplete = q.status === 'complete';
+          const isExpired = q.status === 'expired';
+          const isBinary = isBinaryQuest(q.slug);
+          const xp = q.xpReward ?? { standard: 20, stretch: 35, elite: 50 }[q.tier];
+          const pct = isComplete ? 100 : (!isBinary && q.targetValue > 0) ? Math.min(100, ((q.progress ?? 0) / q.targetValue) * 100) : 0;
+
+          return (
+            <div key={q.slug} className={`q-item${isComplete ? ' done' : ''}${!isComplete && !isExpired ? ' active' : ''}`}>
+              <div className="q-item__top">
+                <span className="q-item__name">{name}</span>
+                <span className="q-item__xp">+{xp} XP</span>
+              </div>
+              {q.desc && <div className="q-item__desc">{q.desc}</div>}
+              <div className="bar-wrap" style={{ height: '6px', marginBottom: '3px' }}>
+                <div className="bar-fill" style={{
+                  width: `${pct}%`,
+                  background: isComplete ? 'var(--sage)' : !isComplete && !isExpired ? 'var(--accent)' : 'var(--water)',
+                }} />
+              </div>
+              <div className="q-item__progress-row">
+                {isComplete && <span className="q-item__done-label">✓ Complete!</span>}
+                {isExpired && <span style={{ fontFamily: 'var(--font-num)', fontSize: '11px', color: 'var(--muted)', opacity: 0.6 }}>Expired</span>}
+                {!isComplete && !isExpired && !isBinary && q.targetValue > 0 && (
+                  <span className="q-item__progress-val">{q.progress ?? 0} / {q.targetValue}</span>
+                )}
+                {!isComplete && !isExpired && isBinary && (
+                  <span className="q-item__progress-val" style={{ opacity: 0.35 }}>—</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Commits by repo ── */}
       {repos.length > 0 && (
-        <div className="dp__section dp__section--commits">
-          <div className="dp__section-title">Commits</div>
+        <div className="card" style={{ padding: '14px' }}>
+          <div className="sec-title">Commits Today</div>
           <RepoCommitList repos={repos} sessionWindows={sessionWindows} />
         </div>
       )}
