@@ -46,6 +46,16 @@ export function FocusScreen({
     ? '— Short Break'
     : '— Long Break';
 
+  // Session counter: completed focus sessions + 1 current, capped at 4
+  const completedFocus = focusSessions.length;
+  const currentSession = completedFocus + 1;
+  const totalSessionsInSet = 4;
+  const sessionTypeLabel = type === 'focus' ? 'Deep Focus' : type === 'shortBreak' ? 'Short Break' : 'Long Break';
+
+  // Energy / time-remaining percentage
+  const pct = Math.round(progress * 100);
+  const energyLabel = pct > 66 ? 'High' : pct > 33 ? 'Medium' : 'Low';
+
   return (
     <div className="focus-layout">
       {/* ── LEFT: main timer card ── */}
@@ -60,9 +70,20 @@ export function FocusScreen({
             </div>
           </div>
 
-          {/* Tomato mascot */}
-          <div className={`focus-tomato${isRunning ? ' focus-tomato--bobbing' : ''}`}>
-            <TomatoSprite state={spriteState} />
+          {/* FIX 2 — Session counter */}
+          <div className="focus-session-line">
+            Session {Math.min(currentSession, totalSessionsInSet)} / {totalSessionsInSet} · {sessionTypeLabel}
+          </div>
+
+          {/* Tomato mascot + energy label + HP bar (FIX 3) */}
+          <div className="focus-tomato-group">
+            <div className={`focus-tomato${isRunning ? ' focus-tomato--bobbing' : ''}`}>
+              <TomatoSprite state={spriteState} />
+            </div>
+            <div className="focus-energy-label">⚡ Energy: {energyLabel}</div>
+            <div className="bar-wrap focus-energy__bar">
+              <div className="bar-fill focus-energy__fill" style={{ width: `${pct}%` }} />
+            </div>
           </div>
 
           {/* Timer digits */}
@@ -74,10 +95,25 @@ export function FocusScreen({
             {phaseLabel}
           </div>
 
-          {/* Energy bar */}
-          <div className="focus-energy">
-            <div className="focus-energy__bar">
-              <div className="focus-energy__fill" style={{ width: `${Math.round(progress * 100)}%` }} />
+          {/* FIX 4 — Session dots */}
+          <div className="focus-dots">
+            {Array.from({ length: totalSessionsInSet }, (_, i) => {
+              const done = i < completedFocus;
+              const now  = i === completedFocus && type === 'focus';
+              return (
+                <div
+                  key={i}
+                  className={`dot${done ? ' done' : now ? ' now' : ''}`}
+                />
+              );
+            })}
+          </div>
+
+          {/* FIX 5 — Time Remaining bar */}
+          <div className="focus-time-remaining">
+            <div className="lbl">Time Remaining</div>
+            <div className="bar-wrap" style={{ height: '7px' }}>
+              <div className="bar-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }} />
             </div>
           </div>
 
