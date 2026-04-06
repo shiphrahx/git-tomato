@@ -46,14 +46,44 @@ export function FocusScreen({
     ? '— Short Break'
     : '— Long Break';
 
+  // Session counter: completed focus sessions + 1 current, capped at 4
+  const completedFocus = focusSessions.length;
+  const currentSession = completedFocus + 1;
+  const totalSessionsInSet = 4;
+  const sessionTypeLabel = type === 'focus' ? 'Deep Focus' : type === 'shortBreak' ? 'Short Break' : 'Long Break';
+
+  // Energy / time-remaining percentage
+  const pct = Math.round(progress * 100);
+  const energyLabel = pct > 66 ? 'High' : pct > 33 ? 'Medium' : 'Low';
+
   return (
     <div className="focus-layout">
       {/* ── LEFT: main timer card ── */}
       <div className="focus-main">
         <div className="card focus-timer-card">
-          {/* Tomato mascot */}
-          <div className={`focus-tomato${isRunning ? ' focus-tomato--bobbing' : ''}`}>
-            <TomatoSprite state={spriteState} />
+          {/* Header bar */}
+          <div className="focus-card-header">
+            <span className="focus-card-header__title">git-tomato v0.1</span>
+            <div className="focus-card-header__status">
+              <div className="focus-card-header__dot" />
+              <span className="focus-card-header__active">Active</span>
+            </div>
+          </div>
+
+          {/* FIX 2 — Session counter */}
+          <div className="focus-session-line">
+            {sessionTypeLabel}
+          </div>
+
+          {/* Tomato mascot + energy label + HP bar (FIX 3) */}
+          <div className="focus-tomato-group">
+            <div className={`focus-tomato${isRunning ? ' focus-tomato--bobbing' : ''}`}>
+              <TomatoSprite state={spriteState} />
+            </div>
+            <div className="focus-energy-label">⚡ Energy: {energyLabel}</div>
+            <div className="bar-wrap focus-energy__bar">
+              <div className="bar-fill focus-energy__fill" style={{ width: `${pct}%` }} />
+            </div>
           </div>
 
           {/* Timer digits */}
@@ -65,10 +95,25 @@ export function FocusScreen({
             {phaseLabel}
           </div>
 
-          {/* Energy bar */}
-          <div className="focus-energy">
-            <div className="focus-energy__bar">
-              <div className="focus-energy__fill" style={{ width: `${Math.round(progress * 100)}%` }} />
+          {/* FIX 4 — Session dots */}
+          <div className="focus-dots">
+            {Array.from({ length: totalSessionsInSet }, (_, i) => {
+              const done = i < completedFocus;
+              const now  = i === completedFocus && type === 'focus';
+              return (
+                <div
+                  key={i}
+                  className={`dot${done ? ' done' : now ? ' now' : ''}`}
+                />
+              );
+            })}
+          </div>
+
+          {/* FIX 5 — Time Remaining bar */}
+          <div className="focus-time-remaining">
+            <div className="lbl">Time Remaining</div>
+            <div className="bar-wrap" style={{ height: '7px' }}>
+              <div className="bar-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }} />
             </div>
           </div>
 
@@ -92,32 +137,16 @@ export function FocusScreen({
               >Long</button>
             </div>
 
-            <div className="focus-actions">
-              {/* Restart */}
-              <button className="focus-action-btn" onClick={onReset} title="Restart">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8" />
-                  <polyline points="3,3 3,8 8,8" />
-                </svg>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <button
+                className="btn btn-coral"
+                onClick={isRunning ? onPause : onStart}
+              >
+                {isRunning ? '⏸ Pause' : '▶ Resume'}
               </button>
-
-              {/* Play / Pause */}
-              {isRunning ? (
-                <button className="focus-action-btn focus-action-btn--play" onClick={onPause} title="Pause">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <rect x="4" y="3" width="4" height="14" rx="1" />
-                    <rect x="12" y="3" width="4" height="14" rx="1" />
-                  </svg>
-                </button>
-              ) : (
-                <button className="focus-action-btn focus-action-btn--play" onClick={onStart} title={status === 'paused' ? 'Resume' : 'Start'}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <polygon points="5,3 18,10 5,17" />
-                  </svg>
-                </button>
-              )}
-
-              {/* Settings */}
+              <button className="btn btn-dim" onClick={onReset}>
+                ↻ Restart
+              </button>
               <button className="focus-action-btn" onClick={onConfig} title="Settings">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="3" />

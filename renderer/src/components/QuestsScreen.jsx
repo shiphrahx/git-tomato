@@ -54,7 +54,7 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
   return (
     <div className="quests-layout">
       {/* ── LEFT: daily quests card ── */}
-      <div className="card" style={{ padding: '16px', overflowY: 'auto', minHeight: 0 }}>
+      <div className="card quests-daily-card" style={{ padding: '16px', overflowY: 'auto', minHeight: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px dashed rgba(90,55,130,0.10)' }}>
           <span className="sec-title" style={{ margin: 0 }}>Daily Quests</span>
           <span style={{ fontSize: '8px', color: 'var(--muted)' }}>

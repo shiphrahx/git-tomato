@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { RepoCommitList } from './RepoCommitList';
 import { BADGES as BADGE_DEFS } from './Badges';
-import { LEVELS } from './SessionComplete';
+
+// Mirror of main/levels.js
+const LEVELS = [
+  { index: 0, title: 'Seedling',   totalXpRequired: 0     },
+  { index: 1, title: 'Committer',  totalXpRequired: 100   },
+  { index: 2, title: 'Shipper',    totalXpRequired: 300   },
+  { index: 3, title: 'Maintainer', totalXpRequired: 700   },
+  { index: 4, title: 'Staff',      totalXpRequired: 1500  },
+  { index: 5, title: 'Principal',  totalXpRequired: 3000  },
+  { index: 6, title: 'Legend',     totalXpRequired: 6000  },
+];
 
 function getTodayStr() {
   const d = new Date();
@@ -59,7 +69,9 @@ function HeatmapGrid({ sessions }) {
   const counts = {};
   (sessions ?? []).forEach(s => {
     if (s.type !== 'focus') return;
-    const day = s.started_at?.slice(0, 10);
+    let day;
+    if (typeof s.started_at === 'string') day = s.started_at.slice(0, 10);
+    else if (typeof s.started_at === 'number') day = new Date(s.started_at).toISOString().slice(0, 10);
     if (day) counts[day] = (counts[day] || 0) + 1;
   });
   return (
