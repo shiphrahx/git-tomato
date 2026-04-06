@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import tomatoImg from '../assets/tomato-1.png';
 
 // Mirror of main/levels.js — must stay in sync
-export const LEVELS = [
+const LEVELS = [
   { index: 0, title: 'Seedling',   totalXpRequired: 0     },
   { index: 1, title: 'Committer',  totalXpRequired: 100   },
   { index: 2, title: 'Shipper',    totalXpRequired: 300   },
