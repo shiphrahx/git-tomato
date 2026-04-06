@@ -72,7 +72,7 @@ export function FocusScreen({
 
           {/* FIX 2 — Session counter */}
           <div className="focus-session-line">
-            Session {Math.min(currentSession, totalSessionsInSet)} / {totalSessionsInSet} · {sessionTypeLabel}
+            {sessionTypeLabel}
           </div>
 
           {/* Tomato mascot + energy label + HP bar (FIX 3) */}
