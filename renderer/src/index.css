@@ -380,6 +380,49 @@ body {
   justify-content: center;
 }
 
+/* Timer card header bar */
+.focus-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid rgba(90,55,130,0.10);
+  padding-bottom: 10px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.focus-card-header__title {
+  font-size: 8px;
+  color: rgba(90,55,130,0.4);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+[data-theme="twilight"] .focus-card-header__title {
+  color: rgba(200,155,255,0.4);
+}
+
+.focus-card-header__status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.focus-card-header__dot {
+  width: 6px;
+  height: 6px;
+  background: var(--sage);
+  border-radius: 50%;
+  animation: dpulse 1s step-end infinite;
+}
+
+.focus-card-header__active {
+  font-size: 8px;
+  color: var(--sage);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* Tomato */
 .focus-tomato {
   animation: float 3.2s ease-in-out infinite;

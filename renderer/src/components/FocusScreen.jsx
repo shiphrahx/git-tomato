@@ -51,6 +51,15 @@ export function FocusScreen({
       {/* ── LEFT: main timer card ── */}
       <div className="focus-main">
         <div className="card focus-timer-card">
+          {/* Header bar */}
+          <div className="focus-card-header">
+            <span className="focus-card-header__title">git-tomato v0.1</span>
+            <div className="focus-card-header__status">
+              <div className="focus-card-header__dot" />
+              <span className="focus-card-header__active">Active</span>
+            </div>
+          </div>
+
           {/* Tomato mascot */}
           <div className={`focus-tomato${isRunning ? ' focus-tomato--bobbing' : ''}`}>
             <TomatoSprite state={spriteState} />
