@@ -157,7 +157,7 @@ body {
 }
 
 /* ─── Buttons ────────────────────────────────────────────────── */
-.btn-coral { background: var(--accent); color: #fff; }
+.btn-coral { background: #d05a28; color: #fff; }
 .btn-dim   { background: rgba(240,234,250,0.95); color: var(--muted); border: 1px solid var(--pb); }
 [data-theme="twilight"] .btn-dim { background: rgba(20,10,40,0.95); }
 
