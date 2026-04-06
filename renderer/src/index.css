@@ -1004,6 +1004,23 @@ body {
 .dash::-webkit-scrollbar-track { background: transparent; }
 .dash::-webkit-scrollbar-thumb { background: var(--scrollbar); }
 
+/* Experiment: non-title text in stats dashboard uses --font-text at 14px */
+.dash .dash-level__xp-row span,
+.dash .gb-xp,
+.dash .gb-name,
+.dash .q-item__desc,
+.dash .q-item__xp,
+.dash .q-item__done-label,
+.dash .q-item__progress-val,
+.dash .badge-desc,
+.dash .badge-xp,
+.dash .dp__xp,
+.dash .dp-empty__hint,
+.dash .quests__placeholder-text {
+  font-family: var(--font-text);
+  font-size: 14px;
+}
+
 /* Level + streak header */
 .dash-level {
   display: flex;
@@ -1473,7 +1490,7 @@ body {
 .rcl-commit__hash--link:hover { opacity: 0.65; }
 
 .rcl-commit__message {
-  font-family: var(--font-num);
+  font-family: var(--font-text);
   font-size: 14px;
   color: var(--text);
   overflow: hidden;
@@ -1611,6 +1628,9 @@ body {
    QUESTS SCREEN
 ═══════════════════════════════════════════════════════════════ */
 
+/* Daily quests card height cap */
+.quests-daily-card { max-height: 580px; }
+
 /* Quests 2-column layout matching mockup */
 .quests-layout {
   display: grid;
@@ -1659,7 +1679,8 @@ body {
 }
 
 .q-item__name {
-  font-size: 9px;
+  font-size: 14px;
+  font-family: var(--font-text);
   color: var(--text);
   line-height: 1.5;
   flex: 1;
@@ -1727,8 +1748,9 @@ body {
 }
 
 .wday-name {
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
+  font-family: var(--font-text)
 }
 
 .wday-dot {
@@ -1761,6 +1783,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
+  max-height: 475px;
+  
 }
 
 .badge-row {
@@ -1788,7 +1812,8 @@ body {
 .badge-info { flex: 1; min-width: 0; }
 
 .badge-name {
-  font-size: 9px;
+  font-size: 14px;
+  font-family: var(--font-text);
   color: var(--gold);
   margin-bottom: 2px;
   white-space: nowrap;
@@ -1797,7 +1822,8 @@ body {
 }
 
 .badge-desc {
-  font-size: 9px;
+  font-size: 14px;
+  font-family: var(--font-text);
   color: var(--muted);
   line-height: 1.5;
   white-space: nowrap;
