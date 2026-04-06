@@ -1,4 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
+
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(e) { return { error: e }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: '20px', color: 'var(--accent)', fontFamily: 'monospace', fontSize: '12px', whiteSpace: 'pre-wrap' }}>
+          <div style={{ marginBottom: '8px', fontFamily: 'var(--font-ui)', fontSize: '10px' }}>RENDER ERROR</div>
+          {String(this.state.error)}
+          {'\n'}{this.state.error?.stack}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { useTimer } from './hooks/useTimer';
 import { DayTimeline } from './components/DayTimeline';
 import { WeekDigest } from './components/WeekDigest';
@@ -171,15 +188,17 @@ export default function App() {
 
             {tab === 'today' && (
               <div className="screen screen--today">
-                <DayTimeline
-                  questSlate={questSlate}
-                  badgeUnlocks={badgeUnlocks}
-                  sessions={todaySessions}
-                  dayCommits={todayCommits}
-                  dayXp={todayXp}
-                  xpState={xpState}
-                  streakState={streakState}
-                />
+                <ErrorBoundary>
+                  <DayTimeline
+                    questSlate={questSlate}
+                    badgeUnlocks={badgeUnlocks}
+                    sessions={todaySessions}
+                    dayCommits={todayCommits}
+                    dayXp={todayXp}
+                    xpState={xpState}
+                    streakState={streakState}
+                  />
+                </ErrorBoundary>
               </div>
             )}
 

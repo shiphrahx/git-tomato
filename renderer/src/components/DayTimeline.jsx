@@ -69,7 +69,9 @@ function HeatmapGrid({ sessions }) {
   const counts = {};
   (sessions ?? []).forEach(s => {
     if (s.type !== 'focus') return;
-    const day = s.started_at?.slice(0, 10);
+    let day;
+    if (typeof s.started_at === 'string') day = s.started_at.slice(0, 10);
+    else if (typeof s.started_at === 'number') day = new Date(s.started_at).toISOString().slice(0, 10);
     if (day) counts[day] = (counts[day] || 0) + 1;
   });
   return (
