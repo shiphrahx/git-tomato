@@ -8,6 +8,7 @@
 :root {
   --font-ui:   'Press Start 2P', monospace;
   --font-num:  'VT323', monospace;
+  --font-text:  monospace;
 }
 
 /* ─── Theme tokens ───────────────────────────────────────────── */
@@ -170,8 +171,8 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   box-shadow: 0 3px 0 var(--btn-shadow);
-  color: var(--text);
-  background: var(--panel-hi);
+  /* color: var(--text); */
+  /* background: var(--panel-hi); */
 }
 .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--btn-shadow); }
 .btn--primary { background: var(--accent); color: #fff; }
@@ -383,7 +384,7 @@ body {
   padding: 22px 20px;
   flex: 1;
   min-height: 0;
-  justify-content: center;
+  /* justify-content: center; */
 }
 
 /* Timer card header bar */
@@ -596,8 +597,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 35px;
+  height: 35px;
   background: var(--panel-hi);
   border: 1px solid var(--pb2);
   color: var(--text);
@@ -770,7 +771,8 @@ body {
 }
 
 .focus-commit__msg {
-  font-size: 9px;
+  font-size: 14px;
+  font-family: var(--font-text);
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1473,7 +1475,7 @@ body {
 
 .rcl-commit__message {
   font-family: var(--font-num);
-  font-size: 16px;
+  font-size: 14px;
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
