@@ -700,13 +700,13 @@ body {
 
 /* Git activity feed */
 .focus-git {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  padding: 12px 14px;
-  /* card border/bg already applied via .card */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 12px 14px;
+    max-height: 385px;
 }
 
 .focus-git__title {
