@@ -353,19 +353,20 @@ body {
 .focus-layout {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
+  grid-template-rows: 1fr;
   gap: 14px;
   padding: 12px;
   height: 100%;
   overflow: hidden;
+  align-items: stretch;
 }
 
 /* Left column */
 .focus-main {
   display: flex;
   flex-direction: column;
-  gap: 14px;
   overflow: hidden;
-  height: 100%;
+  min-height: 0;
 }
 
 .focus-timer-card {
@@ -375,6 +376,7 @@ body {
   gap: 14px;
   padding: 22px 20px;
   flex: 1;
+  min-height: 0;
   justify-content: center;
 }
 
@@ -519,7 +521,7 @@ body {
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
-  height: 100%;
+  min-height: 0;
 }
 
 /* Quick stat cards */
@@ -602,6 +604,7 @@ body {
   min-height: 0;
   overflow: hidden;
   padding: 12px 14px;
+  /* card border/bg already applied via .card */
 }
 
 .focus-git__title {
@@ -1510,10 +1513,12 @@ body {
 .quests-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
   gap: 12px;
   padding: 12px;
   height: 100%;
   overflow: hidden;
+  align-items: stretch;
 }
 
 /* Quest items */

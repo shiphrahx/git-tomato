@@ -54,7 +54,7 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
   return (
     <div className="quests-layout">
       {/* ── LEFT: daily quests card ── */}
-      <div className="card" style={{ padding: '16px', overflowY: 'auto' }}>
+      <div className="card" style={{ padding: '16px', overflowY: 'auto', minHeight: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px dashed rgba(90,55,130,0.10)' }}>
           <span className="sec-title" style={{ margin: 0 }}>Daily Quests</span>
           <span style={{ fontSize: '8px', color: 'var(--muted)' }}>
@@ -110,7 +110,7 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
       </div>
 
       {/* ── RIGHT: streak + recent badges ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflow: 'hidden', minHeight: 0 }}>
         {/* Weekly streak */}
         <div className="card quests-streak">
           <div className="sec-title" style={{ marginBottom: '10px' }}>Weekly Streak</div>
@@ -129,7 +129,7 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
         </div>
 
         {/* Recent badges */}
-        <div className="card quests-badges" style={{ flex: 1 }}>
+        <div className="card quests-badges" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
           <div className="sec-title" style={{ marginBottom: '10px' }}>Recent Badges</div>
           {recentBadges.length === 0 ? (
             <p style={{ fontSize: '9px', color: 'var(--muted)', lineHeight: 2 }}>No badges yet. Keep going!</p>
