@@ -31,7 +31,7 @@
   --bar-shimmer: rgba(255,255,255,0.35);
   --btn-shadow:  rgba(0,0,0,0.18);
   --hm-0: #e4eee5; --hm-1: #b0d8b8; --hm-2: #6ab878; --hm-3: #389050; --hm-4: #1a6a38;
-  --scrollbar:   rgba(90,55,130,0.2);
+  /* --scrollbar:   rgba(90,55,130,0.2); */
 }
 
 [data-theme="twilight"] {
@@ -61,12 +61,14 @@
 html, body, #root {
   height: 100%;
   width: 100%;
+  background: transparent;
 }
 
 body {
   font-family: var(--font-ui);
   font-size: 11px;
   color: var(--text);
+  background-color: transparent;
   -webkit-font-smoothing: antialiased;
   user-select: none;
   overflow: hidden;
@@ -233,15 +235,16 @@ body {
 .top-bar {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid var(--pb);
-  background: var(--panel);
+  /* border-bottom: 1px solid var(--pb); */
+  /* background: var(--panel); */
   flex-shrink: 0;
   position: relative;
   z-index: 2;
+  padding:12px;
 }
 
 .theme-toggle {
-  background: transparent;
+  background: var(--panel);
   border: none;
   border-left: 1px solid var(--pb);
   color: var(--muted);
@@ -356,7 +359,6 @@ body {
   grid-template-rows: 1fr;
   gap: 14px;
   padding: 12px;
-  height: 100%;
   overflow: hidden;
   align-items: stretch;
 }
@@ -807,7 +809,6 @@ body {
   padding: 24px 20px 20px;
   gap: 14px;
   overflow-y: auto;
-  height: 100%;
   background: var(--panel);
 }
 
