@@ -51,6 +51,8 @@ export default function App() {
   const [todaySessions, setTodaySessions] = useState(undefined);
   const [todayCommits, setTodayCommits] = useState(undefined);
   const [todayXp, setTodayXp] = useState(undefined);
+  const [xpState, setXpState] = useState(undefined);
+  const [streakState, setStreakState] = useState(undefined);
 
   function getTodayStr() {
     const d = new Date();
@@ -60,14 +62,18 @@ export default function App() {
   async function loadTodayData() {
     if (!window.electronAPI) return;
     const today = getTodayStr();
-    const [sessions, dayCommits, xp] = await Promise.all([
+    const [sessions, dayCommits, xp, xpSt, streakSt] = await Promise.all([
       window.electronAPI.getSessions(today),
       window.electronAPI.getDayCommits(today),
       window.electronAPI.getDayXp(today),
+      window.electronAPI.getXpState(),
+      window.electronAPI.getStreakState(),
     ]);
     setTodaySessions(sessions);
     setTodayCommits(dayCommits);
     setTodayXp(xp);
+    setXpState(xpSt);
+    setStreakState(streakSt);
   }
 
   useEffect(() => {
@@ -171,6 +177,8 @@ export default function App() {
                   sessions={todaySessions}
                   dayCommits={todayCommits}
                   dayXp={todayXp}
+                  xpState={xpState}
+                  streakState={streakState}
                 />
               </div>
             )}
