@@ -32,7 +32,6 @@
   --bar-shimmer: rgba(255,255,255,0.35);
   --btn-shadow:  rgba(0,0,0,0.18);
   --hm-0: #e4eee5; --hm-1: #b0d8b8; --hm-2: #6ab878; --hm-3: #389050; --hm-4: #1a6a38;
-  --scrollbar:   rgba(90,55,130,0.2);
 }
 
 [data-theme="twilight"] {
