@@ -12,14 +12,22 @@ import { QuestsScreen } from './components/QuestsScreen';
 const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
 
 const TABS = [
-  { id: 'timer',  label: 'Focus',  icon: '🍅' },
-  { id: 'today',  label: 'Stats',  icon: '📊' },
-  { id: 'week',   label: 'Week',   icon: '📅' },
-  { id: 'quests', label: 'Quests', icon: '⚔' },
+  { id: 'timer',  label: '[ Focus ]'  },
+  { id: 'today',  label: '[ Stats ]'  },
+  { id: 'quests', label: '[ Quests ]' },
 ];
 
+function getThemeByTime() {
+  const h = new Date().getHours();
+  return (h >= 6 && h < 18) ? 'morning' : 'twilight';
+}
+
 function getInitialTheme() {
-  try { return localStorage.getItem('gt-theme') || 'twilight'; } catch { return 'twilight'; }
+  // Manual override stored in localStorage; if none, derive from current time
+  try {
+    const stored = localStorage.getItem('gt-theme-manual');
+    return stored || getThemeByTime();
+  } catch { return getThemeByTime(); }
 }
 
 export default function App() {
@@ -85,11 +93,15 @@ export default function App() {
   // Apply theme to root element
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    try { localStorage.setItem('gt-theme', theme); } catch {}
   }, [theme]);
 
   function toggleTheme() {
-    setTheme(t => t === 'morning' ? 'twilight' : 'morning');
+    setTheme(t => {
+      const next = t === 'morning' ? 'twilight' : 'morning';
+      // Only persist if user is manually overriding the time-based default
+      try { localStorage.setItem('gt-theme-manual', next); } catch {}
+      return next;
+    });
   }
 
   function handleDismissComplete() { setCompletedSession(null); }
@@ -102,78 +114,80 @@ export default function App() {
       <BackgroundScene theme={theme} />
 
       <div className="panel">
-        <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
-          {theme === 'morning' ? '[ ☀ ]' : '[ ☽ ]'}
-        </button>
-
-        <div className="panel__body">
-          {tab === 'timer' && !showSessionComplete && (
-            <div className="screen screen--timer">
-              <FocusScreen
-                timeLeft={timeLeft}
-                totalSeconds={totalSeconds}
-                status={status}
-                type={type}
-                onStart={start}
-                onPause={pause}
-                onReset={reset}
-                onSelectFocus={stop}
-                onSelectShortBreak={startShortBreak}
-                onSelectLongBreak={startLongBreak}
-                onConfig={() => window.electronAPI?.openSettings()}
-                todaySessions={todaySessions}
-                todayCommits={todayCommits}
-                todayXp={todayXp}
-              />
-            </div>
-          )}
-
-          {showSessionComplete && (
-            <div className="screen screen--sc">
-              <SessionComplete session={completedSession} onDismiss={handleDismissComplete} />
-            </div>
-          )}
-
-          {tab === 'today' && (
-            <div className="screen screen--today">
-              <DayTimeline
-                questSlate={questSlate}
-                badgeUnlocks={badgeUnlocks}
-                sessions={todaySessions}
-                dayCommits={todayCommits}
-                dayXp={todayXp}
-              />
-            </div>
-          )}
-
-          {tab === 'week' && (
-            <div className="screen screen--week">
-              <WeekDigest />
-            </div>
-          )}
-
-          {tab === 'quests' && (
-            <div className="screen screen--quests">
-              <QuestsScreen questSlate={questSlate} badgeUnlocks={badgeUnlocks} />
-            </div>
-          )}
-        </div>
-
-        <nav className="tab-bar">
-          {TABS.map(t => (
-            <button
-              key={t.id}
-              className={`tab-bar__item${tab === t.id && !(t.id === 'timer' && showSessionComplete) ? ' tab-bar__item--active' : ''}`}
-              onClick={() => {
-                if (t.id === 'timer') setCompletedSession(null);
-                setTab(t.id);
-              }}
-            >
-              <span className="tab-bar__icon">{t.icon}</span>
-              <span className="tab-bar__label">{t.label}</span>
+        <div className="app-content">
+          <div className="top-bar">
+            <nav className="tab-bar">
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  className={`tab-bar__item${tab === t.id && !(t.id === 'timer' && showSessionComplete) ? ' tab-bar__item--active' : ''}`}
+                  onClick={() => {
+                    if (t.id === 'timer') setCompletedSession(null);
+                    setTab(t.id);
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </nav>
+            <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
+              {theme === 'morning' ? '☀' : '☽'}
             </button>
-          ))}
-        </nav>
+          </div>
+
+          <div className="panel__body">
+            {tab === 'timer' && !showSessionComplete && (
+              <div className="screen screen--timer">
+                <FocusScreen
+                  timeLeft={timeLeft}
+                  totalSeconds={totalSeconds}
+                  status={status}
+                  type={type}
+                  onStart={start}
+                  onPause={pause}
+                  onReset={reset}
+                  onSelectFocus={stop}
+                  onSelectShortBreak={startShortBreak}
+                  onSelectLongBreak={startLongBreak}
+                  onConfig={() => window.electronAPI?.openSettings()}
+                  todaySessions={todaySessions}
+                  todayCommits={todayCommits}
+                  todayXp={todayXp}
+                />
+              </div>
+            )}
+
+            {showSessionComplete && (
+              <div className="screen screen--sc">
+                <SessionComplete session={completedSession} onDismiss={handleDismissComplete} />
+              </div>
+            )}
+
+            {tab === 'today' && (
+              <div className="screen screen--today">
+                <DayTimeline
+                  questSlate={questSlate}
+                  badgeUnlocks={badgeUnlocks}
+                  sessions={todaySessions}
+                  dayCommits={todayCommits}
+                  dayXp={todayXp}
+                />
+              </div>
+            )}
+
+            {tab === 'week' && (
+              <div className="screen screen--week">
+                <WeekDigest />
+              </div>
+            )}
+
+            {tab === 'quests' && (
+              <div className="screen screen--quests">
+                <QuestsScreen questSlate={questSlate} badgeUnlocks={badgeUnlocks} />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
