@@ -43,11 +43,15 @@ export function Settings() {
 
   return (
     <div className="settings">
-      <h1 className="settings__title">Settings</h1>
+      {/* Header bar — matches focus-card-header style */}
+      <div className="settings__header">
+        <span className="settings__header-title">git-tomato v0.1</span>
+        <span className="settings__header-tag">Configuration</span>
+      </div>
 
-      {/* Timer */}
-      <section className="settings__section">
-        <h2 className="settings__section-title">Timer</h2>
+      {/* Timer section */}
+      <div className="card settings__card">
+        <div className="settings__section-title">Timer</div>
 
         <div className="settings__field">
           <label className="settings__label">Focus duration</label>
@@ -93,11 +97,11 @@ export function Settings() {
             <span className="settings__unit">min</span>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* GitHub */}
-      <section className="settings__section">
-        <h2 className="settings__section-title">GitHub</h2>
+      {/* GitHub section */}
+      <div className="card settings__card">
+        <div className="settings__section-title">GitHub</div>
         <div className="settings__field">
           <label className="settings__label">Personal access token</label>
           <input
@@ -112,12 +116,12 @@ export function Settings() {
             Needs <code>repo</code> scope.
           </p>
         </div>
-      </section>
+      </div>
 
-      {/* Repo paths */}
-      <section className="settings__section">
-        <h2 className="settings__section-title">Watched repositories</h2>
-        <p className="settings__hint">
+      {/* Watched repositories section */}
+      <div className="card settings__card">
+        <div className="settings__section-title">Watched repositories</div>
+        <p className="settings__hint settings__hint--top">
           Directories scanned for git commits at session end. Leave empty to
           auto-discover repos in ~/projects, ~/code, and ~/dev.
         </p>
@@ -146,15 +150,15 @@ export function Settings() {
         <button className="settings__add-repo" onClick={addRepoPath}>
           + Add path
         </button>
-      </section>
+      </div>
 
-      {/* Save */}
+      {/* Footer / save */}
       <div className="settings__footer">
         <button
           className={`btn btn--primary${saved ? ' btn--saved' : ''}`}
           onClick={handleSave}
         >
-          {saved ? 'Saved ✓' : 'Save'}
+          {saved ? 'Saved ✓' : 'Save settings'}
         </button>
       </div>
     </div>
