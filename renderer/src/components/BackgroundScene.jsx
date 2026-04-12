@@ -43,130 +43,128 @@ function MorningScene() {
       preserveAspectRatio="xMidYMid slice"
       xmlns="http://www.w3.org/2000/svg">
 
-<defs>
-  <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%"    stop-color="#62b8e0"/>
-    <stop offset="12%"   stop-color="#80c8e8"/>
-    <stop offset="24%"   stop-color="#9ed4f0"/>
-    <stop offset="36%"   stop-color="#b8e0f5"/>
-    <stop offset="48%"   stop-color="#cce9f8"/>
-    <stop offset="58%"   stop-color="#dcf0f8"/>
-    <stop offset="68%"   stop-color="#eaf5f8"/>
-    <stop offset="77%"   stop-color="#f4f8f0"/>
-    <stop offset="86%"   stop-color="#f8f0e0"/>
-    <stop offset="100%"  stop-color="#f8e8cc"/>
-  </linearGradient>
-  <linearGradient id="gradDistantHillM" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%"   stop-color="#80c060"/>
-    <stop offset="100%" stop-color="#5a9e40"/>
-  </linearGradient>
-  <linearGradient id="gradMidHillM" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%"   stop-color="#5a9e40"/>
-    <stop offset="100%" stop-color="#428030"/>
-  </linearGradient>
-  <linearGradient id="gradFrontHillM" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%"   stop-color="#428030"/>
-    <stop offset="100%" stop-color="#306020"/>
-  </linearGradient>
-</defs>
-<rect x="0" y="0" width="960" height="425" fill="url(#skyGrad)"/>
+      <defs>
+        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#62b8e0" />
+          <stop offset="12%" stop-color="#80c8e8" />
+          <stop offset="24%" stop-color="#9ed4f0" />
+          <stop offset="36%" stop-color="#b8e0f5" />
+          <stop offset="48%" stop-color="#cce9f8" />
+          <stop offset="58%" stop-color="#dcf0f8" />
+          <stop offset="68%" stop-color="#eaf5f8" />
+          <stop offset="77%" stop-color="#f4f8f0" />
+          <stop offset="86%" stop-color="#f8f0e0" />
+          <stop offset="100%" stop-color="#f8e8cc" />
+        </linearGradient>
+        <linearGradient id="gradDistantHillM" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#80c060" />
+          <stop offset="100%" stop-color="#5a9e40" />
+        </linearGradient>
+        <linearGradient id="gradMidHillM" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#5a9e40" />
+          <stop offset="100%" stop-color="#428030" />
+        </linearGradient>
+        <linearGradient id="gradFrontHillM" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#428030" />
+          <stop offset="100%" stop-color="#306020" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="960" height="425" fill="url(#skyGrad)" />
 
-      <circle cx="108" cy="82" r="54" fill="rgba(252,224,64,0.14)"/>
-      <circle cx="108" cy="82" r="44" fill="rgba(252,220,50,0.20)"/>
-      <rect x="100" y="18"  width="16" height="24" fill="#fcd840"/>
-      <rect x="100" y="122" width="16" height="24" fill="#fcd840"/>
-      <rect x="34"  y="74"  width="24" height="16" fill="#fcd840"/>
-      <rect x="150" y="74"  width="24" height="16" fill="#fcd840"/>
-      <rect x="46"  y="36"  width="18" height="10" fill="#fcd840" transform="rotate(-45 55 41)"/>
-      <rect x="152" y="36"  width="18" height="10" fill="#fcd840" transform="rotate(45 161 41)"/>
-      <rect x="46"  y="118" width="18" height="10" fill="#fcd840" transform="rotate(45 55 123)"/>
-      <rect x="152" y="118" width="18" height="10" fill="#fcd840" transform="rotate(-45 161 123)"/>
-      <circle cx="108" cy="82" r="36" fill="#fce848"/>
-      <ellipse cx="96" cy="68" rx="14" ry="10" fill="rgba(255,255,200,0.4)"/>
+      <circle cx="108" cy="82" r="54" fill="rgba(252,224,64,0.14)" />
+      <circle cx="108" cy="82" r="44" fill="rgba(252,220,50,0.20)" />
+      <rect x="100" y="18" width="16" height="24" fill="#fcd840" />
+      <rect x="100" y="122" width="16" height="24" fill="#fcd840" />
+      <rect x="34" y="74" width="24" height="16" fill="#fcd840" />
+      <rect x="150" y="74" width="24" height="16" fill="#fcd840" />
+      <rect x="46" y="36" width="18" height="10" fill="#fcd840" transform="rotate(-45 55 41)" />
+      <rect x="152" y="36" width="18" height="10" fill="#fcd840" transform="rotate(45 161 41)" />
+      <rect x="46" y="118" width="18" height="10" fill="#fcd840" transform="rotate(45 55 123)" />
+      <rect x="152" y="118" width="18" height="10" fill="#fcd840" transform="rotate(-45 161 123)" />
+      <circle cx="108" cy="82" r="36" fill="#fce848" />
+      <ellipse cx="96" cy="68" rx="14" ry="10" fill="rgba(255,255,200,0.4)" />
 
-      <rect x="218" y="76"  width="52"  height="18" fill="#fafcff"/>
-      <rect x="200" y="88"  width="36"  height="16" fill="#fafcff"/>
-      <rect x="196" y="98"  width="108" height="22" fill="#fafcff"/>
-      <rect x="232" y="60"  width="32"  height="16" fill="#fafcff"/>
-      <rect x="196" y="116" width="108" height="6"  fill="#e8f0f8" opacity="0.7"/>
+      <rect x="218" y="76" width="52" height="18" fill="#fafcff" />
+      <rect x="200" y="88" width="36" height="16" fill="#fafcff" />
+      <rect x="196" y="98" width="108" height="22" fill="#fafcff" />
+      <rect x="232" y="60" width="32" height="16" fill="#fafcff" />
+      <rect x="196" y="116" width="108" height="6" fill="#e8f0f8" opacity="0.7" />
 
-      <rect x="648" y="58" width="36" height="14" fill="#fafcff"/>
-      <rect x="636" y="66" width="72" height="18" fill="#fafcff"/>
-      <rect x="636" y="80" width="72" height="5"  fill="#e8f0f8" opacity="0.65"/>
+      <rect x="648" y="58" width="36" height="14" fill="#fafcff" />
+      <rect x="636" y="66" width="72" height="18" fill="#fafcff" />
+      <rect x="636" y="80" width="72" height="5" fill="#e8f0f8" opacity="0.65" />
 
-      <rect x="780" y="108" width="44" height="14" fill="#fafcff"/>
-      <rect x="764" y="118" width="88" height="20" fill="#fafcff"/>
-      <rect x="764" y="134" width="88" height="5"  fill="#e8f0f8" opacity="0.65"/>
+      <rect x="780" y="108" width="44" height="14" fill="#fafcff" />
+      <rect x="764" y="118" width="88" height="20" fill="#fafcff" />
+      <rect x="764" y="134" width="88" height="5" fill="#e8f0f8" opacity="0.65" />
 
-      <rect x="880" y="70" width="28" height="12" fill="#fafcff" opacity="0.85"/>
-      <rect x="872" y="78" width="56" height="16" fill="#fafcff" opacity="0.85"/>
+      <rect x="880" y="70" width="28" height="12" fill="#fafcff" opacity="0.85" />
+      <rect x="872" y="78" width="56" height="16" fill="#fafcff" opacity="0.85" />
 
-      <rect x="350" y="38" width="32" height="12" fill="#fafcff" opacity="0.9"/>
-      <rect x="338" y="46" width="64" height="16" fill="#fafcff" opacity="0.9"/>
+      <rect x="350" y="38" width="32" height="12" fill="#fafcff" opacity="0.9" />
+      <rect x="338" y="46" width="64" height="16" fill="#fafcff" opacity="0.9" />
 
       <polygon fill="url(#gradDistantHillM)"
-        points="0,385 50,368 105,378 162,358 218,372 275,352 330,367 388,348 445,362 502,344 558,359 614,340 668,356 723,336 778,352 832,334 886,348 960,335 960,540 0,540"/>
+        points="0,385 50,368 105,378 162,358 218,372 275,352 330,367 388,348 445,362 502,344 558,359 614,340 668,356 723,336 778,352 832,334 886,348 960,335 960,540 0,540" />
 
       <polygon fill="url(#gradMidHillM)"
-        points="0,420 58,408 118,418 180,403 242,416 305,400 368,412 430,397 494,410 556,395 618,408 680,393 742,406 804,391 866,404 960,393 960,540 0,540"/>
+        points="0,420 58,408 118,418 180,403 242,416 305,400 368,412 430,397 494,410 556,395 618,408 680,393 742,406 804,391 866,404 960,393 960,540 0,540" />
 
-      <rect x="88"  y="414" width="6"  height="14" fill="#3a7030"/>
-      <rect x="80"  y="408" width="22" height="6"  fill="#448038"/>
-      <rect x="82"  y="402" width="18" height="6"  fill="#4a8a3e"/>
-      <rect x="85"  y="396" width="12" height="6"  fill="#509444"/>
-      <rect x="258" y="413" width="6"  height="13" fill="#3a7030"/>
-      <rect x="250" y="407" width="22" height="6"  fill="#448038"/>
-      <rect x="252" y="401" width="18" height="6"  fill="#4a8a3e"/>
-      <rect x="255" y="395" width="12" height="6"  fill="#509444"/>
-      <rect x="508" y="412" width="6"  height="15" fill="#3a7030"/>
-      <rect x="500" y="406" width="22" height="6"  fill="#448038"/>
-      <rect x="502" y="400" width="18" height="6"  fill="#4a8a3e"/>
-      <rect x="505" y="394" width="12" height="6"  fill="#509444"/>
-      <rect x="718" y="414" width="6"  height="13" fill="#3a7030"/>
-      <rect x="710" y="408" width="22" height="6"  fill="#448038"/>
-      <rect x="712" y="402" width="18" height="6"  fill="#4a8a3e"/>
-      <rect x="715" y="396" width="12" height="6"  fill="#509444"/>
-      <rect x="878" y="411" width="6"  height="15" fill="#3a7030"/>
-      <rect x="870" y="405" width="22" height="6"  fill="#448038"/>
-      <rect x="872" y="399" width="18" height="6"  fill="#4a8a3e"/>
-      <rect x="875" y="393" width="12" height="6"  fill="#509444"/>
+      <rect x="88" y="414" width="6" height="14" fill="#3a7030" />
+      <rect x="80" y="408" width="22" height="6" fill="#448038" />
+      <rect x="82" y="402" width="18" height="6" fill="#4a8a3e" />
+      <rect x="85" y="396" width="12" height="6" fill="#509444" />
+      <rect x="258" y="413" width="6" height="13" fill="#3a7030" />
+      <rect x="250" y="407" width="22" height="6" fill="#448038" />
+      <rect x="252" y="401" width="18" height="6" fill="#4a8a3e" />
+      <rect x="255" y="395" width="12" height="6" fill="#509444" />
+      <rect x="508" y="412" width="6" height="15" fill="#3a7030" />
+      <rect x="500" y="406" width="22" height="6" fill="#448038" />
+      <rect x="502" y="400" width="18" height="6" fill="#4a8a3e" />
+      <rect x="505" y="394" width="12" height="6" fill="#509444" />
+      <rect x="718" y="414" width="6" height="13" fill="#3a7030" />
+      <rect x="710" y="408" width="22" height="6" fill="#448038" />
+      <rect x="712" y="402" width="18" height="6" fill="#4a8a3e" />
+      <rect x="715" y="396" width="12" height="6" fill="#509444" />
+      <rect x="878" y="411" width="6" height="15" fill="#3a7030" />
+      <rect x="870" y="405" width="22" height="6" fill="#448038" />
+      <rect x="872" y="399" width="18" height="6" fill="#4a8a3e" />
+      <rect x="875" y="393" width="12" height="6" fill="#509444" />
 
       <polygon fill="url(#gradFrontHillM)"
-        points="0,456 78,442 156,452 234,438 312,450 390,436 468,448 546,434 624,446 702,432 780,444 858,432 960,438 960,540 0,540"/>
+        points="0,456 78,442 156,452 234,438 312,450 390,436 468,448 546,434 624,446 702,432 780,444 858,432 960,438 960,540 0,540" />
 
-      <rect x="40"  y="458" width="4" height="6" fill="#e84040" opacity="0.9"/>
-      <rect x="38"  y="454" width="8" height="4" fill="#e84040" opacity="0.9"/>
-      <rect x="142" y="460" width="4" height="6" fill="#f8c820" opacity="0.9"/>
-      <rect x="140" y="456" width="8" height="4" fill="#f8c820" opacity="0.9"/>
-      <rect x="288" y="457" width="4" height="6" fill="#e84080" opacity="0.9"/>
-      <rect x="286" y="453" width="8" height="4" fill="#e84080" opacity="0.9"/>
-      <rect x="410" y="459" width="4" height="6" fill="#e84040" opacity="0.9"/>
-      <rect x="408" y="455" width="8" height="4" fill="#e84040" opacity="0.9"/>
-      <rect x="540" y="456" width="4" height="6" fill="#f8c820" opacity="0.9"/>
-      <rect x="538" y="452" width="8" height="4" fill="#f8c820" opacity="0.9"/>
-      <rect x="660" y="458" width="4" height="6" fill="#e84080" opacity="0.9"/>
-      <rect x="658" y="454" width="8" height="4" fill="#e84080" opacity="0.9"/>
-      <rect x="790" y="456" width="4" height="6" fill="#e84040" opacity="0.9"/>
-      <rect x="788" y="452" width="8" height="4" fill="#e84040" opacity="0.9"/>
-      <rect x="900" y="460" width="4" height="6" fill="#f8c820" opacity="0.9"/>
-      <rect x="898" y="456" width="8" height="4" fill="#f8c820" opacity="0.9"/>
+      <rect x="40" y="458" width="4" height="6" fill="#e84040" opacity="0.9" />
+      <rect x="38" y="454" width="8" height="4" fill="#e84040" opacity="0.9" />
+      <rect x="142" y="460" width="4" height="6" fill="#f8c820" opacity="0.9" />
+      <rect x="140" y="456" width="8" height="4" fill="#f8c820" opacity="0.9" />
+      <rect x="288" y="457" width="4" height="6" fill="#e84080" opacity="0.9" />
+      <rect x="286" y="453" width="8" height="4" fill="#e84080" opacity="0.9" />
+      <rect x="410" y="459" width="4" height="6" fill="#e84040" opacity="0.9" />
+      <rect x="408" y="455" width="8" height="4" fill="#e84040" opacity="0.9" />
+      <rect x="540" y="456" width="4" height="6" fill="#f8c820" opacity="0.9" />
+      <rect x="538" y="452" width="8" height="4" fill="#f8c820" opacity="0.9" />
+      <rect x="660" y="458" width="4" height="6" fill="#e84080" opacity="0.9" />
+      <rect x="658" y="454" width="8" height="4" fill="#e84080" opacity="0.9" />
+      <rect x="790" y="456" width="4" height="6" fill="#e84040" opacity="0.9" />
+      <rect x="788" y="452" width="8" height="4" fill="#e84040" opacity="0.9" />
+      <rect x="900" y="460" width="4" height="6" fill="#f8c820" opacity="0.9" />
+      <rect x="898" y="456" width="8" height="4" fill="#f8c820" opacity="0.9" />
 
       <g opacity="0.7">
         <path d="M200,140 Q206,136 212,140 Q218,136 224,140" stroke="#2a4a6a" strokeWidth="2" fill="none">
-          <animateTransform attributeName="transform" type="translate" values="-50,0;960,0" dur="28s" repeatCount="indefinite" begin="0s"/>
+          <animateTransform attributeName="transform" type="translate" values="-50,0;960,0" dur="28s" repeatCount="indefinite" begin="0s" />
         </path>
         <path d="M0,180 Q7,175 14,180 Q21,175 28,180" stroke="#2a4a6a" strokeWidth="2" fill="none">
-          <animateTransform attributeName="transform" type="translate" values="-40,0;960,0" dur="34s" repeatCount="indefinite" begin="5s"/>
+          <animateTransform attributeName="transform" type="translate" values="-40,0;960,0" dur="34s" repeatCount="indefinite" begin="5s" />
         </path>
         <path d="M100,110 Q106,106 112,110 Q118,106 124,110" stroke="#2a4a6a" strokeWidth="2" fill="none">
-          <animateTransform attributeName="transform" type="translate" values="-120,0;960,0" dur="22s" repeatCount="indefinite" begin="12s"/>
+          <animateTransform attributeName="transform" type="translate" values="-120,0;960,0" dur="22s" repeatCount="indefinite" begin="12s" />
         </path>
         <path d="M300,95 Q308,90 316,95 Q324,90 332,95" stroke="#2a4a6a" strokeWidth="2.5" fill="none">
-          <animateTransform attributeName="transform" type="translate" values="-350,0;960,0" dur="40s" repeatCount="indefinite" begin="3s"/>
+          <animateTransform attributeName="transform" type="translate" values="-350,0;960,0" dur="40s" repeatCount="indefinite" begin="3s" />
         </path>
       </g>
-
-      <rect x="0" y="402" width="960" height="8" fill="#f8e0b0" opacity="0.20"/>
     </svg>
   );
 }
@@ -186,89 +184,89 @@ function TwilightScene() {
 
       <defs>
         <linearGradient id="twilightSkyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#080418"/>
-          <stop offset="13%"  stop-color="#110630"/>
-          <stop offset="25%"  stop-color="#1e0c48"/>
-          <stop offset="37%"  stop-color="#341560"/>
-          <stop offset="48%"  stop-color="#4e2070"/>
-          <stop offset="57%"  stop-color="#6a2c78"/>
-          <stop offset="66%"  stop-color="#8a3070"/>
-          <stop offset="74%"  stop-color="#a83858"/>
-          <stop offset="82%"  stop-color="#cc5048"/>
-          <stop offset="88%"  stop-color="#e07050"/>
-          <stop offset="94%"  stop-color="#f09058"/>
-          <stop offset="100%" stop-color="#f4a870"/>
+          <stop offset="0%" stop-color="#080418" />
+          <stop offset="13%" stop-color="#110630" />
+          <stop offset="25%" stop-color="#1e0c48" />
+          <stop offset="37%" stop-color="#341560" />
+          <stop offset="48%" stop-color="#4e2070" />
+          <stop offset="57%" stop-color="#6a2c78" />
+          <stop offset="66%" stop-color="#8a3070" />
+          <stop offset="74%" stop-color="#a83858" />
+          <stop offset="82%" stop-color="#cc5048" />
+          <stop offset="88%" stop-color="#e07050" />
+          <stop offset="94%" stop-color="#f09058" />
+          <stop offset="100%" stop-color="#f4a870" />
         </linearGradient>
         <mask id="moonmask">
-          <circle cx="848" cy="78" r="30" fill="white"/>
-          <circle cx="863" cy="68" r="24" fill="black"/>
+          <circle cx="848" cy="78" r="30" fill="white" />
+          <circle cx="863" cy="68" r="24" fill="black" />
         </mask>
         <linearGradient id="gradDistantHill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#2a4e38"/>
-          <stop offset="100%" stop-color="#152a1e"/>
+          <stop offset="0%" stop-color="#2a4e38" />
+          <stop offset="100%" stop-color="#152a1e" />
         </linearGradient>
         <linearGradient id="gradMidHill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#1e3828"/>
-          <stop offset="100%" stop-color="#0e1e14"/>
+          <stop offset="0%" stop-color="#1e3828" />
+          <stop offset="100%" stop-color="#0e1e14" />
         </linearGradient>
         <linearGradient id="gradFrontHill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#162818"/>
-          <stop offset="100%" stop-color="#090d0a"/>
+          <stop offset="0%" stop-color="#162818" />
+          <stop offset="100%" stop-color="#090d0a" />
         </linearGradient>
       </defs>
-      <rect x="0" y="0" width="960" height="450" fill="url(#twilightSkyGrad)"/>
-      <circle cx="848" cy="78" r="30" fill="#f5e8a8" mask="url(#moonmask)" opacity="0.88"/>
-      <circle cx="848" cy="78" r="36" fill="none" stroke="#f5e8a8" strokeWidth="6" opacity="0.06"/>
+      <rect x="0" y="0" width="960" height="450" fill="url(#twilightSkyGrad)" />
+      <circle cx="848" cy="78" r="30" fill="#f5e8a8" mask="url(#moonmask)" opacity="0.88" />
+      <circle cx="848" cy="78" r="36" fill="none" stroke="#f5e8a8" strokeWidth="6" opacity="0.06" />
 
       <g id="stars"></g>
 
       <polygon fill="url(#gradDistantHill)"
-        points="0,388 45,372 90,380 145,362 200,374 258,355 315,368 375,350 430,364 490,347 548,360 605,343 660,357 715,340 768,354 825,338 882,352 960,338 960,540 0,540"/>
+        points="0,388 45,372 90,380 145,362 200,374 258,355 315,368 375,350 430,364 490,347 548,360 605,343 660,357 715,340 768,354 825,338 882,352 960,338 960,540 0,540" />
 
       <polygon fill="url(#gradMidHill)"
-        points="0,422 55,410 115,420 178,406 240,417 305,402 368,413 430,399 494,411 558,397 620,409 682,395 744,407 806,393 868,405 960,395 960,540 0,540"/>
+        points="0,422 55,410 115,420 178,406 240,417 305,402 368,413 430,399 494,411 558,397 620,409 682,395 744,407 806,393 868,405 960,395 960,540 0,540" />
 
-      <rect x="78"  y="416" width="5"  height="13" fill="#0c1c12"/>
-      <rect x="71"  y="411" width="19" height="5"  fill="#102016"/>
-      <rect x="73"  y="406" width="15" height="5"  fill="#122416"/>
-      <rect x="76"  y="401" width="9"  height="5"  fill="#142816"/>
-      <rect x="218" y="415" width="5"  height="12" fill="#0c1c12"/>
-      <rect x="211" y="410" width="19" height="5"  fill="#102016"/>
-      <rect x="213" y="405" width="15" height="5"  fill="#122416"/>
-      <rect x="216" y="400" width="9"  height="5"  fill="#142816"/>
-      <rect x="478" y="414" width="5"  height="14" fill="#0c1c12"/>
-      <rect x="471" y="409" width="19" height="5"  fill="#102016"/>
-      <rect x="473" y="404" width="15" height="5"  fill="#122416"/>
-      <rect x="476" y="399" width="9"  height="5"  fill="#142816"/>
-      <rect x="678" y="416" width="5"  height="12" fill="#0c1c12"/>
-      <rect x="671" y="411" width="19" height="5"  fill="#102016"/>
-      <rect x="673" y="406" width="15" height="5"  fill="#122416"/>
-      <rect x="676" y="401" width="9"  height="5"  fill="#142816"/>
-      <rect x="859" y="413" width="5"  height="14" fill="#0c1c12"/>
-      <rect x="852" y="408" width="19" height="5"  fill="#102016"/>
-      <rect x="854" y="403" width="15" height="5"  fill="#122416"/>
-      <rect x="857" y="398" width="9"  height="5"  fill="#142816"/>
+      <rect x="78" y="416" width="5" height="13" fill="#0c1c12" />
+      <rect x="71" y="411" width="19" height="5" fill="#102016" />
+      <rect x="73" y="406" width="15" height="5" fill="#122416" />
+      <rect x="76" y="401" width="9" height="5" fill="#142816" />
+      <rect x="218" y="415" width="5" height="12" fill="#0c1c12" />
+      <rect x="211" y="410" width="19" height="5" fill="#102016" />
+      <rect x="213" y="405" width="15" height="5" fill="#122416" />
+      <rect x="216" y="400" width="9" height="5" fill="#142816" />
+      <rect x="478" y="414" width="5" height="14" fill="#0c1c12" />
+      <rect x="471" y="409" width="19" height="5" fill="#102016" />
+      <rect x="473" y="404" width="15" height="5" fill="#122416" />
+      <rect x="476" y="399" width="9" height="5" fill="#142816" />
+      <rect x="678" y="416" width="5" height="12" fill="#0c1c12" />
+      <rect x="671" y="411" width="19" height="5" fill="#102016" />
+      <rect x="673" y="406" width="15" height="5" fill="#122416" />
+      <rect x="676" y="401" width="9" height="5" fill="#142816" />
+      <rect x="859" y="413" width="5" height="14" fill="#0c1c12" />
+      <rect x="852" y="408" width="19" height="5" fill="#102016" />
+      <rect x="854" y="403" width="15" height="5" fill="#122416" />
+      <rect x="857" y="398" width="9" height="5" fill="#142816" />
 
       <polygon fill="url(#gradFrontHill)"
-        points="0,458 75,444 150,454 228,440 306,451 384,438 460,450 538,436 616,448 694,434 770,446 848,434 960,440 960,540 0,540"/>
+        points="0,458 75,444 150,454 228,440 306,451 384,438 460,450 538,436 616,448 694,434 770,446 848,434 960,440 960,540 0,540" />
 
       <circle cx="160" cy="435" r="2" fill="#d0f8a0" opacity="0.0">
-        <animate attributeName="opacity" values="0;0.8;0" dur="2.8s" repeatCount="indefinite" begin="0s"/>
+        <animate attributeName="opacity" values="0;0.8;0" dur="2.8s" repeatCount="indefinite" begin="0s" />
       </circle>
       <circle cx="320" cy="428" r="2" fill="#c8f0a0" opacity="0.0">
-        <animate attributeName="opacity" values="0;0.7;0" dur="3.4s" repeatCount="indefinite" begin="1.2s"/>
+        <animate attributeName="opacity" values="0;0.7;0" dur="3.4s" repeatCount="indefinite" begin="1.2s" />
       </circle>
       <circle cx="580" cy="440" r="2" fill="#d4f8b0" opacity="0.0">
-        <animate attributeName="opacity" values="0;0.9;0" dur="2.2s" repeatCount="indefinite" begin="0.6s"/>
+        <animate attributeName="opacity" values="0;0.9;0" dur="2.2s" repeatCount="indefinite" begin="0.6s" />
       </circle>
       <circle cx="760" cy="432" r="2" fill="#c8f8a8" opacity="0.0">
-        <animate attributeName="opacity" values="0;0.75;0" dur="3.8s" repeatCount="indefinite" begin="2s"/>
+        <animate attributeName="opacity" values="0;0.75;0" dur="3.8s" repeatCount="indefinite" begin="2s" />
       </circle>
       <circle cx="430" cy="450" r="1.5" fill="#d0f8a0" opacity="0.0">
-        <animate attributeName="opacity" values="0;0.8;0" dur="4.2s" repeatCount="indefinite" begin="0.8s"/>
+        <animate attributeName="opacity" values="0;0.8;0" dur="4.2s" repeatCount="indefinite" begin="0.8s" />
       </circle>
       <circle cx="880" cy="442" r="2" fill="#c8f8a8" opacity="0.0">
-        <animate attributeName="opacity" values="0;0.6;0" dur="2.6s" repeatCount="indefinite" begin="1.8s"/>
+        <animate attributeName="opacity" values="0;0.6;0" dur="2.6s" repeatCount="indefinite" begin="1.8s" />
       </circle>
     </svg>
   );
