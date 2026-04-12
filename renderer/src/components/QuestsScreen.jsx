@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BADGES as BADGE_DEFS } from './Badges';
+import { BadgeIcon } from './badgeIcons';
 
 const TIER_XP = { standard: 20, stretch: 35, elite: 50 };
 
@@ -57,7 +58,7 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
       <div className="card quests-daily-card" style={{ padding: '16px', overflowY: 'auto', minHeight: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px dashed rgba(90,55,130,0.10)' }}>
           <span className="sec-title" style={{ margin: 0 }}>Daily Quests</span>
-          <span style={{ fontSize: '8px', color: 'var(--muted)' }}>
+          <span style={{ fontSize: '14px', color: 'var(--muted)' }}>
             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           </span>
         </div>
@@ -136,7 +137,7 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
           ) : (
             recentBadges.map(u => (
               <div key={u.slug} className="badge-row">
-                <div className="badge-ico">{u.def.icon ?? '🏅'}</div>
+                <div className="badge-ico"><BadgeIcon slug={u.slug} /></div>
                 <div className="badge-info">
                   <div className="badge-name">{u.def.name}</div>
                   <div className="badge-desc">{u.def.description}</div>

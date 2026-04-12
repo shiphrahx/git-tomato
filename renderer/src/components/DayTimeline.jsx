@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RepoCommitList } from './RepoCommitList';
 import { BADGES as BADGE_DEFS } from './Badges';
+import { BadgeIcon } from './badgeIcons';
 
 // Mirror of main/levels.js
 const LEVELS = [
@@ -188,7 +189,7 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, dayCommit
               const earned = unlockedSlugs.has(b.slug);
               return (
                 <div key={b.slug} className={`gb${earned ? ' earned' : ' locked'}`}>
-                  <div className="gb-ico">{b.icon ?? '🏅'}</div>
+                  <div className="gb-ico"><BadgeIcon slug={b.slug} locked={!earned} /></div>
                   <div className="gb-name">{b.name}</div>
                   <div className="gb-xp num">{b.xp ?? 50} XP</div>
                 </div>

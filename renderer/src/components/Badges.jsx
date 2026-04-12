@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BadgeIcon } from './badgeIcons';
 
 // Badge definitions mirrored from main/badgeDefs.js (no IPC needed for static data)
 const BADGES = [
@@ -89,7 +90,9 @@ export function Badges() {
                     key={badge.slug}
                     className={`badge-card${isUnlocked ? ' badge-card--unlocked' : ' badge-card--locked'}`}
                   >
-                    <div className="badge-card__icon">{isUnlocked ? '🏅' : '🔒'}</div>
+                    <div className="badge-card__icon">
+                      <BadgeIcon slug={badge.slug} locked={!isUnlocked} />
+                    </div>
                     <div className="badge-card__body">
                       <div className="badge-card__name">{badge.name}</div>
                       <div className="badge-card__desc">{badge.description}</div>
