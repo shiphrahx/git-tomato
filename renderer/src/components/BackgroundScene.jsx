@@ -43,16 +43,21 @@ function MorningScene() {
       preserveAspectRatio="xMidYMid slice"
       xmlns="http://www.w3.org/2000/svg">
 
-      <rect x="0" y="0"   width="960" height="55"  fill="#62b8e0"/>
-      <rect x="0" y="55"  width="960" height="55"  fill="#80c8e8"/>
-      <rect x="0" y="110" width="960" height="55"  fill="#9ed4f0"/>
-      <rect x="0" y="165" width="960" height="50"  fill="#b8e0f5"/>
-      <rect x="0" y="215" width="960" height="50"  fill="#cce9f8"/>
-      <rect x="0" y="265" width="960" height="45"  fill="#dcf0f8"/>
-      <rect x="0" y="310" width="960" height="40"  fill="#eaf5f8"/>
-      <rect x="0" y="350" width="960" height="30"  fill="#f4f8f0"/>
-      <rect x="0" y="380" width="960" height="25"  fill="#f8f0e0"/>
-      <rect x="0" y="405" width="960" height="20"  fill="#f8e8cc"/>
+<defs>
+  <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"    stop-color="#62b8e0"/>
+    <stop offset="12%"   stop-color="#80c8e8"/>
+    <stop offset="24%"   stop-color="#9ed4f0"/>
+    <stop offset="36%"   stop-color="#b8e0f5"/>
+    <stop offset="48%"   stop-color="#cce9f8"/>
+    <stop offset="58%"   stop-color="#dcf0f8"/>
+    <stop offset="68%"   stop-color="#eaf5f8"/>
+    <stop offset="77%"   stop-color="#f4f8f0"/>
+    <stop offset="86%"   stop-color="#f8f0e0"/>
+    <stop offset="100%"  stop-color="#f8e8cc"/>
+  </linearGradient>
+</defs>
+<rect x="0" y="0" width="960" height="425" fill="url(#skyGrad)"/>
 
       <circle cx="108" cy="82" r="54" fill="rgba(252,224,64,0.14)"/>
       <circle cx="108" cy="82" r="44" fill="rgba(252,220,50,0.20)"/>

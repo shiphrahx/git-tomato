@@ -573,6 +573,7 @@ body {
   font-size: 9px;
   color: var(--sage);
   letter-spacing: 0.1em;
+  font-family: var(--font-ui);
 }
 
 .focus-energy__bar {
