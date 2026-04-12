@@ -65,7 +65,7 @@ html, body, #root {
 }
 
 body {
-  font-family: var(--font-ui);
+  font-family: monospace;
   font-size: 11px;
   color: var(--text);
   background-color: transparent;
@@ -147,7 +147,7 @@ body {
 
 /* ─── SHA chip ───────────────────────────────────────────────── */
 .sha {
-  font-family: var(--font-num);
+  font-family: monospace;
   font-size: 13px;
   color: var(--water);
   background: rgba(0,0,0,0.06);
@@ -187,6 +187,7 @@ body {
 
 /* ─── Labels ──────────────────────────────────────────────────── */
 .lbl {
+  font-family: var(--font-ui);
   font-size: 9px;
   color: var(--muted);
   letter-spacing: 0.1em;
@@ -194,6 +195,7 @@ body {
   text-transform: uppercase;
 }
 .sec-title {
+  font-family: var(--font-ui);
   font-size: 11px;
   color: var(--text);
   letter-spacing: 0.08em;
@@ -476,6 +478,7 @@ body {
 }
 
 .focus-card-header__title {
+  font-family: var(--font-ui);
   font-size: 8px;
   color: rgba(90,55,130,0.4);
   letter-spacing: 0.1em;
@@ -500,6 +503,7 @@ body {
 }
 
 .focus-card-header__active {
+  font-family: var(--font-ui);
   font-size: 8px;
   color: var(--sage);
   letter-spacing: 0.08em;
@@ -536,6 +540,7 @@ body {
 
 /* Phase label */
 .focus-phase {
+  font-family: var(--font-ui);
   font-size: 9px;
   color: var(--accent);
   letter-spacing: 0.14em;
@@ -545,6 +550,7 @@ body {
 
 /* FIX 2 — Session counter line */
 .focus-session-line {
+  font-family: var(--font-ui);
   font-size: 8px;
   color: var(--muted);
   letter-spacing: 0.12em;
@@ -728,6 +734,7 @@ body {
 }
 
 .focus-stat__lbl {
+  font-family: monospace;
   font-size: 9px;
   color: var(--muted);
   text-transform: uppercase;
@@ -745,6 +752,7 @@ body {
 }
 
 .focus-xp__label {
+  font-family: monospace;
   font-size: 9px;
   color: var(--gold);
   text-transform: uppercase;
@@ -766,11 +774,13 @@ body {
 }
 
 .focus-xp__bar-label {
+  font-family: monospace;
   font-size: 8px;
   color: var(--muted);
 }
 
 .focus-xp__bar-next {
+  font-family: monospace;
   font-size: 8px;
   color: var(--gold);
 }
@@ -787,6 +797,7 @@ body {
 }
 
 .focus-git__title {
+  font-family: monospace;
   font-size: 9px;
   color: var(--muted);
   text-transform: uppercase;
@@ -807,6 +818,7 @@ body {
 .focus-git__scroll::-webkit-scrollbar-thumb { background: var(--scrollbar); }
 
 .focus-git__empty {
+  font-family: monospace;
   font-size: 9px;
   color: var(--muted);
   opacity: 0.6;
@@ -823,7 +835,7 @@ body {
 .focus-commit:last-child { border-bottom: none; }
 
 .focus-commit__hash {
-  font-family: var(--font-num);
+  font-family: monospace;
   font-size: 13px;
   color: var(--water);
   background: rgba(24,112,168,0.08);
@@ -857,7 +869,7 @@ body {
 }
 
 .focus-commit__meta {
-  font-family: var(--font-num);
+  font-family: monospace;
   font-size: 13px;
   color: var(--muted);
   display: flex;
@@ -924,6 +936,7 @@ body {
 }
 
 .sc__title {
+  font-family: var(--font-ui);
   font-size: 11px;
   color: var(--text);
   letter-spacing: 0.04em;
@@ -967,6 +980,7 @@ body {
 }
 
 .sc-stat__label {
+  font-family: monospace;
   font-size: 9px;
   color: var(--muted);
   text-transform: uppercase;
@@ -987,12 +1001,14 @@ body {
 }
 
 .sc__xp-bar-level {
+  font-family: monospace;
   font-size: 11px;
   color: var(--text);
   opacity: 0.8;
 }
 
 .sc__xp-bar-next {
+  font-family: monospace;
   font-size: 9px;
   color: var(--muted);
 }
@@ -1021,6 +1037,7 @@ body {
 }
 
 .sc__xp-bar-meta {
+  font-family: monospace;
   font-size: 9px;
   color: var(--muted);
   text-align: right;
@@ -1124,12 +1141,14 @@ body {
 }
 
 .dash-level__num {
+  font-family: var(--font-num);
   font-size: 22px;
   color: var(--gold);
   line-height: 1;
 }
 
 .dash-level__lbl {
+  font-family: var(--font-ui);
   font-size: 8px;
   color: var(--gold-dk);
   letter-spacing: 0.1em;
@@ -1141,6 +1160,7 @@ body {
 }
 
 .dash-level__name {
+  font-family: var(--font-ui);
   font-size: 11px;
   color: var(--text);
   margin-bottom: 4px;
@@ -1162,6 +1182,7 @@ body {
 }
 
 .dash-streak__num {
+  font-family: var(--font-num);
   font-size: 38px;
   color: var(--accent);
   line-height: 1;
@@ -1183,6 +1204,7 @@ body {
 }
 
 .dash-metric__val {
+  font-family: var(--font-num);
   font-size: 30px;
   color: var(--text);
   line-height: 1;
@@ -1236,6 +1258,7 @@ body {
 .gb-ico { font-size: 18px; }
 
 .gb-name {
+  font-family: monospace;
   font-size: 8px;
   color: var(--text);
   line-height: 1.3;
@@ -1243,6 +1266,7 @@ body {
 .gb.earned .gb-name { color: var(--gold); }
 
 .gb-xp {
+  font-family: monospace;
   font-size: 12px;
   color: var(--gold-dk);
 }
@@ -1261,12 +1285,14 @@ body {
 .dp-empty__icon { font-size: 36px; }
 
 .dp-empty__title {
+  font-family: var(--font-ui);
   font-size: 9px;
   color: var(--muted);
   letter-spacing: 0.05em;
 }
 
 .dp-empty__hint {
+  font-family: monospace;
   font-size: 11px;
   color: var(--muted);
   opacity: 0.6;
@@ -1279,6 +1305,7 @@ body {
 }
 
 .dp__title {
+  font-family: var(--font-ui);
   font-size: 9px;
   color: var(--text);
   letter-spacing: 0.06em;
@@ -1319,6 +1346,7 @@ body {
 }
 
 .dp-stat__label {
+  font-family: var(--font-ui);
   font-size: 9px;
   color: var(--muted);
   text-align: center;
@@ -1339,6 +1367,7 @@ body {
 }
 
 .dp__section-title {
+  font-family: var(--font-ui);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -1385,6 +1414,7 @@ body {
 }
 
 .quest-card__tier {
+  font-family: var(--font-ui);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1403,6 +1433,7 @@ body {
 }
 
 .quest-card__name {
+  font-family: monospace;
   font-size: 11px;
   color: var(--text);
   line-height: 1.6;
@@ -1466,12 +1497,14 @@ body {
 }
 
 .dp-badge__name {
+  font-family: var(--font-ui);
   font-size: 11px;
   color: var(--gold);
   letter-spacing: 0.03em;
 }
 
 .dp-badge__desc {
+  font-family: monospace;
   font-size: 9px;
   color: var(--muted);
   line-height: 1.5;
@@ -1516,6 +1549,7 @@ body {
 }
 
 .rcl-repo__name {
+  font-family: monospace;
   font-size: 11px;
   color: var(--text);
   flex: 1;
@@ -1525,7 +1559,7 @@ body {
 }
 
 .rcl-repo__count {
-  font-family: var(--font-num);
+  font-family: monospace;
   font-size: 14px;
   color: var(--muted);
   background: var(--bar-track);
@@ -1557,7 +1591,7 @@ body {
 .rcl-commit:hover { background: var(--panel); }
 
 .rcl-commit__hash {
-  font-family: var(--font-num);
+  font-family: monospace;
   font-size: 13px;
   color: var(--water);
   flex-shrink: 0;
@@ -1601,6 +1635,7 @@ body {
   padding: 10px 14px;
   border-bottom: 1px solid var(--pb);
   flex-shrink: 0;
+  font-family: monospace;
   font-size: 11px;
   color: var(--muted);
   background: var(--panel);
@@ -1656,6 +1691,7 @@ body {
 }
 
 .week-chart__label {
+  font-family: var(--font-ui);
   font-size: 9px;
   color: var(--muted);
   white-space: nowrap;
@@ -1664,7 +1700,7 @@ body {
 .week-chart__label--today { color: var(--accent); }
 
 .week-chart__commits {
-  font-family: var(--font-num);
+  font-family: monospace;
   font-size: 13px;
   color: var(--muted);
 }
@@ -1688,12 +1724,14 @@ body {
 }
 
 .timeline-empty__hint {
+  font-family: monospace;
   font-size: 11px;
   color: var(--muted);
   opacity: 0.6;
 }
 
 .week-repos__title {
+  font-family: var(--font-ui);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1917,6 +1955,7 @@ body {
 
 /* Placeholder */
 .quests__placeholder-text {
+  font-family: monospace;
   font-size: 11px;
   color: var(--muted);
   line-height: 2;
@@ -1952,7 +1991,7 @@ body {
 
 .profile__level-badge { font-size: 30px; line-height: 1; flex-shrink: 0; }
 
-.profile__level-title { font-size: 11px; color: var(--text); letter-spacing: 0.02em; margin-bottom: 4px; }
+.profile__level-title { font-family: var(--font-ui); font-size: 11px; color: var(--text); letter-spacing: 0.02em; margin-bottom: 4px; }
 
 .profile__level-xp { font-family: var(--font-num); font-size: 16px; color: var(--muted); margin-top: 4px; }
 
@@ -1960,6 +1999,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  font-family: var(--font-ui);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -1983,7 +2023,7 @@ body {
 
 .profile__stat-value { font-family: var(--font-num); font-size: 28px; color: var(--text); line-height: 1; }
 
-.profile__stat-label { font-size: 9px; color: var(--muted); text-align: center; letter-spacing: 0.04em; line-height: 1.6; }
+.profile__stat-label { font-family: var(--font-ui); font-size: 9px; color: var(--muted); text-align: center; letter-spacing: 0.04em; line-height: 1.6; }
 
 .profile__stat--at-risk { border-color: var(--gold-dk); background: rgba(176,120,24,0.06); }
 .profile__stat--at-risk .profile__stat-value { color: var(--gold); }
@@ -1992,7 +2032,7 @@ body {
 .profile__badges { display: flex; flex-direction: column; gap: 12px; }
 
 .profile__badge-category {}
-.profile__badge-category-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+.profile__badge-category-label { font-family: var(--font-ui); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
 
 .profile__badge-grid { display: flex; flex-direction: column; gap: 4px; }
 
@@ -2014,19 +2054,19 @@ body {
 
 .profile__badge-item-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
-.profile__badge-item-name { font-size: 11px; color: var(--text); letter-spacing: 0.02em; }
+.profile__badge-item-name { font-family: var(--font-ui); font-size: 11px; color: var(--text); letter-spacing: 0.02em; }
 .profile__badge-item--locked .profile__badge-item-name { color: var(--muted); }
 
-.profile__badge-item-desc { font-size: 9px; color: var(--muted); line-height: 1.4; }
+.profile__badge-item-desc { font-family: monospace; font-size: 9px; color: var(--muted); line-height: 1.4; }
 
 .profile__badge-item-date { font-family: var(--font-num); font-size: 13px; color: var(--gold); }
 
 .xp-bar { width: 100%; height: 10px; background: var(--bar-track); border: 1px solid var(--dim); overflow: hidden; margin-top: 6px; position: relative; }
 .xp-bar__fill { height: 100%; background: var(--gold); position: relative; transition: width 0.4s ease; }
 .xp-bar__fill::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 40%; background: var(--bar-shimmer); }
-.xp-legend-label { font-size: 14px; color: var(--muted); margin-top: 6px; text-align: center; }
+.xp-legend-label { font-family: monospace; font-size: 14px; color: var(--muted); margin-top: 6px; text-align: center; }
 
-.profile__xp-meta { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); margin-top: 8px; }
+.profile__xp-meta { font-family: monospace; display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); margin-top: 8px; }
 
 /* Badge header strip */
 .badge-header {
