@@ -56,9 +56,17 @@ function MorningScene() {
     <stop offset="86%"   stop-color="#f8f0e0"/>
     <stop offset="100%"  stop-color="#f8e8cc"/>
   </linearGradient>
-  <linearGradient id="gradHillsM" x1="0" y1="335" x2="0" y2="540" gradientUnits="userSpaceOnUse">
+  <linearGradient id="gradDistantHillM" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%"   stop-color="#80c060"/>
-    <stop offset="100%" stop-color="#284e18"/>
+    <stop offset="100%" stop-color="#5a9e40"/>
+  </linearGradient>
+  <linearGradient id="gradMidHillM" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#5a9e40"/>
+    <stop offset="100%" stop-color="#428030"/>
+  </linearGradient>
+  <linearGradient id="gradFrontHillM" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#428030"/>
+    <stop offset="100%" stop-color="#306020"/>
   </linearGradient>
 </defs>
 <rect x="0" y="0" width="960" height="425" fill="url(#skyGrad)"/>
@@ -96,10 +104,10 @@ function MorningScene() {
       <rect x="350" y="38" width="32" height="12" fill="#fafcff" opacity="0.9"/>
       <rect x="338" y="46" width="64" height="16" fill="#fafcff" opacity="0.9"/>
 
-      <polygon fill="url(#gradHillsM)"
+      <polygon fill="url(#gradDistantHillM)"
         points="0,385 50,368 105,378 162,358 218,372 275,352 330,367 388,348 445,362 502,344 558,359 614,340 668,356 723,336 778,352 832,334 886,348 960,335 960,540 0,540"/>
 
-      <polygon fill="url(#gradHillsM)"
+      <polygon fill="url(#gradMidHillM)"
         points="0,420 58,408 118,418 180,403 242,416 305,400 368,412 430,397 494,410 556,395 618,408 680,393 742,406 804,391 866,404 960,393 960,540 0,540"/>
 
       <rect x="88"  y="414" width="6"  height="14" fill="#3a7030"/>
@@ -123,7 +131,7 @@ function MorningScene() {
       <rect x="872" y="399" width="18" height="6"  fill="#4a8a3e"/>
       <rect x="875" y="393" width="12" height="6"  fill="#509444"/>
 
-      <polygon fill="url(#gradHillsM)"
+      <polygon fill="url(#gradFrontHillM)"
         points="0,456 78,442 156,452 234,438 312,450 390,436 468,448 546,434 624,446 702,432 780,444 858,432 960,438 960,540 0,540"/>
 
       <rect x="40"  y="458" width="4" height="6" fill="#e84040" opacity="0.9"/>
@@ -195,8 +203,16 @@ function TwilightScene() {
           <circle cx="848" cy="78" r="30" fill="white"/>
           <circle cx="863" cy="68" r="24" fill="black"/>
         </mask>
-        <linearGradient id="gradHills" x1="0" y1="338" x2="0" y2="540" gradientUnits="userSpaceOnUse">
+        <linearGradient id="gradDistantHill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stop-color="#2a4e38"/>
+          <stop offset="100%" stop-color="#152a1e"/>
+        </linearGradient>
+        <linearGradient id="gradMidHill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#1e3828"/>
+          <stop offset="100%" stop-color="#0e1e14"/>
+        </linearGradient>
+        <linearGradient id="gradFrontHill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#162818"/>
           <stop offset="100%" stop-color="#090d0a"/>
         </linearGradient>
       </defs>
@@ -206,10 +222,10 @@ function TwilightScene() {
 
       <g id="stars"></g>
 
-      <polygon fill="url(#gradHills)"
+      <polygon fill="url(#gradDistantHill)"
         points="0,388 45,372 90,380 145,362 200,374 258,355 315,368 375,350 430,364 490,347 548,360 605,343 660,357 715,340 768,354 825,338 882,352 960,338 960,540 0,540"/>
 
-      <polygon fill="url(#gradHills)"
+      <polygon fill="url(#gradMidHill)"
         points="0,422 55,410 115,420 178,406 240,417 305,402 368,413 430,399 494,411 558,397 620,409 682,395 744,407 806,393 868,405 960,395 960,540 0,540"/>
 
       <rect x="78"  y="416" width="5"  height="13" fill="#0c1c12"/>
@@ -233,7 +249,7 @@ function TwilightScene() {
       <rect x="854" y="403" width="15" height="5"  fill="#122416"/>
       <rect x="857" y="398" width="9"  height="5"  fill="#142816"/>
 
-      <polygon fill="url(#gradHills)"
+      <polygon fill="url(#gradFrontHill)"
         points="0,458 75,444 150,454 228,440 306,451 384,438 460,450 538,436 616,448 694,434 770,446 848,434 960,440 960,540 0,540"/>
 
       <circle cx="160" cy="435" r="2" fill="#d0f8a0" opacity="0.0">
