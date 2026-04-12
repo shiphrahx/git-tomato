@@ -49,9 +49,15 @@ function getInitialTheme() {
 
 export default function App() {
   if (isSettingsWindow) {
+    const theme = getInitialTheme();
     return (
-      <div className="app-shell app-shell--settings">
-        <Settings />
+      <div className="app-shell" data-theme={theme}>
+        <BackgroundScene theme={theme} />
+        <div className="panel">
+          <div className="app-content app-content--settings">
+            <Settings />
+          </div>
+        </div>
       </div>
     );
   }
