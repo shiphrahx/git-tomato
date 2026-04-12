@@ -142,7 +142,7 @@ export function FocusScreen({
                 className="btn btn-coral"
                 onClick={isRunning ? onPause : onStart}
               >
-                {isRunning ? '⏸ Pause' : '▶ Resume'}
+                {isRunning ? '⏸ Pause' : status === 'paused' ? '▶ Resume' : '▶ Start'}
               </button>
               <button className="btn btn-dim" onClick={onReset}>
                 ↻ Restart
