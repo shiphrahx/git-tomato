@@ -134,8 +134,6 @@ function MorningScene() {
       <polygon fill="url(#gradFrontHillM)"
         points="0,456 78,442 156,452 234,438 312,450 390,436 468,448 546,434 624,446 702,432 780,444 858,432 960,438 960,540 0,540"/>
 
-      <rect x="0" y="490" width="960" height="50" fill="#306020"/>
-
       <rect x="40"  y="458" width="4" height="6" fill="#e84040" opacity="0.9"/>
       <rect x="38"  y="454" width="8" height="4" fill="#e84040" opacity="0.9"/>
       <rect x="142" y="460" width="4" height="6" fill="#f8c820" opacity="0.9"/>
@@ -186,20 +184,21 @@ function TwilightScene() {
       preserveAspectRatio="xMidYMid slice"
       xmlns="http://www.w3.org/2000/svg">
 
-      <rect x="0" y="0"   width="960" height="60"  fill="#080418"/>
-      <rect x="0" y="60"  width="960" height="55"  fill="#110630"/>
-      <rect x="0" y="115" width="960" height="55"  fill="#1e0c48"/>
-      <rect x="0" y="170" width="960" height="50"  fill="#341560"/>
-      <rect x="0" y="220" width="960" height="48"  fill="#4e2070"/>
-      <rect x="0" y="268" width="960" height="44"  fill="#6a2c78"/>
-      <rect x="0" y="312" width="960" height="40"  fill="#8a3070"/>
-      <rect x="0" y="352" width="960" height="35"  fill="#a83858"/>
-      <rect x="0" y="387" width="960" height="28"  fill="#cc5048"/>
-      <rect x="0" y="415" width="960" height="22"  fill="#e07050"/>
-      <rect x="0" y="437" width="960" height="12"  fill="#f09058"/>
-      <rect x="0" y="444" width="960" height="6"   fill="#f4a870" opacity="0.35"/>
-
       <defs>
+        <linearGradient id="twilightSkyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#080418"/>
+          <stop offset="13%"  stop-color="#110630"/>
+          <stop offset="25%"  stop-color="#1e0c48"/>
+          <stop offset="37%"  stop-color="#341560"/>
+          <stop offset="48%"  stop-color="#4e2070"/>
+          <stop offset="57%"  stop-color="#6a2c78"/>
+          <stop offset="66%"  stop-color="#8a3070"/>
+          <stop offset="74%"  stop-color="#a83858"/>
+          <stop offset="82%"  stop-color="#cc5048"/>
+          <stop offset="88%"  stop-color="#e07050"/>
+          <stop offset="94%"  stop-color="#f09058"/>
+          <stop offset="100%" stop-color="#f4a870"/>
+        </linearGradient>
         <mask id="moonmask">
           <circle cx="848" cy="78" r="30" fill="white"/>
           <circle cx="863" cy="68" r="24" fill="black"/>
@@ -217,6 +216,7 @@ function TwilightScene() {
           <stop offset="100%" stop-color="#090d0a"/>
         </linearGradient>
       </defs>
+      <rect x="0" y="0" width="960" height="450" fill="url(#twilightSkyGrad)"/>
       <circle cx="848" cy="78" r="30" fill="#f5e8a8" mask="url(#moonmask)" opacity="0.88"/>
       <circle cx="848" cy="78" r="36" fill="none" stroke="#f5e8a8" strokeWidth="6" opacity="0.06"/>
 
@@ -251,8 +251,6 @@ function TwilightScene() {
 
       <polygon fill="url(#gradFrontHill)"
         points="0,458 75,444 150,454 228,440 306,451 384,438 460,450 538,436 616,448 694,434 770,446 848,434 960,440 960,540 0,540"/>
-
-      <rect x="0" y="488" width="960" height="52" fill="#090d0a"/>
 
       <circle cx="160" cy="435" r="2" fill="#d0f8a0" opacity="0.0">
         <animate attributeName="opacity" values="0;0.8;0" dur="2.8s" repeatCount="indefinite" begin="0s"/>
