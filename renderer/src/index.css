@@ -2163,7 +2163,7 @@ body {
 
 .q-item__xp {
   font-family: var(--font-num);
-  font-size: 14px;
+  font-size: 18px;
   color: var(--gold);
   flex-shrink: 0;
   border: 1px solid rgba(176, 120, 24, 0.2);
@@ -2188,13 +2188,13 @@ body {
 
 .q-item__progress-val {
   font-family: var(--font-num);
-  font-size: 11px;
+  font-size: 17px;
   color: var(--muted);
 }
 
 .q-item__done-label {
   font-family: var(--font-num);
-  font-size: 11px;
+  font-size: 17px;
   color: var(--sage);
 }
 
