@@ -66,7 +66,7 @@ html, body, #root {
 
 body {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text);
   background-color: transparent;
   -webkit-font-smoothing: antialiased;
@@ -148,7 +148,7 @@ body {
 /* ─── SHA chip ───────────────────────────────────────────────── */
 .sha {
   font-family: monospace;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--water);
   background: rgba(0,0,0,0.06);
   padding: 1px 5px;
@@ -347,7 +347,7 @@ body {
 .settings__label {
   display: block;
   font-family: monospace;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text);
   margin-bottom: 6px;
 }
@@ -361,30 +361,30 @@ body {
   padding: 8px 12px;
   color: var(--text);
   font-family: monospace;
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
   transition: border-color 0.15s;
 }
 .settings__input:focus { border-color: var(--accent); outline: none; }
 .settings__input--number { width: 72px; text-align: center; }
-.settings__input--path { font-family: monospace; font-size: 13px; }
+.settings__input--path { font-family: monospace; font-size: 14px; }
 
 .settings__unit {
   font-family: monospace;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   flex-shrink: 0;
 }
 
 .settings__hint {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 6px;
   line-height: 1.65;
 }
 .settings__hint--top { margin-top: 0; margin-bottom: 12px; }
-.settings__hint code { color: var(--accent); font-family: monospace; font-size: 12px; }
+.settings__hint code { color: var(--accent); font-family: monospace; font-size: 14px; }
 
 .settings__repo-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .settings__repo-row { display: flex; gap: 8px; align-items: center; }
@@ -395,7 +395,7 @@ body {
   color: var(--muted);
   cursor: pointer;
   font-family: monospace;
-  font-size: 13px;
+  font-size: 14px;
   padding: 4px 8px;
   transition: color 0.15s;
   flex-shrink: 0;
@@ -407,7 +407,7 @@ body {
   border: 1px dashed var(--pb2);
   color: var(--muted);
   font-family: monospace;
-  font-size: 12px;
+  font-size: 14px;
   padding: 8px 14px;
   cursor: pointer;
   width: 100%;
@@ -735,7 +735,7 @@ body {
 
 .focus-stat__lbl {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -753,7 +753,7 @@ body {
 
 .focus-xp__label {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -775,13 +775,13 @@ body {
 
 .focus-xp__bar-label {
   font-family: monospace;
-  font-size: 8px;
+  font-size: 14px;
   color: var(--muted);
 }
 
 .focus-xp__bar-next {
   font-family: monospace;
-  font-size: 8px;
+  font-size: 14px;
   color: var(--gold);
 }
 
@@ -798,7 +798,7 @@ body {
 
 .focus-git__title {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -819,7 +819,7 @@ body {
 
 .focus-git__empty {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   opacity: 0.6;
   padding: 8px 0;
@@ -836,7 +836,7 @@ body {
 
 .focus-commit__hash {
   font-family: monospace;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--water);
   background: rgba(24,112,168,0.08);
   padding: 1px 5px;
@@ -870,7 +870,7 @@ body {
 
 .focus-commit__meta {
   font-family: monospace;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
   display: flex;
   gap: 8px;
@@ -981,7 +981,7 @@ body {
 
 .sc-stat__label {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1002,14 +1002,14 @@ body {
 
 .sc__xp-bar-level {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text);
   opacity: 0.8;
 }
 
 .sc__xp-bar-next {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -1038,7 +1038,7 @@ body {
 
 .sc__xp-bar-meta {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   text-align: right;
 }
@@ -1259,7 +1259,7 @@ body {
 
 .gb-name {
   font-family: monospace;
-  font-size: 8px;
+  font-size: 14px;
   color: var(--text);
   line-height: 1.3;
 }
@@ -1267,7 +1267,7 @@ body {
 
 .gb-xp {
   font-family: monospace;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--gold-dk);
 }
 
@@ -1293,7 +1293,7 @@ body {
 
 .dp-empty__hint {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   opacity: 0.6;
 }
@@ -1434,7 +1434,7 @@ body {
 
 .quest-card__name {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text);
   line-height: 1.6;
   margin-bottom: 8px;
@@ -1505,7 +1505,7 @@ body {
 
 .dp-badge__desc {
   font-family: monospace;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.5;
 }
@@ -1550,7 +1550,7 @@ body {
 
 .rcl-repo__name {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text);
   flex: 1;
   overflow: hidden;
@@ -1592,7 +1592,7 @@ body {
 
 .rcl-commit__hash {
   font-family: monospace;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--water);
   flex-shrink: 0;
   opacity: 0.9;
@@ -1636,7 +1636,7 @@ body {
   border-bottom: 1px solid var(--pb);
   flex-shrink: 0;
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   background: var(--panel);
   letter-spacing: 0.04em;
@@ -1701,7 +1701,7 @@ body {
 
 .week-chart__commits {
   font-family: monospace;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -1725,7 +1725,7 @@ body {
 
 .timeline-empty__hint {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   opacity: 0.6;
 }
@@ -1956,7 +1956,7 @@ body {
 /* Placeholder */
 .quests__placeholder-text {
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 2;
   letter-spacing: 0.02em;
@@ -2057,7 +2057,7 @@ body {
 .profile__badge-item-name { font-family: var(--font-ui); font-size: 11px; color: var(--text); letter-spacing: 0.02em; }
 .profile__badge-item--locked .profile__badge-item-name { color: var(--muted); }
 
-.profile__badge-item-desc { font-family: monospace; font-size: 9px; color: var(--muted); line-height: 1.4; }
+.profile__badge-item-desc { font-family: monospace; font-size: 14px; color: var(--muted); line-height: 1.4; }
 
 .profile__badge-item-date { font-family: var(--font-num); font-size: 13px; color: var(--gold); }
 
