@@ -141,7 +141,7 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
                   <div className="badge-name">{u.def.name}</div>
                   <div className="badge-desc">{u.def.description}</div>
                 </div>
-                <div className="badge-xp num">+{u.def.xp ?? 50}</div>
+                <div className="badge-xp num">+{u.def.xp ?? 50} xp</div>
               </div>
             ))
           )}

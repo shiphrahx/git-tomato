@@ -136,8 +136,8 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, dayCommit
             <div className="bar-fill" style={{ width: `${lvl ? lvl.pct : 0}%`, background: 'var(--gold)' }} />
           </div>
           <div className="dash-level__xp-row">
-            <span style={{ fontSize: '8px', color: 'var(--muted)' }}>{totalXpEver.toLocaleString()} XP</span>
-            <span style={{ fontSize: '8px', color: 'var(--gold)' }}>
+            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{totalXpEver.toLocaleString()} XP</span>
+            <span style={{ fontSize: '13px', color: 'var(--gold)' }}>
               {lvl ? (lvl.xpNeeded - lvl.xpIntoLevel).toLocaleString() : '—'} to Level {lvl ? lvl.levelNum + 1 : 2}
             </span>
           </div>
@@ -160,7 +160,7 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, dayCommit
           <div key={label} className="card dash-metric">
             <div className="num dash-metric__val">{val}</div>
             <div className="lbl" style={{ marginTop: '3px' }}>{label}</div>
-            <div className="num" style={{ fontSize: '13px', color: positive ? 'var(--sage)' : 'var(--accent)', marginTop: '5px' }}>{delta}</div>
+            <div className="num" style={{ fontSize: '17px', color: positive ? 'var(--sage)' : 'var(--accent)', marginTop: '5px' }}>{delta}</div>
           </div>
         ))}
       </div>
