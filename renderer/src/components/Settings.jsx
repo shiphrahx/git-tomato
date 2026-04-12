@@ -45,7 +45,7 @@ export function Settings() {
     <div className="settings">
       {/* Header bar — matches focus-card-header style */}
       <div className="settings__header">
-        <span className="settings__header-title">git-tomato v0.1</span>
+        <span className="settings__header-title">git-tomato</span>
         <span className="settings__header-tag">Configuration</span>
       </div>
 
