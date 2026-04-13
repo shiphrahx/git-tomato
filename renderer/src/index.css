@@ -2250,14 +2250,12 @@ body {
   font-size: 13px;
   font-family: var(--font-ui);
   image-rendering: pixelated;
-  transition: box-shadow 0.1s step-end;
 }
 
 .wday-dot.hit {
   background: var(--streak-hit-dk);
   border-color: var(--streak-hit);
   color: var(--streak-hit);
-  box-shadow: 0 0 6px 1px var(--streak-hit-glow), inset 0 0 4px rgba(0,230,118,0.2);
 }
 
 .wday-dot.hit::after {
@@ -2268,7 +2266,6 @@ body {
   background: var(--streak-miss-dk);
   border-color: var(--streak-miss);
   color: var(--streak-miss);
-  box-shadow: 0 0 6px 1px var(--streak-miss-glow), inset 0 0 4px rgba(255,23,68,0.15);
 }
 
 .wday-dot.miss::after {
