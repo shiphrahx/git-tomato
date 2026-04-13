@@ -69,6 +69,7 @@ export default function App() {
 
   const [badgeUnlocks, setBadgeUnlocks] = useState([]);
   const [questSlate, setQuestSlate] = useState(undefined);
+  const [productiveDays, setProductiveDays] = useState([]);
 
   // Today tab data fetched eagerly
   const [todaySessions, setTodaySessions] = useState(undefined);
@@ -103,6 +104,7 @@ export default function App() {
     if (!window.electronAPI) return;
     window.electronAPI.getBadgeUnlocks().then(records => setBadgeUnlocks(records ?? []));
     window.electronAPI.getQuestSlate().then(s => setQuestSlate(s ?? null));
+    window.electronAPI.getProductiveDays().then(days => setProductiveDays((days ?? []).map(d => d.day)));
     loadTodayData();
     const unsubBadges = window.electronAPI.onBadgesUpdated(records => setBadgeUnlocks(records ?? []));
     const unsubQuests = window.electronAPI.onQuestsUpdated(s => setQuestSlate(s ?? null));
@@ -115,6 +117,7 @@ export default function App() {
       setCompletedSession(session);
       setTab('timer');
       loadTodayData();
+      window.electronAPI.getProductiveDays().then(days => setProductiveDays((days ?? []).map(d => d.day)));
     });
     return cleanup;
   }, []);
@@ -216,7 +219,7 @@ export default function App() {
 
             {tab === 'quests' && (
               <div className="screen screen--quests">
-                <QuestsScreen questSlate={questSlate} badgeUnlocks={badgeUnlocks} />
+                <QuestsScreen questSlate={questSlate} badgeUnlocks={badgeUnlocks} productiveDays={productiveDays} />
               </div>
             )}
           </div>

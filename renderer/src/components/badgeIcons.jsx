@@ -22,7 +22,7 @@ const BADGE_ICONS = {
 
   first_blood: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#1a0a1a"/>
+
       <rect x="12" y="8" width="26" height="24" fill="#7a1a1a"/>
       <rect x="10" y="10" width="30" height="22" fill="#c02020"/>
       <rect x="12" y="8" width="26" height="4" fill="#e03030"/>
@@ -45,7 +45,7 @@ const BADGE_ICONS = {
 
   firestarter: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#1a0a00"/>
+
       <rect x="20" y="40" width="10" height="4" fill="#e06000"/>
       <rect x="18" y="36" width="14" height="4" fill="#e07000"/>
       <rect x="16" y="32" width="18" height="4" fill="#f08000"/>
@@ -71,7 +71,7 @@ const BADGE_ICONS = {
 
   the_refactorer: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#0a0a1a"/>
+
       <rect x="8" y="20" width="6" height="4" fill="#6080c0"/>
       <rect x="8" y="18" width="4" height="2" fill="#8090d0"/>
       <rect x="10" y="16" width="4" height="2" fill="#8090d0"/>
@@ -97,7 +97,7 @@ const BADGE_ICONS = {
 
   deleter: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#0a0a0a"/>
+
       <rect x="12" y="18" width="26" height="26" fill="#404040"/>
       <rect x="12" y="18" width="26" height="4" fill="#606060"/>
       <rect x="14" y="22" width="22" height="20" fill="#383838"/>
@@ -114,7 +114,7 @@ const BADGE_ICONS = {
 
   polyglot: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080818"/>
+
       <rect x="6" y="6" width="14" height="18" fill="#c0a000"/>
       <rect x="6" y="6" width="14" height="3" fill="#e0c000"/>
       <rect x="14" y="6" width="6" height="6" fill="#806800"/>
@@ -145,7 +145,7 @@ const BADGE_ICONS = {
 
   century: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#0a0a00"/>
+
       <rect x="18" y="8" width="14" height="16" fill="#c8900c"/>
       <rect x="18" y="8" width="14" height="4" fill="#e0b020"/>
       <rect x="16" y="10" width="4" height="10" fill="#e0b020"/>
@@ -165,7 +165,7 @@ const BADGE_ICONS = {
 
   deep_cut: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#0a0808"/>
+
       <rect x="8" y="22" width="30" height="6" fill="#9090a0"/>
       <rect x="8" y="22" width="30" height="2" fill="#c0c0d0"/>
       <rect x="34" y="18" width="8" height="4" fill="#a0a0b0"/>
@@ -190,7 +190,7 @@ const BADGE_ICONS = {
 
   creature_of_habit: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080c10"/>
+
       <rect x="8" y="10" width="34" height="32" fill="#1a2030"/>
       <rect x="8" y="10" width="34" height="6" fill="#4060c0"/>
       <rect x="8" y="16" width="34" height="2" fill="#2a3040"/>
@@ -216,7 +216,7 @@ const BADGE_ICONS = {
 
   iron_week: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080a10"/>
+
       <rect x="12" y="8" width="26" height="28" fill="#506070"/>
       <rect x="12" y="8" width="26" height="4" fill="#708090"/>
       <rect x="10" y="10" width="4" height="22" fill="#708090"/>
@@ -241,7 +241,7 @@ const BADGE_ICONS = {
 
   monthly_committer: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080810"/>
+
       <rect x="28" y="6" width="12" height="2" fill="#e0d080"/>
       <rect x="26" y="8" width="16" height="2" fill="#e8d890"/>
       <rect x="24" y="10" width="18" height="8" fill="#e8d890"/>
@@ -272,7 +272,7 @@ const BADGE_ICONS = {
 
   mono_tasker: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080c08"/>
+
       <rect x="10" y="20" width="30" height="10" fill="#203020"/>
       <rect x="12" y="18" width="26" height="14" fill="#284028"/>
       <rect x="16" y="16" width="18" height="4" fill="#40c040"/>
@@ -298,7 +298,7 @@ const BADGE_ICONS = {
 
   comeback_kid: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#0a0810"/>
+
       <rect x="8" y="42" width="34" height="4" fill="#403020"/>
       <rect x="10" y="40" width="30" height="2" fill="#604030"/>
       <rect x="20" y="24" width="10" height="10" fill="#e06020"/>
@@ -325,7 +325,7 @@ const BADGE_ICONS = {
 
   early_bird: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080818"/>
+
       <rect x="0" y="28" width="50" height="22" fill="#1a0a2a"/>
       <rect x="0" y="26" width="50" height="4" fill="#3a1a4a"/>
       <rect x="14" y="22" width="22" height="6" fill="#f09030"/>
@@ -347,7 +347,7 @@ const BADGE_ICONS = {
 
   night_owl: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#040414"/>
+
       <rect x="8" y="6" width="2" height="2" fill="#e0e0f0"/>
       <rect x="18" y="4" width="2" height="2" fill="#c0c0e0"/>
       <rect x="30" y="8" width="2" height="2" fill="#e0e0f0"/>
@@ -386,7 +386,7 @@ const BADGE_ICONS = {
 
   deep_work: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080c10"/>
+
       <rect x="12" y="6" width="26" height="4" fill="#8060c0"/>
       <rect x="14" y="10" width="22" height="2" fill="#6040a0"/>
       <rect x="16" y="12" width="18" height="2" fill="#c0a020"/>
@@ -410,7 +410,7 @@ const BADGE_ICONS = {
 
   marathon: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#0a0808"/>
+
       <rect x="28" y="6" width="6" height="6" fill="#e0b080"/>
       <rect x="26" y="12" width="8" height="8" fill="#2060d0"/>
       <rect x="18" y="14" width="8" height="4" fill="#2060d0"/>
@@ -441,7 +441,7 @@ const BADGE_ICONS = {
 
   lunch_break_hacker: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#0a0c08"/>
+
       <rect x="8" y="28" width="34" height="2" fill="#505050"/>
       <rect x="8" y="22" width="34" height="6" fill="#303030"/>
       <rect x="10" y="14" width="30" height="14" fill="#202020"/>
@@ -465,7 +465,7 @@ const BADGE_ICONS = {
 
   ghost_mode: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#060810"/>
+
       <rect x="14" y="12" width="22" height="2" fill="#c0c0e0" opacity="0.6"/>
       <rect x="12" y="14" width="26" height="2" fill="#d0d0f0" opacity="0.7"/>
       <rect x="10" y="16" width="30" height="16" fill="#c0c0e0" opacity="0.65"/>
@@ -489,7 +489,7 @@ const BADGE_ICONS = {
 
   greenfield: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080c08"/>
+
       <rect x="0" y="36" width="50" height="14" fill="#1a3010"/>
       <rect x="0" y="34" width="50" height="2" fill="#2a5020"/>
       <rect x="8" y="24" width="4" height="10" fill="#308040"/>
@@ -515,7 +515,7 @@ const BADGE_ICONS = {
 
   silent_majority: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#08080c"/>
+
       <rect x="8" y="8" width="34" height="26" fill="#1a1a2a"/>
       <rect x="8" y="8" width="34" height="4" fill="#2a2a3a"/>
       <rect x="6" y="10" width="4" height="20" fill="#2a2a3a"/>
@@ -538,7 +538,7 @@ const BADGE_ICONS = {
 
   the_cleaner: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080808"/>
+
       <rect x="32" y="6" width="4" height="4" fill="#a06030"/>
       <rect x="30" y="10" width="4" height="4" fill="#a06030"/>
       <rect x="28" y="14" width="4" height="4" fill="#906020"/>
@@ -564,7 +564,7 @@ const BADGE_ICONS = {
 
   level_up_unlocked: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080c18"/>
+
       <rect x="22" y="8" width="6" height="26" fill="#60a0f0"/>
       <rect x="16" y="18" width="6" height="4" fill="#60a0f0"/>
       <rect x="28" y="18" width="6" height="4" fill="#60a0f0"/>
@@ -589,7 +589,7 @@ const BADGE_ICONS = {
 
   principal_engineer: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#08080c"/>
+
       <rect x="20" y="6" width="10" height="2" fill="#c0d0ff"/>
       <rect x="16" y="8" width="18" height="4" fill="#d0e0ff"/>
       <rect x="12" y="12" width="26" height="10" fill="#e0f0ff"/>
@@ -613,7 +613,7 @@ const BADGE_ICONS = {
 
   ten_thousand_lines: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#080c08"/>
+
       <rect x="6" y="34" width="6" height="8" fill="#4080c0"/>
       <rect x="14" y="28" width="6" height="14" fill="#4090d0"/>
       <rect x="22" y="22" width="6" height="20" fill="#40a0e0"/>
@@ -634,7 +634,7 @@ const BADGE_ICONS = {
 
   session_centurion: (
     <svg width="36" height="36" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" shapeRendering="crispEdges">
-      <rect width="50" height="50" fill="#100808"/>
+
       <rect x="22" y="4" width="6" height="2" fill="#d04040"/>
       <rect x="20" y="6" width="10" height="2" fill="#e05050"/>
       <rect x="18" y="8" width="14" height="4" fill="#e06060"/>
