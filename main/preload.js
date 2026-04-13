@@ -76,4 +76,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('quests:updated', handler);
     return () => ipcRenderer.removeListener('quests:updated', handler);
   },
+
+  // Productive days (for weekly streak colouring)
+  getProductiveDays: () => ipcRenderer.invoke('store:getProductiveDays'),
 });

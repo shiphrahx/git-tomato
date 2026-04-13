@@ -38,7 +38,7 @@ function getWeekDays() {
 
 const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
+export function QuestsScreen({ questSlate, badgeUnlocks = [], productiveDays = [] }) {
   const [now] = useState(Date.now());
 
   const quests = questSlate?.quests ?? [];
@@ -119,10 +119,20 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [] }) {
             {weekDays.map(d => {
               const dayOfWeek = new Date(d + 'T12:00:00').getDay();
               const isToday = d === today;
+              const isProductive = productiveDays.includes(d);
+              const isPast = d < today;
+              const boxColor = isProductive
+                ? 'var(--sage)'
+                : isPast
+                  ? '#c0392b'
+                  : undefined;
               return (
                 <div key={d} className="wday">
                   <span className="wday-name">{DAY_LABELS[dayOfWeek]}</span>
-                  <div className={`wday-dot${isToday ? ' today' : ''}`} />
+                  <div
+                    className={`wday-dot${isToday ? ' today' : ''}`}
+                    style={boxColor ? { background: boxColor, borderColor: boxColor } : undefined}
+                  />
                 </div>
               );
             })}

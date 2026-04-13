@@ -269,6 +269,8 @@ app.whenReady().then(() => {
   ipcMain.handle(CHANNELS.QUESTS_GET, () => getTodaySlate());
   ipcMain.handle(CHANNELS.QUESTS_HISTORY_GET, () => store.getAllQuestSlates());
 
+  ipcMain.handle(CHANNELS.STORE_GET_PRODUCTIVE_DAYS, () => store.getAllProductiveDays());
+
   // Settings handlers
   ipcMain.handle(CHANNELS.SETTINGS_OPEN, () => openSettingsWindow());
   ipcMain.handle(CHANNELS.SETTINGS_GET, () => readSettings());
