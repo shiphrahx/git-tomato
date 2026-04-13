@@ -49,6 +49,9 @@ const CHANNELS = {
   QUESTS_GET: 'quests:get',
   QUESTS_UPDATED: 'quests:updated',
   QUESTS_HISTORY_GET: 'quests:historyGet',
+
+  // Productive days (for weekly streak colouring)
+  STORE_GET_PRODUCTIVE_DAYS: 'store:getProductiveDays',
 };
 
 module.exports = { CHANNELS };

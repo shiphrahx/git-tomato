@@ -502,9 +502,11 @@ const CONDITIONS = {
   // C-10: total session duration today >= target hours (in minutes)
   focused_hours(quest, data) {
     const targetMinutes = quest.targetValue * 60;
-    const totalMinutes = data.todaySessions.reduce(
-      (sum, s) => sum + (s.duration_minutes ?? 0), 0
-    );
+    const nowMs = Date.now();
+    const totalMinutes = data.todaySessions.reduce((sum, s) => {
+      const endMs = s.status === 'completed' ? s.ended_at : nowMs;
+      return sum + (endMs - s.started_at) / 60000;
+    }, 0);
     return { met: totalMinutes >= targetMinutes, progress: totalMinutes };
   },
 
