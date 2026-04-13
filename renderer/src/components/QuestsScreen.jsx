@@ -121,18 +121,11 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [], productiveDays = [
               const isToday = d === today;
               const isProductive = productiveDays.includes(d);
               const isPast = d < today;
-              const boxColor = isProductive
-                ? 'var(--sage)'
-                : isPast
-                  ? '#c0392b'
-                  : undefined;
+              const stateClass = isProductive ? ' hit' : isPast ? ' miss' : '';
               return (
                 <div key={d} className="wday">
                   <span className="wday-name">{DAY_LABELS[dayOfWeek]}</span>
-                  <div
-                    className={`wday-dot${isToday ? ' today' : ''}`}
-                    style={boxColor ? { background: boxColor, borderColor: boxColor } : undefined}
-                  />
+                  <div className={`wday-dot${stateClass}${isToday && !isProductive ? ' today' : ''}`} />
                 </div>
               );
             })}
