@@ -41,8 +41,8 @@
   --streak-hit: #00e676;
   --streak-hit-dk: #00701a;
   --streak-hit-glow: rgba(0, 230, 118, 0.45);
-  --streak-miss: #ff1744;
-  --streak-miss-dk: #8b1a2a;
+  --streak-miss: #fff;
+  --streak-miss-dk: #c3263c;
   --streak-miss-glow: rgba(255, 23, 68, 0.35);
 }
 
