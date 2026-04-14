@@ -83,7 +83,7 @@ function HeatmapGrid({ sessions }) {
       {days.map(d => {
         const n = counts[d] || 0;
         const c = commitCounts[d] || 0;
-        const cls = n === 0 ? 'hm' : n <= 1 ? 'hm hm1' : n <= 3 ? 'hm hm2' : n <= 5 ? 'hm hm3' : 'hm hm4';
+        const cls = c === 0 ? 'hm' : c <= 1 ? 'hm hm1' : c <= 3 ? 'hm hm2' : c <= 5 ? 'hm hm3' : 'hm hm4';
         const label = n > 0 ? `${d} — ${c} commit${c !== 1 ? 's' : ''}` : d;
         return <div key={d} className={cls} title={label} />;
       })}
