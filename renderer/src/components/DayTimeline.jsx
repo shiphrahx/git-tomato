@@ -66,20 +66,26 @@ function HeatmapGrid({ sessions }) {
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     days.push(key);
   }
-  // Count sessions per day using local date
+  // Count sessions and commits per day using local date
   const counts = {};
+  const commitCounts = {};
   (sessions ?? []).forEach(s => {
     if (s.type !== 'focus') return;
     const d = new Date(s.started_at);
     const day = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     counts[day] = (counts[day] || 0) + 1;
+    const repos = Array.isArray(s.repos) ? s.repos : [];
+    const sessionCommits = repos.reduce((sum, r) => sum + (r.commits?.length ?? 0), 0);
+    commitCounts[day] = (commitCounts[day] || 0) + sessionCommits;
   });
   return (
     <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '8px' }}>
       {days.map(d => {
         const n = counts[d] || 0;
+        const c = commitCounts[d] || 0;
         const cls = n === 0 ? 'hm' : n <= 1 ? 'hm hm1' : n <= 3 ? 'hm hm2' : n <= 5 ? 'hm hm3' : 'hm hm4';
-        return <div key={d} className={cls} title={d} />;
+        const label = n > 0 ? `${d} — ${c} commit${c !== 1 ? 's' : ''}` : d;
+        return <div key={d} className={cls} title={label} />;
       })}
     </div>
   );
