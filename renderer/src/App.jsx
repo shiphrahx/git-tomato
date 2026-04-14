@@ -71,6 +71,8 @@ export default function App() {
   const [questSlate, setQuestSlate] = useState(undefined);
   const [productiveDays, setProductiveDays] = useState([]);
 
+  const [allSessions, setAllSessions] = useState([]);
+
   // Today tab data fetched eagerly
   const [todaySessions, setTodaySessions] = useState(undefined);
   const [todayCommits, setTodayCommits] = useState(undefined);
@@ -105,6 +107,7 @@ export default function App() {
     window.electronAPI.getBadgeUnlocks().then(records => setBadgeUnlocks(records ?? []));
     window.electronAPI.getQuestSlate().then(s => setQuestSlate(s ?? null));
     window.electronAPI.getProductiveDays().then(days => setProductiveDays((days ?? []).map(d => d.day)));
+    window.electronAPI.getSessions().then(s => setAllSessions(s ?? []));
     loadTodayData();
     const unsubBadges = window.electronAPI.onBadgesUpdated(records => setBadgeUnlocks(records ?? []));
     const unsubQuests = window.electronAPI.onQuestsUpdated(s => setQuestSlate(s ?? null));
@@ -118,6 +121,7 @@ export default function App() {
       setTab('timer');
       loadTodayData();
       window.electronAPI.getProductiveDays().then(days => setProductiveDays((days ?? []).map(d => d.day)));
+      window.electronAPI.getSessions().then(s => setAllSessions(s ?? []));
     });
     return cleanup;
   }, []);
@@ -202,6 +206,7 @@ export default function App() {
                     questSlate={questSlate}
                     badgeUnlocks={badgeUnlocks}
                     sessions={todaySessions}
+                    allSessions={allSessions}
                     dayCommits={todayCommits}
                     dayXp={todayXp}
                     xpState={xpState}

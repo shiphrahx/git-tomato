@@ -66,14 +66,13 @@ function HeatmapGrid({ sessions }) {
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     days.push(key);
   }
-  // Count sessions per day
+  // Count sessions per day using local date
   const counts = {};
   (sessions ?? []).forEach(s => {
     if (s.type !== 'focus') return;
-    let day;
-    if (typeof s.started_at === 'string') day = s.started_at.slice(0, 10);
-    else if (typeof s.started_at === 'number') day = new Date(s.started_at).toISOString().slice(0, 10);
-    if (day) counts[day] = (counts[day] || 0) + 1;
+    const d = new Date(s.started_at);
+    const day = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    counts[day] = (counts[day] || 0) + 1;
   });
   return (
     <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '8px' }}>
@@ -86,7 +85,7 @@ function HeatmapGrid({ sessions }) {
   );
 }
 
-export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, dayCommits, dayXp, xpState, streakState }) {
+export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessions = [], dayCommits, dayXp, xpState, streakState }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60000);
@@ -171,7 +170,7 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, dayCommit
         {/* Heatmap */}
         <div className="card" style={{ padding: '14px' }}>
           <div className="sec-title">Focus Heatmap — 12 Weeks</div>
-          <HeatmapGrid sessions={sessions} />
+          <HeatmapGrid sessions={allSessions} />
           <div style={{ display: 'flex', gap: '5px', alignItems: 'center', marginTop: '8px' }}>
             <span style={{ fontSize: '8px', color: 'var(--muted)' }}>Less</span>
             {['hm','hm hm1','hm hm2','hm hm3','hm hm4'].map((c,i) => (
