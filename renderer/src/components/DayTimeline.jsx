@@ -244,7 +244,10 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
       <div className="card" style={{ padding: '14px' }}>
         <div className="sec-title">Badges Earned</div>
         <div className="dash-badge-grid">
-          {BADGE_DEFS.slice(0, 6).map(b => {
+          {[
+            ...BADGE_DEFS.filter(b => unlockedSlugs.has(b.slug)),
+            ...BADGE_DEFS.filter(b => !unlockedSlugs.has(b.slug)),
+          ].map(b => {
             const earned = unlockedSlugs.has(b.slug);
             return (
               <div key={b.slug} className={`gb${earned ? ' earned' : ' locked'}`}>
