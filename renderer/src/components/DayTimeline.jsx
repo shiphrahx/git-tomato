@@ -171,36 +171,16 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
         ))}
       </div>
 
-      {/* ── Bottom 2-column: Heatmap + Badges ── */}
-      <div className="dash-bottom">
-        {/* Heatmap */}
-        <div className="card" style={{ padding: '14px' }}>
-          <div className="sec-title">Focus Heatmap — 12 Weeks</div>
-          <HeatmapGrid sessions={allSessions} />
-          <div style={{ display: 'flex', gap: '5px', alignItems: 'center', marginTop: '8px' }}>
-            <span style={{ fontSize: '8px', color: 'var(--muted)' }}>Less</span>
-            {['hm','hm hm1','hm hm2','hm hm3','hm hm4'].map((c,i) => (
-              <div key={i} className={c} style={{ width: '9px', height: '9px' }} />
-            ))}
-            <span style={{ fontSize: '8px', color: 'var(--muted)' }}>More</span>
-          </div>
-        </div>
-
-        {/* Badge grid */}
-        <div className="card" style={{ padding: '14px' }}>
-          <div className="sec-title">Badges Earned</div>
-          <div className="dash-badge-grid">
-            {BADGE_DEFS.slice(0, 6).map(b => {
-              const earned = unlockedSlugs.has(b.slug);
-              return (
-                <div key={b.slug} className={`gb${earned ? ' earned' : ' locked'}`}>
-                  <div className="gb-ico"><BadgeIcon slug={b.slug} locked={!earned} /></div>
-                  <div className="gb-name">{b.name}</div>
-                  <div className="gb-xp num">{b.xp ?? 50} XP</div>
-                </div>
-              );
-            })}
-          </div>
+      {/* ── Heatmap (full width) ── */}
+      <div className="card" style={{ padding: '14px' }}>
+        <div className="sec-title">Focus Heatmap — 12 Weeks</div>
+        <HeatmapGrid sessions={allSessions} />
+        <div style={{ display: 'flex', gap: '5px', alignItems: 'center', marginTop: '8px' }}>
+          <span style={{ fontSize: '8px', color: 'var(--muted)' }}>Less</span>
+          {['hm','hm hm1','hm hm2','hm hm3','hm hm4'].map((c,i) => (
+            <div key={i} className={c} style={{ width: '12px', height: '12px' }} />
+          ))}
+          <span style={{ fontSize: '8px', color: 'var(--muted)' }}>More</span>
         </div>
       </div>
 
@@ -259,6 +239,23 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
           <RepoCommitList repos={repos} sessionWindows={sessionWindows} />
         </div>
       )}
+
+      {/* ── Badge grid ── */}
+      <div className="card" style={{ padding: '14px' }}>
+        <div className="sec-title">Badges Earned</div>
+        <div className="dash-badge-grid">
+          {BADGE_DEFS.slice(0, 6).map(b => {
+            const earned = unlockedSlugs.has(b.slug);
+            return (
+              <div key={b.slug} className={`gb${earned ? ' earned' : ' locked'}`}>
+                <div className="gb-ico"><BadgeIcon slug={b.slug} locked={!earned} /></div>
+                <div className="gb-name">{b.name}</div>
+                <div className="gb-xp num">{b.xp ?? 50} XP</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
