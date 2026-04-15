@@ -41,8 +41,8 @@
   --streak-hit: #00e676;
   --streak-hit-dk: #00701a;
   --streak-hit-glow: rgba(0, 230, 118, 0.45);
-  --streak-miss: #ff1744;
-  --streak-miss-dk: #7f0014;
+  --streak-miss: #fff;
+  --streak-miss-dk: #c3263c;
   --streak-miss-glow: rgba(255, 23, 68, 0.35);
 }
 
@@ -75,7 +75,7 @@
   --streak-hit-dk: #004d1a;
   --streak-hit-glow: rgba(0, 230, 118, 0.55);
   --streak-miss: #ff1744;
-  --streak-miss-dk: #4d0010;
+  --streak-miss-dk: #7a1828;
   --streak-miss-glow: rgba(255, 23, 68, 0.45);
 }
 
