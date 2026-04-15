@@ -224,7 +224,7 @@ export default function App() {
 
             {tab === 'quests' && (
               <div className="screen screen--quests">
-                <QuestsScreen questSlate={questSlate} badgeUnlocks={badgeUnlocks} productiveDays={productiveDays} />
+                <QuestsScreen questSlate={questSlate} badgeUnlocks={badgeUnlocks} productiveDays={productiveDays} allSessions={allSessions} />
               </div>
             )}
           </div>

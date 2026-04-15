@@ -38,12 +38,23 @@ function getWeekDays() {
 
 const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-export function QuestsScreen({ questSlate, badgeUnlocks = [], productiveDays = [] }) {
+export function QuestsScreen({ questSlate, badgeUnlocks = [], allSessions = [] }) {
   const [now] = useState(Date.now());
 
   const quests = questSlate?.quests ?? [];
   const today = localDateStr(new Date());
   const weekDays = getWeekDays();
+
+  // Days with any commit (regardless of qualifying threshold)
+  const daysWithCommits = new Set();
+  allSessions.forEach(s => {
+    if (s.type !== 'focus') return;
+    const repos = Array.isArray(s.repos) ? s.repos : [];
+    const hasCommit = repos.some(r => (r.commits?.length ?? 0) > 0);
+    if (!hasCommit) return;
+    const d = new Date(s.started_at);
+    daysWithCommits.add(localDateStr(d));
+  });
 
   // Recent badges (last 5 unlocked)
   const recentBadges = [...badgeUnlocks]
@@ -119,13 +130,13 @@ export function QuestsScreen({ questSlate, badgeUnlocks = [], productiveDays = [
             {weekDays.map(d => {
               const dayOfWeek = new Date(d + 'T12:00:00').getDay();
               const isToday = d === today;
-              const isProductive = productiveDays.includes(d);
+              const hasCommit = daysWithCommits.has(d);
               const isPast = d < today;
-              const stateClass = isProductive ? ' hit' : isPast ? ' miss' : '';
+              const stateClass = hasCommit ? ' hit' : isPast ? ' miss' : '';
               return (
                 <div key={d} className="wday">
                   <span className="wday-name">{DAY_LABELS[dayOfWeek]}</span>
-                  <div className={`wday-dot${stateClass}${isToday && !isProductive ? ' today' : ''}`} />
+                  <div className={`wday-dot${stateClass}${isToday && !hasCommit ? ' today' : ''}`} />
                 </div>
               );
             })}
