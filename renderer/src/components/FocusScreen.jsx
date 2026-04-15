@@ -1,6 +1,21 @@
 import React from 'react';
 import { TomatoSprite, getTomatoState } from './TomatoSprite';
 
+const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getWeekDays() {
+  const today = new Date();
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    return localDateStr(d);
+  });
+}
+
 // Flatten all commits from dayCommits into a flat list with repo name attached
 function flatCommits(dayCommits) {
   if (!dayCommits?.repos) return [];
@@ -21,7 +36,7 @@ function isInSession(timestamp, sessionWindows) {
 export function FocusScreen({
   timeLeft, totalSeconds, status, type,
   onStart, onPause, onReset, onSelectFocus, onSelectShortBreak, onSelectLongBreak, onConfig,
-  todaySessions, todayCommits, todayXp,
+  todaySessions, todayCommits, todayXp, allSessions = [],
 }) {
   const progress = totalSeconds > 0 ? timeLeft / totalSeconds : 1;
   const spriteState = getTomatoState(progress);
@@ -39,6 +54,17 @@ export function FocusScreen({
   const xpToday = todayXp?.xp ?? 0;
 
   const commits = flatCommits(todayCommits);
+
+  // Weekly streak — days with any commit
+  const today = localDateStr(new Date());
+  const weekDays = getWeekDays();
+  const daysWithCommits = new Set();
+  allSessions.forEach(s => {
+    if (s.type !== 'focus') return;
+    const repos = Array.isArray(s.repos) ? s.repos : [];
+    if (!repos.some(r => (r.commits?.length ?? 0) > 0)) return;
+    daysWithCommits.add(localDateStr(new Date(s.started_at)));
+  });
 
   const phaseLabel = type === 'focus'
     ? '▶ Deep Focus Mode'
@@ -173,6 +199,26 @@ export function FocusScreen({
           <div className="card focus-stat">
             <span className="focus-stat__val num">{todayLines}</span>
             <span className="focus-stat__lbl">Lines</span>
+          </div>
+        </div>
+
+        {/* Weekly streak */}
+        <div className="card quests-streak">
+          <div className="sec-title" style={{ marginBottom: '10px' }}>Weekly Streak</div>
+          <div className="quests-streak__days">
+            {weekDays.map(d => {
+              const dayOfWeek = new Date(d + 'T12:00:00').getDay();
+              const isToday = d === today;
+              const hasCommit = daysWithCommits.has(d);
+              const isPast = d < today;
+              const stateClass = hasCommit ? ' hit' : isPast ? ' miss' : '';
+              return (
+                <div key={d} className="wday">
+                  <span className="wday-name">{DAY_LABELS[dayOfWeek]}</span>
+                  <div className={`wday-dot${stateClass}${isToday && !hasCommit ? ' today' : ''}`} />
+                </div>
+              );
+            })}
           </div>
         </div>
 
