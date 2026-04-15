@@ -937,7 +937,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow: hidden;
+  overflow-y: auto;
   min-height: 0;
 }
 

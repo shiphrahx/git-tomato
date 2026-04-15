@@ -31,7 +31,6 @@ const isSettingsWindow = new URLSearchParams(window.location.search).get('view')
 const TABS = [
   { id: 'timer',  label: '[ Focus ]'  },
   { id: 'today',  label: '[ Stats ]'  },
-  { id: 'quests', label: '[ Quests ]' },
 ];
 
 function getThemeByTime() {
@@ -189,6 +188,7 @@ export default function App() {
                   todaySessions={todaySessions}
                   todayCommits={todayCommits}
                   todayXp={todayXp}
+                  allSessions={allSessions}
                 />
               </div>
             )}
@@ -222,11 +222,6 @@ export default function App() {
               </div>
             )}
 
-            {tab === 'quests' && (
-              <div className="screen screen--quests">
-                <QuestsScreen questSlate={questSlate} badgeUnlocks={badgeUnlocks} productiveDays={productiveDays} allSessions={allSessions} />
-              </div>
-            )}
           </div>
         </div>
       </div>
