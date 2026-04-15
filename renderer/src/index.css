@@ -407,6 +407,10 @@ body {
   overflow: hidden;
 }
 
+.screen--config {
+  overflow-y: auto;
+}
+
 .screen--sc {
   overflow-y: auto;
 }

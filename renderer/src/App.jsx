@@ -26,11 +26,10 @@ import { FocusScreen } from './components/FocusScreen';
 import { QuestsScreen } from './components/QuestsScreen';
 
 // Settings window loads the same renderer with ?view=settings
-const isSettingsWindow = new URLSearchParams(window.location.search).get('view') === 'settings';
-
 const TABS = [
   { id: 'timer',  label: '[ Focus ]'  },
   { id: 'today',  label: '[ Stats ]'  },
+  { id: 'config', label: '[ Config ]' },
 ];
 
 function getThemeByTime() {
@@ -47,20 +46,6 @@ function getInitialTheme() {
 }
 
 export default function App() {
-  if (isSettingsWindow) {
-    const theme = getInitialTheme();
-    return (
-      <div className="app-shell" data-theme={theme}>
-        <BackgroundScene theme={theme} />
-        <div className="panel">
-          <div className="app-content app-content--settings">
-            <Settings />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const { timeLeft, totalSeconds, status, type, start, pause, reset: resetTimer, stop, startShortBreak, startLongBreak } = useTimer();
   const [tab, setTab] = useState('timer');
   const [completedSession, setCompletedSession] = useState(null);
@@ -184,7 +169,7 @@ export default function App() {
                   onSelectFocus={stop}
                   onSelectShortBreak={startShortBreak}
                   onSelectLongBreak={startLongBreak}
-                  onConfig={() => window.electronAPI?.openSettings()}
+                  onConfig={() => setTab('config')}
                   todaySessions={todaySessions}
                   todayCommits={todayCommits}
                   todayXp={todayXp}
@@ -219,6 +204,12 @@ export default function App() {
             {tab === 'week' && (
               <div className="screen screen--week">
                 <WeekDigest />
+              </div>
+            )}
+
+            {tab === 'config' && (
+              <div className="screen screen--config">
+                <Settings />
               </div>
             )}
 
