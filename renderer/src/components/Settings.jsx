@@ -13,6 +13,21 @@ export function Settings() {
     setSaved(false);
   }
 
+  function handleDurationChange(field, raw) {
+    // Store raw string while typing so the field can be cleared
+    setSettings(prev => ({ ...prev, [field]: raw }));
+    setSaved(false);
+  }
+
+  function handleDurationBlur(field, raw, fallback) {
+    const parsed = parseInt(raw);
+    if (isNaN(parsed) || parsed < 1) {
+      setSettings(prev => ({ ...prev, [field]: fallback }));
+    } else {
+      setSettings(prev => ({ ...prev, [field]: parsed }));
+    }
+  }
+
   function handleRepoPathChange(index, value) {
     const updated = [...(settings.repoPaths ?? [])];
     updated[index] = value;
@@ -62,7 +77,8 @@ export function Settings() {
               min="1"
               max="120"
               value={settings.focusDuration}
-              onChange={e => handleChange('focusDuration', parseInt(e.target.value) || 25)}
+              onChange={e => handleDurationChange('focusDuration', e.target.value)}
+              onBlur={e => handleDurationBlur('focusDuration', e.target.value, 25)}
             />
             <span className="settings__unit">min</span>
           </div>
@@ -77,7 +93,8 @@ export function Settings() {
               min="1"
               max="60"
               value={settings.shortBreak}
-              onChange={e => handleChange('shortBreak', parseInt(e.target.value) || 5)}
+              onChange={e => handleDurationChange('shortBreak', e.target.value)}
+              onBlur={e => handleDurationBlur('shortBreak', e.target.value, 5)}
             />
             <span className="settings__unit">min</span>
           </div>
@@ -92,7 +109,8 @@ export function Settings() {
               min="1"
               max="60"
               value={settings.longBreak ?? 15}
-              onChange={e => handleChange('longBreak', parseInt(e.target.value) || 15)}
+              onChange={e => handleDurationChange('longBreak', e.target.value)}
+              onBlur={e => handleDurationBlur('longBreak', e.target.value, 15)}
             />
             <span className="settings__unit">min</span>
           </div>
