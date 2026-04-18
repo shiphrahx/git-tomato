@@ -158,29 +158,33 @@ export default function App() {
           <div className="panel__body">
             {tab === 'timer' && !showSessionComplete && (
               <div className="screen screen--timer">
-                <FocusScreen
-                  timeLeft={timeLeft}
-                  totalSeconds={totalSeconds}
-                  status={status}
-                  type={type}
-                  onStart={start}
-                  onPause={pause}
-                  onReset={reset}
-                  onSelectFocus={stop}
-                  onSelectShortBreak={startShortBreak}
-                  onSelectLongBreak={startLongBreak}
-                  onConfig={() => setTab('config')}
-                  todaySessions={todaySessions}
-                  todayCommits={todayCommits}
-                  todayXp={todayXp}
-                  allSessions={allSessions}
-                />
+                <ErrorBoundary>
+                  <FocusScreen
+                    timeLeft={timeLeft}
+                    totalSeconds={totalSeconds}
+                    status={status}
+                    type={type}
+                    onStart={start}
+                    onPause={pause}
+                    onReset={reset}
+                    onSelectFocus={stop}
+                    onSelectShortBreak={startShortBreak}
+                    onSelectLongBreak={startLongBreak}
+                    onConfig={() => setTab('config')}
+                    todaySessions={todaySessions}
+                    todayCommits={todayCommits}
+                    todayXp={todayXp}
+                    allSessions={allSessions}
+                  />
+                </ErrorBoundary>
               </div>
             )}
 
             {showSessionComplete && (
               <div className="screen screen--sc">
-                <SessionComplete session={completedSession} onDismiss={handleDismissComplete} />
+                <ErrorBoundary>
+                  <SessionComplete session={completedSession} onDismiss={handleDismissComplete} />
+                </ErrorBoundary>
               </div>
             )}
 
@@ -209,7 +213,9 @@ export default function App() {
 
             {tab === 'config' && (
               <div className="screen screen--config">
-                <Settings />
+                <ErrorBoundary>
+                  <Settings />
+                </ErrorBoundary>
               </div>
             )}
 
