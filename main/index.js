@@ -298,8 +298,20 @@ app.whenReady().then(() => {
   });
   ipcMain.handle(CHANNELS.SETTINGS_SET, async (_, s) => {
     try {
-      writeSettings(s);
-      timer.updateSettings(s);
+      if (!s || typeof s !== 'object') throw new Error('Invalid settings object');
+      const clamp = (v, min, max, def) => {
+        const n = parseInt(v);
+        return (isNaN(n) || n < min || n > max) ? def : n;
+      };
+      const validated = {
+        focusDuration: clamp(s.focusDuration, 1, 120, 25),
+        shortBreak:    clamp(s.shortBreak,    1,  60, 5),
+        longBreak:     clamp(s.longBreak,     1,  60, 15),
+        repoPaths:     Array.isArray(s.repoPaths) ? s.repoPaths.filter(p => typeof p === 'string' && p.trim()) : [],
+        githubToken:   typeof s.githubToken === 'string' ? s.githubToken : '',
+      };
+      writeSettings(validated);
+      timer.updateSettings(validated);
       invalidateSettingsCache();
       return { ok: true };
     } catch (e) {
