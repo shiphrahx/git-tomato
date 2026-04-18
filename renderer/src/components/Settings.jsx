@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 export function Settings() {
   const [settings, setSettings] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   useEffect(() => {
     window.electronAPI.getSettings().then(setSettings);
@@ -47,9 +48,15 @@ export function Settings() {
   }
 
   async function handleSave() {
-    await window.electronAPI.setSettings(settings);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setSaveError(null);
+    try {
+      const result = await window.electronAPI.setSettings(settings);
+      if (result?.ok === false) throw new Error(result.error ?? 'Unknown error');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      setSaveError('Failed to save: ' + e.message);
+    }
   }
 
   if (!settings) {
@@ -178,6 +185,9 @@ export function Settings() {
         >
           {saved ? 'Saved ✓' : 'Save settings'}
         </button>
+        {saveError && (
+          <div className="settings__save-error">{saveError}</div>
+        )}
       </div>
     </div>
   );

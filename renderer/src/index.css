@@ -605,7 +605,15 @@ body {
 .settings__footer {
   padding: 4px 0 8px;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.settings__save-error {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--streak-miss);
 }
 
 .settings-loading {
