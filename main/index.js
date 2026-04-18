@@ -116,7 +116,9 @@ app.whenReady().then(() => {
     app.setAppUserModelId('com.git-tomato.app');
   }
 
-  const iconPath = path.join(__dirname, '../assets/trayTemplate.png');
+  const iconPath = process.platform === 'win32'
+    ? path.join(__dirname, '../assets/tray_icons/windows/tray.ico')
+    : path.join(__dirname, '../assets/tray_icons/macos/tray_22Template.png');
   const icon = nativeImage.createFromPath(iconPath);
 
   // Cap height to workArea on Windows
