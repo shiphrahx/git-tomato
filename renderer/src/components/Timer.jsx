@@ -21,13 +21,12 @@ export function Timer({ timeLeft, totalSeconds, status }) {
       {/* Glow layer behind the ring */}
       <div className={`timer-glow${isRunning ? ' timer-glow--active' : ''}`} />
 
-      <div className="timer-ring-container" style={{ width: SIZE, height: SIZE, position: 'relative' }}>
+      <div className="timer-ring-container" style={{ width: SIZE, height: SIZE }}>
         <svg
           width={SIZE}
           height={SIZE}
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="timer-svg"
-          style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}
           overflow="visible"
         >
           <defs>
@@ -67,7 +66,7 @@ export function Timer({ timeLeft, totalSeconds, status }) {
             strokeLinecap="round"
             transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
             filter="url(#ring-glow)"
-            style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+            className="timer-progress-ring"
           />
 
           <defs>

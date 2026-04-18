@@ -108,7 +108,7 @@ export function FocusScreen({
             </div>
             <div className="focus-energy-label">⚡ Energy: {energyLabel}</div>
             <div className="bar-wrap focus-energy__bar">
-              <div className="bar-fill focus-energy__fill" style={{ width: `${pct}%` }} />
+              <div className="bar-fill focus-energy__fill" style={{ width: `${pct}%` }} />  {/* dynamic width — kept inline */}
             </div>
           </div>
 
@@ -116,8 +116,7 @@ export function FocusScreen({
           <div className="focus-digits num">{mins}:{secs}</div>
 
           {/* Phase label */}
-          <div className={`focus-phase${isRunning ? '' : ' focus-phase--idle'}`}
-               style={isRunning ? {} : { animationPlayState: 'paused', opacity: 0.5 }}>
+          <div className={`focus-phase${isRunning ? '' : ' focus-phase--idle'}`}>
             {phaseLabel}
           </div>
 
@@ -138,8 +137,8 @@ export function FocusScreen({
           {/* FIX 5 — Time Remaining bar */}
           <div className="focus-time-remaining">
             <div className="lbl">Time Remaining</div>
-            <div className="bar-wrap" style={{ height: '7px' }}>
-              <div className="bar-fill" style={{ width: `${pct}%`, background: 'var(--accent)' }} />
+            <div className="bar-wrap">
+              <div className="bar-fill" style={{ width: `${pct}%` }} />  {/* dynamic width — kept inline */}
             </div>
           </div>
 
@@ -163,7 +162,7 @@ export function FocusScreen({
               >Long</button>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div className="focus-controls__row">
               <button
                 className="btn btn-coral"
                 onClick={isRunning ? onPause : onStart}
@@ -204,7 +203,7 @@ export function FocusScreen({
 
         {/* Weekly streak */}
         <div className="card quests-streak">
-          <div className="sec-title" style={{ marginBottom: '10px' }}>Weekly Streak</div>
+          <div className="sec-title quests-streak__title">Weekly Streak</div>
           <div className="quests-streak__days">
             {weekDays.map(d => {
               const dayOfWeek = new Date(d + 'T12:00:00').getDay();
@@ -226,8 +225,8 @@ export function FocusScreen({
         <div className="card card--gold focus-xp-card">
           <div className="focus-xp__label">XP Today</div>
           <div className="focus-xp__gained num">+{xpToday}</div>
-          <div className="bar-wrap" style={{ height: '9px', marginTop: '4px' }}>
-            <div className="bar-fill" style={{ width: `${Math.min(100, xpToday / 5)}%`, background: 'var(--gold)' }} />
+          <div className="bar-wrap">
+            <div className="bar-fill" style={{ width: `${Math.min(100, xpToday / 5)}%` }} />  {/* dynamic width — kept inline */}
           </div>
           <div className="focus-xp__bar-row">
             <span className="focus-xp__bar-label">{xpToday} XP</span>
@@ -256,8 +255,8 @@ export function FocusScreen({
                     <div className="focus-commit__body">
                       <span className="focus-commit__msg">{c.message}</span>
                       <span className="focus-commit__meta">
-                        <span style={{ color: 'var(--muted)' }}>{c.repo}</span>
-                        {duringSession && <span style={{ color: 'var(--accent)' }}>🍅</span>}
+                        <span className="focus-commit__repo-name">{c.repo}</span>
+                        {duringSession && <span className="focus-commit__session-indicator">🍅</span>}
                       </span>
                     </div>
                   </div>

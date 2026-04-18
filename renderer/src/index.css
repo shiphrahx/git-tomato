@@ -751,6 +751,11 @@ body {
   text-transform: uppercase;
 }
 
+.focus-phase--idle {
+  animation-play-state: paused;
+  opacity: 0.5;
+}
+
 /* FIX 2 — Session counter line */
 .focus-session-line {
   font-family: var(--font-ui);
@@ -948,6 +953,22 @@ body {
   opacity: 0.9;
 }
 
+/* Action button row (play + restart + config) */
+.focus-controls__row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Time-remaining bar */
+.focus-time-remaining .bar-wrap {
+  height: 7px;
+}
+
+.focus-time-remaining .bar-fill {
+  background: var(--accent);
+}
+
 /* Right column */
 .focus-side {
   display: flex;
@@ -1013,6 +1034,16 @@ body {
   font-size: 32px;
   color: var(--gold);
   line-height: 1;
+}
+
+/* XP bar inside the xp card */
+.focus-xp-card .bar-wrap {
+  height: 9px;
+  margin-top: 4px;
+}
+
+.focus-xp-card .bar-fill {
+  background: var(--gold);
 }
 
 .focus-xp__bar-row {
@@ -1329,6 +1360,11 @@ body {
   text-align: right;
 }
 
+.sc__xp-to-next {
+  font-family: var(--font-num);
+  font-size: 16px;
+}
+
 .sc__xp-row-total {
   display: flex;
   align-items: center;
@@ -1475,6 +1511,25 @@ body {
   margin-top: 3px;
 }
 
+.dash-level__xp-total {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dash-level__xp-remaining {
+  font-size: 13px;
+  color: var(--gold);
+}
+
+/* XP bar height inside level card */
+.dash-level .bar-wrap {
+  height: 9px;
+}
+
+.dash-level__lbl-spacing {
+  margin-bottom: 6px;
+}
+
 .dash-streak {
   display: flex;
   flex-direction: column;
@@ -1489,6 +1544,15 @@ body {
   font-size: 38px;
   color: var(--accent);
   line-height: 1;
+}
+
+.dash-streak__fire {
+  font-size: 14px;
+  animation: blink 0.9s step-end infinite alternate;
+}
+
+.dash-streak__label {
+  margin: 0;
 }
 
 /* 4-column metrics */
@@ -1513,6 +1577,24 @@ body {
   line-height: 1;
 }
 
+.dash-metric__label {
+  margin-top: 3px;
+}
+
+.dash-metric__delta {
+  font-family: var(--font-num);
+  font-size: 17px;
+  margin-top: 5px;
+}
+
+.dash-metric__delta--positive {
+  color: var(--sage);
+}
+
+.dash-metric__delta--negative {
+  color: var(--accent);
+}
+
 /* Heatmap cells */
 .hm {
   width: 22px;
@@ -1534,6 +1616,86 @@ body {
 
 .hm4 {
   background: var(--hm-4);
+}
+
+/* Heatmap grid wrapper */
+.hm-grid {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* Heatmap legend */
+.hm-legend {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.hm-legend__label {
+  font-size: 8px;
+  color: var(--muted);
+}
+
+.hm-legend__sample {
+  width: 12px;
+  height: 12px;
+}
+
+/* Heatmap card */
+.heatmap-card {
+  padding: 14px;
+}
+
+/* Quests card */
+.quests-card {
+  padding: 16px;
+}
+
+/* Quests card header row */
+.quests-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(90, 55, 130, 0.10);
+}
+
+.quests-header__title {
+  margin: 0;
+}
+
+.quests-header__countdown {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Quest progress bar (inside q-item) */
+.q-progress-wrap {
+  height: 6px;
+  margin-bottom: 3px;
+}
+
+/* Quest expired label */
+.q-item__expired-label {
+  font-family: var(--font-num);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* Quest progress value — binary (hidden target) */
+.q-item__progress-val--empty {
+  opacity: 0.35;
+}
+
+/* Commits / badge cards */
+.commits-card,
+.badges-card {
+  padding: 14px;
 }
 
 /* Badge grid */
@@ -2114,6 +2276,40 @@ body {
 /* Daily quests card height cap */
 .quests-daily-card {
   max-height: 580px;
+  padding: 16px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.quests-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.quests-badges {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.quests-countdown {
+  text-align: center;
+  font-size: 9px;
+  color: var(--muted);
+  padding-bottom: 4px;
+}
+
+.quests-countdown__num {
+  font-size: 14px;
+}
+
+.quests-badge-placeholder {
+  font-size: 9px;
+  color: var(--muted);
+  line-height: 2;
 }
 
 /* Quest items */
@@ -2165,6 +2361,10 @@ body {
   padding-right: 8px;
 }
 
+.q-item__name--complete {
+  color: var(--sage);
+}
+
 .q-item__xp {
   font-family: var(--font-num);
   font-size: 18px;
@@ -2173,6 +2373,12 @@ body {
   border: 1px solid rgba(176, 120, 24, 0.2);
   background: rgba(176, 120, 24, 0.08);
   padding: 0 6px;
+}
+
+.q-item__xp--complete {
+  color: var(--sage);
+  background: rgba(38, 120, 40, 0.1);
+  border-color: rgba(38, 120, 40, 0.22);
 }
 
 .q-item__desc {
@@ -2209,6 +2415,10 @@ body {
   flex-direction: column;
   gap: 0;
   flex-shrink: 0;
+}
+
+.quests-streak__title {
+  margin-bottom: 10px;
 }
 
 .quests-streak__days {
@@ -2389,4 +2599,70 @@ body {
 .badge-header {
   display: none;
   /* replaced by theme-toggle area */
+}
+
+/* ─── Tomato sprite ──────────────────────────────────────────── */
+.tomato-sprite {
+  image-rendering: pixelated;
+  display: block;
+}
+
+/* ─── Timer ring container ───────────────────────────────────── */
+.timer-ring-container {
+  position: relative;
+}
+
+.timer-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+}
+
+.timer-progress-ring {
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+/* ─── Background scene ───────────────────────────────────────── */
+#scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ─── Badge icon ─────────────────────────────────────────────── */
+.badge-svg-icon {
+  display: inline-flex;
+}
+
+.badge-svg-icon--locked {
+  filter: grayscale(1) brightness(0.4);
+}
+
+/* ─── Session card ───────────────────────────────────────────── */
+.session-card__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 10px 14px;
+  cursor: default;
+}
+
+.session-card__header--clickable {
+  cursor: pointer;
+}
+
+/* ─── Commit meta ────────────────────────────────────────────── */
+.focus-commit__repo-name {
+  color: var(--muted);
+}
+
+.focus-commit__session-indicator {
+  color: var(--accent);
 }

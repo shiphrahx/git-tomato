@@ -79,7 +79,7 @@ function HeatmapGrid({ sessions }) {
     commitCounts[day] = (commitCounts[day] || 0) + sessionCommits;
   });
   return (
-    <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '8px' }}>
+    <div className="hm-grid">
       {days.map(d => {
         const n = counts[d] || 0;
         const c = commitCounts[d] || 0;
@@ -135,23 +135,23 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
         </div>
         <div className="dash-level__info">
           <div className="dash-level__name">{lvl ? lvl.level.title : 'Seedling'}</div>
-          <div className="lbl" style={{ marginBottom: '6px' }}>
+          <div className="lbl dash-level__lbl-spacing">
             XP — Level {lvl ? lvl.levelNum : 1} → {lvl ? lvl.levelNum + 1 : 2}
           </div>
-          <div className="bar-wrap" style={{ height: '9px' }}>
+          <div className="bar-wrap">
             <div className="bar-fill" style={{ width: `${lvl ? lvl.pct : 0}%`, background: 'var(--gold)' }} />
           </div>
           <div className="dash-level__xp-row">
-            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{totalXpEver.toLocaleString()} XP</span>
-            <span style={{ fontSize: '13px', color: 'var(--gold)' }}>
+            <span className="dash-level__xp-total">{totalXpEver.toLocaleString()} XP</span>
+            <span className="dash-level__xp-remaining">
               {lvl ? (lvl.xpNeeded - lvl.xpIntoLevel).toLocaleString() : '—'} to Level {lvl ? lvl.levelNum + 1 : 2}
             </span>
           </div>
         </div>
         <div className="dash-streak">
-          <div className="dash-streak__fire" style={{ fontSize: '14px', animation: 'blink 0.9s step-end infinite alternate' }}>🔥</div>
+          <div className="dash-streak__fire">🔥</div>
           <div className="num dash-streak__num">{streak}</div>
-          <div className="lbl" style={{ margin: 0 }}>day streak</div>
+          <div className="lbl dash-streak__label">day streak</div>
         </div>
       </div>
 
@@ -165,31 +165,31 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
         ].map(({ val, label, delta, positive }) => (
           <div key={label} className="card dash-metric">
             <div className="num dash-metric__val">{val}</div>
-            <div className="lbl" style={{ marginTop: '3px' }}>{label}</div>
-            <div className="num" style={{ fontSize: '17px', color: positive ? 'var(--sage)' : 'var(--accent)', marginTop: '5px' }}>{delta}</div>
+            <div className="lbl dash-metric__label">{label}</div>
+            <div className={`dash-metric__delta${positive ? ' dash-metric__delta--positive' : ' dash-metric__delta--negative'}`}>{delta}</div>
           </div>
         ))}
       </div>
 
       {/* ── Heatmap (full width) ── */}
-      <div className="card" style={{ padding: '14px' }}>
+      <div className="card heatmap-card">
         <div className="sec-title">Focus Heatmap — 12 Weeks</div>
         <HeatmapGrid sessions={allSessions} />
-        <div style={{ display: 'flex', gap: '5px', alignItems: 'center', marginTop: '8px' }}>
-          <span style={{ fontSize: '8px', color: 'var(--muted)' }}>Less</span>
+        <div className="hm-legend">
+          <span className="hm-legend__label">Less</span>
           {['hm','hm hm1','hm hm2','hm hm3','hm hm4'].map((c,i) => (
-            <div key={i} className={c} style={{ width: '12px', height: '12px' }} />
+            <div key={i} className={`${c} hm-legend__sample`} />
           ))}
-          <span style={{ fontSize: '8px', color: 'var(--muted)' }}>More</span>
+          <span className="hm-legend__label">More</span>
         </div>
       </div>
 
       {/* ── Daily quests ── */}
-      <div className="card" style={{ padding: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px dashed rgba(90,55,130,0.10)' }}>
-          <span className="sec-title" style={{ margin: 0 }}>Daily Quests</span>
+      <div className="card quests-card">
+        <div className="quests-header">
+          <span className="sec-title quests-header__title">Daily Quests</span>
           {questSlate && (
-            <span className="num" style={{ fontSize: '14px', color: 'var(--muted)' }}>Resets in {formatCountdown(now)}</span>
+            <span className="num quests-header__countdown">Resets in {formatCountdown(now)}</span>
           )}
         </div>
 
@@ -211,7 +211,7 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
                 <span className="q-item__xp">+{xp} XP</span>
               </div>
               {q.desc && <div className="q-item__desc">{q.desc}</div>}
-              <div className="bar-wrap" style={{ height: '6px', marginBottom: '3px' }}>
+              <div className="bar-wrap q-progress-wrap">
                 <div className="bar-fill" style={{
                   width: `${pct}%`,
                   background: isComplete ? 'var(--sage)' : !isComplete && !isExpired ? 'var(--accent)' : 'var(--water)',
@@ -219,12 +219,12 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
               </div>
               <div className="q-item__progress-row">
                 {isComplete && <span className="q-item__done-label">✓ Complete!</span>}
-                {isExpired && <span style={{ fontFamily: 'var(--font-num)', fontSize: '11px', color: 'var(--muted)', opacity: 0.6 }}>Expired</span>}
+                {isExpired && <span className="q-item__expired-label">Expired</span>}
                 {!isComplete && !isExpired && !isBinary && q.targetValue > 0 && (
                   <span className="q-item__progress-val">{q.progress ?? 0} / {q.targetValue}</span>
                 )}
                 {!isComplete && !isExpired && isBinary && (
-                  <span className="q-item__progress-val" style={{ opacity: 0.35 }}>—</span>
+                  <span className="q-item__progress-val q-item__progress-val--empty">—</span>
                 )}
               </div>
             </div>
@@ -234,14 +234,14 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
 
       {/* ── Commits by repo ── */}
       {repos.length > 0 && (
-        <div className="card" style={{ padding: '14px' }}>
+        <div className="card commits-card">
           <div className="sec-title">Commits Today</div>
           <RepoCommitList repos={repos} sessionWindows={sessionWindows} />
         </div>
       )}
 
       {/* ── Badge grid ── */}
-      <div className="card" style={{ padding: '14px' }}>
+      <div className="card badges-card">
         <div className="sec-title">Badges Earned</div>
         <div className="dash-badge-grid">
           {[

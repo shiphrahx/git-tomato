@@ -7,10 +7,7 @@ export function BadgeIcon({ slug, locked = false }) {
   const icon = BADGE_ICONS[slug];
   if (!icon) return null;
   return (
-    <span
-      className="badge-svg-icon"
-      style={{ display: 'inline-flex', filter: locked ? 'grayscale(1) brightness(0.4)' : 'none' }}
-    >
+    <span className={`badge-svg-icon${locked ? ' badge-svg-icon--locked' : ''}`}>
       {icon}
     </span>
   );
