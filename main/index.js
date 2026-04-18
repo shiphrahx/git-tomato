@@ -1,4 +1,4 @@
-const { app, ipcMain, shell, nativeImage, screen, BrowserWindow, Tray, Menu } = require('electron');
+const { app, ipcMain, shell, nativeImage, screen, BrowserWindow, Tray, Menu, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { CHANNELS } = require('./ipc');
@@ -27,22 +27,46 @@ const DEFAULT_SETTINGS = {
   githubToken: '',
 };
 
+function decryptToken(encrypted) {
+  try {
+    if (!encrypted || !safeStorage.isEncryptionAvailable()) return '';
+    return safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+  } catch (_) { return ''; }
+}
+
+function encryptToken(plain) {
+  try {
+    if (!plain || !safeStorage.isEncryptionAvailable()) return '';
+    return safeStorage.encryptString(plain).toString('base64');
+  } catch (_) { return ''; }
+}
+
 function readSettings() {
   try {
     const saved = JSON.parse(fs.readFileSync(SETTINGS_PATH(), 'utf8'));
-    // Merge with defaults so newly added fields are always present
-    return { ...DEFAULT_SETTINGS, ...saved };
-  } catch (_) {
+    const merged = { ...DEFAULT_SETTINGS, ...saved };
+    // Decrypt token if stored encrypted; fall back to plaintext for migration
+    if (merged._tokenEncrypted) {
+      merged.githubToken = decryptToken(merged._tokenEncrypted);
+      delete merged._tokenEncrypted;
+    }
+    return merged;
+  } catch (e) {
+    console.error('[settings] Failed to read settings, using defaults:', e.message);
     return { ...DEFAULT_SETTINGS };
   }
 }
 
 function writeSettings(settings) {
-  fs.writeFileSync(SETTINGS_PATH(), JSON.stringify(settings, null, 2));
+  const toWrite = { ...settings };
+  if (toWrite.githubToken) {
+    toWrite._tokenEncrypted = encryptToken(toWrite.githubToken);
+    toWrite.githubToken = '';
+  }
+  fs.writeFileSync(SETTINGS_PATH(), JSON.stringify(toWrite, null, 2));
 }
 
 let mainWindow = null;
-let settingsWindow = null;
 let tray = null;
 
 // D-1, D-2, D-3: build streak state payload with computed at-risk booleans.
@@ -123,7 +147,6 @@ app.whenReady().then(() => {
     frame: true,
   });
 
-  mainWindow.maximize();
 
   mainWindow.loadURL(RENDERER_URL);
   mainWindow.setMenuBarVisibility(false);
@@ -133,47 +156,9 @@ app.whenReady().then(() => {
   tray = new Tray(icon);
   tray.setToolTip('git-tomato');
 
-  function openSettingsWindow() {
-    if (settingsWindow && !settingsWindow.isDestroyed()) {
-      settingsWindow.focus();
-      return;
-    }
-
-    const settingsUrl = isDev
-      ? 'http://localhost:5173?view=settings'
-      : `file://${path.join(__dirname, '../renderer/dist/index.html')}?view=settings`;
-
-    const { workArea: wa } = screen.getPrimaryDisplay();
-    const winWidth = 480;
-    const winHeight = 600;
-    const sx = Math.round(wa.x + (wa.width - winWidth) / 2);
-    const sy = Math.round(wa.y + (wa.height - winHeight) / 2);
-
-    settingsWindow = new BrowserWindow({
-      width: winWidth,
-      height: winHeight,
-      x: sx,
-      y: sy,
-      title: 'git-tomato — Settings',
-      backgroundColor: '#0f1115',
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-        contextIsolation: true,
-        nodeIntegration: false,
-      },
-      resizable: false,
-      skipTaskbar: false,
-    });
-
-    settingsWindow.loadURL(settingsUrl);
-    settingsWindow.setMenuBarVisibility(false);
-    settingsWindow.on('closed', () => { settingsWindow = null; });
-  }
-
   // Right-click tray context menu
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Open git-tomato', click: showMainWindow },
-    { label: 'Settings', click: openSettingsWindow },
     { type: 'separator' },
     { label: 'Quit git-tomato', click: () => app.quit() },
   ]);
@@ -201,8 +186,7 @@ app.whenReady().then(() => {
       });
       mainWindow.loadURL(RENDERER_URL);
       mainWindow.setMenuBarVisibility(false);
-      mainWindow.maximize();
-      mainWindow.on('closed', () => { mainWindow = null; });
+          mainWindow.on('closed', () => { mainWindow = null; });
       timer.setWindow(mainWindow);
     }
   }
@@ -239,18 +223,30 @@ app.whenReady().then(() => {
   });
 
   // Store handlers
-  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, (_, { date } = {}) => {
-    return date ? store.getSessionsForDate(date) : store.getAllSessions();
+  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date } = {}) => {
+    try {
+      return date ? store.getSessionsForDate(date) : store.getAllSessions();
+    } catch (e) {
+      console.error('[ipc] STORE_GET_SESSIONS error:', e);
+      return [];
+    }
   });
 
-  ipcMain.handle(CHANNELS.XP_STATE_GET, () => store.getXpState());
+  ipcMain.handle(CHANNELS.XP_STATE_GET, async () => {
+    try { return store.getXpState(); }
+    catch (e) { console.error('[ipc] XP_STATE_GET error:', e); return null; }
+  });
 
   // Badges: return all unlocks with badge def metadata attached
-  ipcMain.handle(CHANNELS.BADGES_GET, () => store.getBadgeUnlocks());
+  ipcMain.handle(CHANNELS.BADGES_GET, async () => {
+    try { return store.getBadgeUnlocks(); }
+    catch (e) { console.error('[ipc] BADGES_GET error:', e); return []; }
+  });
 
   // D-1, D-2, D-3: streak state with computed at-risk fields (never persisted)
-  ipcMain.handle(CHANNELS.STREAK_STATE_GET, () => {
-    return buildStreakPayload();
+  ipcMain.handle(CHANNELS.STREAK_STATE_GET, async () => {
+    try { return buildStreakPayload(); }
+    catch (e) { console.error('[ipc] STREAK_STATE_GET error:', e); return null; }
   });
 
   timer.timerEvents.on('xpStateUpdated', (xpState) => {
@@ -266,47 +262,101 @@ app.whenReady().then(() => {
   });
 
   // Quest handlers
-  ipcMain.handle(CHANNELS.QUESTS_GET, () => getTodaySlate());
-  ipcMain.handle(CHANNELS.QUESTS_HISTORY_GET, () => store.getAllQuestSlates());
+  ipcMain.handle(CHANNELS.QUESTS_GET, async () => {
+    try { return getTodaySlate(); }
+    catch (e) { console.error('[ipc] QUESTS_GET error:', e); return null; }
+  });
+  ipcMain.handle(CHANNELS.QUESTS_HISTORY_GET, async () => {
+    try { return store.getAllQuestSlates(); }
+    catch (e) { console.error('[ipc] QUESTS_HISTORY_GET error:', e); return []; }
+  });
 
-  ipcMain.handle(CHANNELS.STORE_GET_PRODUCTIVE_DAYS, () => store.getAllProductiveDays());
+  ipcMain.handle(CHANNELS.STORE_GET_PRODUCTIVE_DAYS, async () => {
+    try { return store.getAllProductiveDays(); }
+    catch (e) { console.error('[ipc] STORE_GET_PRODUCTIVE_DAYS error:', e); return []; }
+  });
+
+  ipcMain.handle(CHANNELS.GIT_CHECK, async () => {
+    try { return { available: scanner.isGitAvailable() }; }
+    catch (e) { console.error('[ipc] GIT_CHECK error:', e); return { available: false }; }
+  });
+
+  ipcMain.handle(CHANNELS.APP_VERSION, async () => {
+    try { return app.getVersion(); }
+    catch (e) { console.error('[ipc] APP_VERSION error:', e); return null; }
+  });
 
   // Settings handlers
-  ipcMain.handle(CHANNELS.SETTINGS_OPEN, () => openSettingsWindow());
-  ipcMain.handle(CHANNELS.SETTINGS_GET, () => readSettings());
-  ipcMain.handle(CHANNELS.SETTINGS_SET, (_, s) => {
-    writeSettings(s);
-    timer.updateSettings(s);
-    invalidateSettingsCache();
-    return true;
+  ipcMain.handle(CHANNELS.SETTINGS_GET, async () => {
+    try { return readSettings(); }
+    catch (e) { console.error('[ipc] SETTINGS_GET error:', e); return null; }
+  });
+  ipcMain.handle(CHANNELS.SETTINGS_SET, async (_, s) => {
+    try {
+      if (!s || typeof s !== 'object') throw new Error('Invalid settings object');
+      const clamp = (v, min, max, def) => {
+        const n = parseInt(v);
+        return (isNaN(n) || n < min || n > max) ? def : n;
+      };
+      const validated = {
+        focusDuration: clamp(s.focusDuration, 1, 120, 25),
+        shortBreak:    clamp(s.shortBreak,    1,  60, 5),
+        longBreak:     clamp(s.longBreak,     1,  60, 15),
+        repoPaths:     Array.isArray(s.repoPaths) ? s.repoPaths.filter(p => typeof p === 'string' && p.trim()) : [],
+        githubToken:   typeof s.githubToken === 'string' ? s.githubToken : '',
+      };
+      writeSettings(validated);
+      timer.updateSettings(validated);
+      invalidateSettingsCache();
+      return { ok: true };
+    } catch (e) {
+      console.error('[ipc] SETTINGS_SET error:', e);
+      return { ok: false, error: e.message };
+    }
   });
 
   // Timer state handler (renderer requests current state on load)
-  ipcMain.handle('timer:getState', () => timer.getState());
+  ipcMain.handle('timer:getState', async () => {
+    try { return timer.getState(); }
+    catch (e) { console.error('[ipc] timer:getState error:', e); return null; }
+  });
 
   // Open URL in default browser
-  ipcMain.handle(CHANNELS.OPEN_URL, (_, url) => shell.openExternal(url));
+  ipcMain.handle(CHANNELS.OPEN_URL, async (_, url) => {
+    try { await shell.openExternal(url); }
+    catch (e) { console.error('[ipc] OPEN_URL error:', e); }
+  });
 
   // XP and lines earned on a calendar day
-  ipcMain.handle(CHANNELS.STORE_GET_DAY_XP, (_, { date } = {}) => {
-    if (!date) return { xp: 0, totalLines: 0 };
-    const { analyseCommitsRich } = require('./commitAnalyser');
-    const settings = readSettings();
-    const sessions = store.getSessionsForDate(date).filter(s => s.type === 'focus' && s.status === 'completed');
-    const totalLines = sessions.reduce((sum, s) => {
-      const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
-      return sum + rich.reduce((rs, c) => rs + (c.totalLines ?? 0), 0);
-    }, 0);
-    return { xp: store.getXpForDate(date), totalLines };
+  ipcMain.handle(CHANNELS.STORE_GET_DAY_XP, async (_, { date } = {}) => {
+    try {
+      if (!date) return { xp: 0, totalLines: 0 };
+      const { analyseCommitsRich } = require('./commitAnalyser');
+      const settings = readSettings();
+      const sessions = store.getSessionsForDate(date).filter(s => s.type === 'focus' && s.status === 'completed');
+      const totalLines = sessions.reduce((sum, s) => {
+        const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
+        return sum + rich.reduce((rs, c) => rs + (c.totalLines ?? 0), 0);
+      }, 0);
+      return { xp: store.getXpForDate(date), totalLines };
+    } catch (e) {
+      console.error('[ipc] STORE_GET_DAY_XP error:', e);
+      return { xp: 0, totalLines: 0 };
+    }
   });
 
   // All commits for a calendar day + session windows for that day
-  ipcMain.handle(CHANNELS.STORE_GET_DAY_COMMITS, (_, { date } = {}) => {
-    if (!date) return { repos: [], sessionWindows: [] };
-    const settings = readSettings();
-    const repos = scanner.getAllCommitsForDay(date, settings.repoPaths);
-    const sessionWindows = store.getSessionWindowsForDate(date);
-    return { repos, sessionWindows };
+  ipcMain.handle(CHANNELS.STORE_GET_DAY_COMMITS, async (_, { date } = {}) => {
+    try {
+      if (!date) return { repos: [], sessionWindows: [] };
+      const settings = readSettings();
+      const repos = scanner.getAllCommitsForDay(date, settings.repoPaths);
+      const sessionWindows = store.getSessionWindowsForDate(date);
+      return { repos, sessionWindows };
+    } catch (e) {
+      console.error('[ipc] STORE_GET_DAY_COMMITS error:', e);
+      return { repos: [], sessionWindows: [] };
+    }
   });
 
   // Open devtools in dev mode
@@ -318,4 +368,9 @@ app.whenReady().then(() => {
 // Keep the app running when the window is closed — tray keeps it alive
 app.on('window-all-closed', () => {
   // Do nothing — tray app stays alive
+});
+
+// Close DB cleanly before the process exits
+app.on('before-quit', () => {
+  store.closeDb();
 });

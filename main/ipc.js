@@ -39,9 +39,6 @@ const CHANNELS = {
   BADGES_GET: 'badges:get',
   BADGES_UPDATED: 'badges:updated',
 
-  // Open settings window
-  SETTINGS_OPEN: 'settings:open',
-
   // XP earned for a calendar day
   STORE_GET_DAY_XP: 'store:getDayXp',
 
@@ -52,6 +49,12 @@ const CHANNELS = {
 
   // Productive days (for weekly streak colouring)
   STORE_GET_PRODUCTIVE_DAYS: 'store:getProductiveDays',
+
+  // Git availability check
+  GIT_CHECK: 'git:check',
+
+  // App version
+  APP_VERSION: 'app:version',
 };
 
 module.exports = { CHANNELS };

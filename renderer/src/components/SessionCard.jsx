@@ -18,9 +18,8 @@ export function SessionCard({ session }) {
   return (
     <div className={`session-card session-card--${session.type}`}>
       <button
-        className="session-card__header"
+        className={`session-card__header${hasCommits ? ' session-card__header--clickable' : ''}`}
         onClick={() => hasCommits && setExpanded(e => !e)}
-        style={{ cursor: hasCommits ? 'pointer' : 'default' }}
       >
         <span className="session-card__type">
           {session.type === 'focus' ? 'Focus' : 'Break'}

@@ -274,7 +274,7 @@ function TwilightScene() {
 
 export function BackgroundScene({ theme }) {
   return (
-    <div id="scene" style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+    <div id="scene">
       {theme === 'morning' ? <MorningScene /> : <TwilightScene />}
     </div>
   );

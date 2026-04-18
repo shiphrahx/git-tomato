@@ -22,7 +22,7 @@ export function TomatoSprite({ state = 1 }) {
       alt=""
       width={140}
       height={140}
-      style={{ imageRendering: 'pixelated', display: 'block' }}
+      className="tomato-sprite"
       draggable={false}
     />
   );

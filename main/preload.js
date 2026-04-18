@@ -42,7 +42,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDayXp: (date) => ipcRenderer.invoke('store:getDayXp', { date }),
 
   // Settings
-  openSettings: () => ipcRenderer.invoke('settings:open'),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (settings) => ipcRenderer.invoke('settings:set', settings),
 
@@ -79,4 +78,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Productive days (for weekly streak colouring)
   getProductiveDays: () => ipcRenderer.invoke('store:getProductiveDays'),
+
+  // Git availability check
+  checkGit: () => ipcRenderer.invoke('git:check'),
+
+  // App version
+  getAppVersion: () => ipcRenderer.invoke('app:version'),
 });

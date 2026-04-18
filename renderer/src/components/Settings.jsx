@@ -3,9 +3,14 @@ import React, { useState, useEffect } from 'react';
 export function Settings() {
   const [settings, setSettings] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [gitAvailable, setGitAvailable] = useState(true);
+  const [appVersion, setAppVersion] = useState(null);
 
   useEffect(() => {
     window.electronAPI.getSettings().then(setSettings);
+    window.electronAPI.checkGit().then(({ available }) => setGitAvailable(available));
+    window.electronAPI.getAppVersion().then(v => setAppVersion(v));
   }, []);
 
   function handleChange(field, value) {
@@ -47,9 +52,15 @@ export function Settings() {
   }
 
   async function handleSave() {
-    await window.electronAPI.setSettings(settings);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setSaveError(null);
+    try {
+      const result = await window.electronAPI.setSettings(settings);
+      if (result?.ok === false) throw new Error(result.error ?? 'Unknown error');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      setSaveError('Failed to save: ' + e.message);
+    }
   }
 
   if (!settings) {
@@ -82,6 +93,7 @@ export function Settings() {
             />
             <span className="settings__unit">min</span>
           </div>
+          <p className="settings__hint">Takes effect on the next session. Any currently running timer is not affected.</p>
         </div>
 
         <div className="settings__field">
@@ -139,6 +151,11 @@ export function Settings() {
       {/* Watched repositories section */}
       <div className="card settings__card">
         <div className="settings__section-title">Watched repositories</div>
+        {!gitAvailable && (
+          <p className="settings__hint settings__hint--warn">
+            git was not found on PATH. Commit tracking will not work until git is installed and available in your terminal.
+          </p>
+        )}
         <p className="settings__hint settings__hint--top">
           Directories scanned for git commits at session end. Leave empty to
           auto-discover repos in ~/projects, ~/code, and ~/dev.
@@ -178,6 +195,12 @@ export function Settings() {
         >
           {saved ? 'Saved ✓' : 'Save settings'}
         </button>
+        {saveError && (
+          <div className="settings__save-error">{saveError}</div>
+        )}
+        {appVersion && (
+          <div className="settings__version">v{appVersion}</div>
+        )}
       </div>
     </div>
   );
