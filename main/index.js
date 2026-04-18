@@ -173,7 +173,6 @@ app.whenReady().then(() => {
   // Right-click tray context menu
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Open git-tomato', click: showMainWindow },
-    { label: 'Settings', click: openSettingsWindow },
     { type: 'separator' },
     { label: 'Quit git-tomato', click: () => app.quit() },
   ]);
