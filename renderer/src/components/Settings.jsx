@@ -91,6 +91,7 @@ export function Settings() {
             />
             <span className="settings__unit">min</span>
           </div>
+          <p className="settings__hint">Takes effect on the next session. Any currently running timer is not affected.</p>
         </div>
 
         <div className="settings__field">
