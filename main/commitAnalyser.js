@@ -133,8 +133,8 @@ function discoverCommits(repoPaths, startedAt, endedAt) {
         seen.add(hash);
         commits.push({ hash, message, repoPath });
       }
-    } catch (_) {
-      // D-1: git log failure for this repo — skip, don't affect other repos
+    } catch (e) {
+      console.error(`[commitAnalyser] git log failed for ${repoPath}:`, e.message);
     }
   }
 
@@ -148,8 +148,8 @@ function analyseDiff(hash, repoPath) {
   let rawDiff;
   try {
     rawDiff = runGit(`show ${hash} --format="" --unified=0`, repoPath);
-  } catch (_) {
-    // G-3: timeout or error — treat as disqualified
+  } catch (e) {
+    console.error(`[commitAnalyser] git show failed for ${hash}:`, e.message);
     return null;
   }
 

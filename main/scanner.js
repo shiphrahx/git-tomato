@@ -105,8 +105,8 @@ function getCommitsSince(isoTimestamp, repoPaths) {
           commits,
         });
       }
-    } catch (_) {
-      // repo inaccessible, empty, or git not available — skip
+    } catch (e) {
+      console.error(`[scanner] getCommitsSince failed for ${repoPath}:`, e.message);
     }
   }
 
@@ -164,8 +164,8 @@ function getAllCommitsForDay(dateStr, repoPaths) {
           commits,
         });
       }
-    } catch (_) {
-      // repo inaccessible or git not available — skip
+    } catch (e) {
+      console.error(`[scanner] getAllCommitsForDay failed for ${repoPath}:`, e.message);
     }
   }
 

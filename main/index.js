@@ -51,7 +51,8 @@ function readSettings() {
       delete merged._tokenEncrypted;
     }
     return merged;
-  } catch (_) {
+  } catch (e) {
+    console.error('[settings] Failed to read settings, using defaults:', e.message);
     return { ...DEFAULT_SETTINGS };
   }
 }

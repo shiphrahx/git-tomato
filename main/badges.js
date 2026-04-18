@@ -336,7 +336,8 @@ function _getSettings() {
     const fs = require('fs');
     const p = require('path').join(app.getPath('userData'), 'settings.json');
     _settingsCache = JSON.parse(fs.readFileSync(p, 'utf8'));
-  } catch (_) {
+  } catch (e) {
+    console.error('[badges] Failed to load settings, using defaults:', e.message);
     _settingsCache = { repoPaths: [] };
   }
   return _settingsCache;
