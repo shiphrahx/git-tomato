@@ -239,18 +239,30 @@ app.whenReady().then(() => {
   });
 
   // Store handlers
-  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, (_, { date } = {}) => {
-    return date ? store.getSessionsForDate(date) : store.getAllSessions();
+  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date } = {}) => {
+    try {
+      return date ? store.getSessionsForDate(date) : store.getAllSessions();
+    } catch (e) {
+      console.error('[ipc] STORE_GET_SESSIONS error:', e);
+      return [];
+    }
   });
 
-  ipcMain.handle(CHANNELS.XP_STATE_GET, () => store.getXpState());
+  ipcMain.handle(CHANNELS.XP_STATE_GET, async () => {
+    try { return store.getXpState(); }
+    catch (e) { console.error('[ipc] XP_STATE_GET error:', e); return null; }
+  });
 
   // Badges: return all unlocks with badge def metadata attached
-  ipcMain.handle(CHANNELS.BADGES_GET, () => store.getBadgeUnlocks());
+  ipcMain.handle(CHANNELS.BADGES_GET, async () => {
+    try { return store.getBadgeUnlocks(); }
+    catch (e) { console.error('[ipc] BADGES_GET error:', e); return []; }
+  });
 
   // D-1, D-2, D-3: streak state with computed at-risk fields (never persisted)
-  ipcMain.handle(CHANNELS.STREAK_STATE_GET, () => {
-    return buildStreakPayload();
+  ipcMain.handle(CHANNELS.STREAK_STATE_GET, async () => {
+    try { return buildStreakPayload(); }
+    catch (e) { console.error('[ipc] STREAK_STATE_GET error:', e); return null; }
   });
 
   timer.timerEvents.on('xpStateUpdated', (xpState) => {
@@ -266,47 +278,79 @@ app.whenReady().then(() => {
   });
 
   // Quest handlers
-  ipcMain.handle(CHANNELS.QUESTS_GET, () => getTodaySlate());
-  ipcMain.handle(CHANNELS.QUESTS_HISTORY_GET, () => store.getAllQuestSlates());
+  ipcMain.handle(CHANNELS.QUESTS_GET, async () => {
+    try { return getTodaySlate(); }
+    catch (e) { console.error('[ipc] QUESTS_GET error:', e); return null; }
+  });
+  ipcMain.handle(CHANNELS.QUESTS_HISTORY_GET, async () => {
+    try { return store.getAllQuestSlates(); }
+    catch (e) { console.error('[ipc] QUESTS_HISTORY_GET error:', e); return []; }
+  });
 
-  ipcMain.handle(CHANNELS.STORE_GET_PRODUCTIVE_DAYS, () => store.getAllProductiveDays());
+  ipcMain.handle(CHANNELS.STORE_GET_PRODUCTIVE_DAYS, async () => {
+    try { return store.getAllProductiveDays(); }
+    catch (e) { console.error('[ipc] STORE_GET_PRODUCTIVE_DAYS error:', e); return []; }
+  });
 
   // Settings handlers
-  ipcMain.handle(CHANNELS.SETTINGS_OPEN, () => openSettingsWindow());
-  ipcMain.handle(CHANNELS.SETTINGS_GET, () => readSettings());
-  ipcMain.handle(CHANNELS.SETTINGS_SET, (_, s) => {
-    writeSettings(s);
-    timer.updateSettings(s);
-    invalidateSettingsCache();
-    return true;
+  ipcMain.handle(CHANNELS.SETTINGS_GET, async () => {
+    try { return readSettings(); }
+    catch (e) { console.error('[ipc] SETTINGS_GET error:', e); return null; }
+  });
+  ipcMain.handle(CHANNELS.SETTINGS_SET, async (_, s) => {
+    try {
+      writeSettings(s);
+      timer.updateSettings(s);
+      invalidateSettingsCache();
+      return { ok: true };
+    } catch (e) {
+      console.error('[ipc] SETTINGS_SET error:', e);
+      return { ok: false, error: e.message };
+    }
   });
 
   // Timer state handler (renderer requests current state on load)
-  ipcMain.handle('timer:getState', () => timer.getState());
+  ipcMain.handle('timer:getState', async () => {
+    try { return timer.getState(); }
+    catch (e) { console.error('[ipc] timer:getState error:', e); return null; }
+  });
 
   // Open URL in default browser
-  ipcMain.handle(CHANNELS.OPEN_URL, (_, url) => shell.openExternal(url));
+  ipcMain.handle(CHANNELS.OPEN_URL, async (_, url) => {
+    try { await shell.openExternal(url); }
+    catch (e) { console.error('[ipc] OPEN_URL error:', e); }
+  });
 
   // XP and lines earned on a calendar day
-  ipcMain.handle(CHANNELS.STORE_GET_DAY_XP, (_, { date } = {}) => {
-    if (!date) return { xp: 0, totalLines: 0 };
-    const { analyseCommitsRich } = require('./commitAnalyser');
-    const settings = readSettings();
-    const sessions = store.getSessionsForDate(date).filter(s => s.type === 'focus' && s.status === 'completed');
-    const totalLines = sessions.reduce((sum, s) => {
-      const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
-      return sum + rich.reduce((rs, c) => rs + (c.totalLines ?? 0), 0);
-    }, 0);
-    return { xp: store.getXpForDate(date), totalLines };
+  ipcMain.handle(CHANNELS.STORE_GET_DAY_XP, async (_, { date } = {}) => {
+    try {
+      if (!date) return { xp: 0, totalLines: 0 };
+      const { analyseCommitsRich } = require('./commitAnalyser');
+      const settings = readSettings();
+      const sessions = store.getSessionsForDate(date).filter(s => s.type === 'focus' && s.status === 'completed');
+      const totalLines = sessions.reduce((sum, s) => {
+        const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
+        return sum + rich.reduce((rs, c) => rs + (c.totalLines ?? 0), 0);
+      }, 0);
+      return { xp: store.getXpForDate(date), totalLines };
+    } catch (e) {
+      console.error('[ipc] STORE_GET_DAY_XP error:', e);
+      return { xp: 0, totalLines: 0 };
+    }
   });
 
   // All commits for a calendar day + session windows for that day
-  ipcMain.handle(CHANNELS.STORE_GET_DAY_COMMITS, (_, { date } = {}) => {
-    if (!date) return { repos: [], sessionWindows: [] };
-    const settings = readSettings();
-    const repos = scanner.getAllCommitsForDay(date, settings.repoPaths);
-    const sessionWindows = store.getSessionWindowsForDate(date);
-    return { repos, sessionWindows };
+  ipcMain.handle(CHANNELS.STORE_GET_DAY_COMMITS, async (_, { date } = {}) => {
+    try {
+      if (!date) return { repos: [], sessionWindows: [] };
+      const settings = readSettings();
+      const repos = scanner.getAllCommitsForDay(date, settings.repoPaths);
+      const sessionWindows = store.getSessionWindowsForDate(date);
+      return { repos, sessionWindows };
+    } catch (e) {
+      console.error('[ipc] STORE_GET_DAY_COMMITS error:', e);
+      return { repos: [], sessionWindows: [] };
+    }
   });
 
   // Open devtools in dev mode
