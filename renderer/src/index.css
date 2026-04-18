@@ -612,6 +612,14 @@ body {
   color: var(--streak-miss);
 }
 
+.settings__version {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: var(--muted);
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
 .settings-loading {
   display: flex;
   align-items: center;

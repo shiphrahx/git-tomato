@@ -319,6 +319,11 @@ app.whenReady().then(() => {
     catch (e) { console.error('[ipc] GIT_CHECK error:', e); return { available: false }; }
   });
 
+  ipcMain.handle(CHANNELS.APP_VERSION, async () => {
+    try { return app.getVersion(); }
+    catch (e) { console.error('[ipc] APP_VERSION error:', e); return null; }
+  });
+
   // Settings handlers
   ipcMain.handle(CHANNELS.SETTINGS_GET, async () => {
     try { return readSettings(); }

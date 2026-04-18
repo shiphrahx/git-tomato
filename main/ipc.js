@@ -55,6 +55,9 @@ const CHANNELS = {
 
   // Git availability check
   GIT_CHECK: 'git:check',
+
+  // App version
+  APP_VERSION: 'app:version',
 };
 
 module.exports = { CHANNELS };

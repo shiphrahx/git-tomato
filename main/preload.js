@@ -82,4 +82,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Git availability check
   checkGit: () => ipcRenderer.invoke('git:check'),
+
+  // App version
+  getAppVersion: () => ipcRenderer.invoke('app:version'),
 });

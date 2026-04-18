@@ -5,10 +5,12 @@ export function Settings() {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [gitAvailable, setGitAvailable] = useState(true);
+  const [appVersion, setAppVersion] = useState(null);
 
   useEffect(() => {
     window.electronAPI.getSettings().then(setSettings);
     window.electronAPI.checkGit().then(({ available }) => setGitAvailable(available));
+    window.electronAPI.getAppVersion().then(v => setAppVersion(v));
   }, []);
 
   function handleChange(field, value) {
@@ -195,6 +197,9 @@ export function Settings() {
         </button>
         {saveError && (
           <div className="settings__save-error">{saveError}</div>
+        )}
+        {appVersion && (
+          <div className="settings__version">v{appVersion}</div>
         )}
       </div>
     </div>
