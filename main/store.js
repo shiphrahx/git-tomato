@@ -489,8 +489,13 @@ function getQuestCompletions() {
     .all();
 }
 
+function closeDb() {
+  if (db) { db.close(); db = null; }
+}
+
 module.exports = {
   getDb,
+  closeDb,
   saveSession,
   beginSession, completeSession, markSessionXpDone, abortInProgressSessions,
   getPendingXpSessions, getSessionById,

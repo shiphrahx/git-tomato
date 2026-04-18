@@ -362,3 +362,8 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   // Do nothing — tray app stays alive
 });
+
+// Close DB cleanly before the process exits
+app.on('before-quit', () => {
+  store.closeDb();
+});
