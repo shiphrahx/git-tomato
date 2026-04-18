@@ -152,6 +152,7 @@ app.whenReady().then(() => {
 
   mainWindow.loadURL(RENDERER_URL);
   mainWindow.setMenuBarVisibility(false);
+  mainWindow.maximize();
   mainWindow.on('closed', () => { mainWindow = null; });
 
   // Tray icon for tooltip + right-click menu
