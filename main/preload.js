@@ -79,4 +79,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Productive days (for weekly streak colouring)
   getProductiveDays: () => ipcRenderer.invoke('store:getProductiveDays'),
+
+  // Git availability check
+  checkGit: () => ipcRenderer.invoke('git:check'),
 });

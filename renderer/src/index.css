@@ -541,6 +541,11 @@ body {
   margin-bottom: 12px;
 }
 
+.settings__hint--warn {
+  color: var(--streak-miss);
+  margin-bottom: 8px;
+}
+
 .settings__hint code {
   color: var(--accent);
   font-family: monospace;

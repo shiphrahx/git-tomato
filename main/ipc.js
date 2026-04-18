@@ -52,6 +52,9 @@ const CHANNELS = {
 
   // Productive days (for weekly streak colouring)
   STORE_GET_PRODUCTIVE_DAYS: 'store:getProductiveDays',
+
+  // Git availability check
+  GIT_CHECK: 'git:check',
 };
 
 module.exports = { CHANNELS };

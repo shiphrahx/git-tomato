@@ -289,6 +289,11 @@ app.whenReady().then(() => {
     catch (e) { console.error('[ipc] STORE_GET_PRODUCTIVE_DAYS error:', e); return []; }
   });
 
+  ipcMain.handle(CHANNELS.GIT_CHECK, async () => {
+    try { return { available: scanner.isGitAvailable() }; }
+    catch (e) { console.error('[ipc] GIT_CHECK error:', e); return { available: false }; }
+  });
+
   // Settings handlers
   ipcMain.handle(CHANNELS.SETTINGS_GET, async () => {
     try { return readSettings(); }

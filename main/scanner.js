@@ -172,4 +172,13 @@ function getAllCommitsForDay(dateStr, repoPaths) {
   return results;
 }
 
-module.exports = { getCommitsSince, findGitRepos, getAllCommitsForDay };
+function isGitAvailable() {
+  try {
+    execSync(`${GIT_BIN} --version`, { timeout: 3000, stdio: 'ignore' });
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+module.exports = { getCommitsSince, findGitRepos, getAllCommitsForDay, isGitAvailable };

@@ -4,9 +4,11 @@ export function Settings() {
   const [settings, setSettings] = useState(null);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const [gitAvailable, setGitAvailable] = useState(true);
 
   useEffect(() => {
     window.electronAPI.getSettings().then(setSettings);
+    window.electronAPI.checkGit().then(({ available }) => setGitAvailable(available));
   }, []);
 
   function handleChange(field, value) {
@@ -146,6 +148,11 @@ export function Settings() {
       {/* Watched repositories section */}
       <div className="card settings__card">
         <div className="settings__section-title">Watched repositories</div>
+        {!gitAvailable && (
+          <p className="settings__hint settings__hint--warn">
+            git was not found on PATH. Commit tracking will not work until git is installed and available in your terminal.
+          </p>
+        )}
         <p className="settings__hint settings__hint--top">
           Directories scanned for git commits at session end. Leave empty to
           auto-discover repos in ~/projects, ~/code, and ~/dev.
