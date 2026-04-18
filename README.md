@@ -4,6 +4,8 @@
 
 A desktop app that runs a Pomodoro timer and automatically links each focus session to your git commits. At the end of every session it scans your repos and shows exactly what you shipped during that block. Over time you build a commit heatmap, XP level, daily streaks, and badge collection — all driven by real coding output, not self-reported effort.
 
+![alt text](assets/demo.png)
+
 ---
 
 ## What it does
