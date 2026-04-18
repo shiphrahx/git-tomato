@@ -1,4 +1,4 @@
-const { app, ipcMain, shell, nativeImage, screen, BrowserWindow, Tray, Menu } = require('electron');
+const { app, ipcMain, shell, nativeImage, screen, BrowserWindow, Tray, Menu, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { CHANNELS } = require('./ipc');
@@ -27,18 +27,42 @@ const DEFAULT_SETTINGS = {
   githubToken: '',
 };
 
+function decryptToken(encrypted) {
+  try {
+    if (!encrypted || !safeStorage.isEncryptionAvailable()) return '';
+    return safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
+  } catch (_) { return ''; }
+}
+
+function encryptToken(plain) {
+  try {
+    if (!plain || !safeStorage.isEncryptionAvailable()) return '';
+    return safeStorage.encryptString(plain).toString('base64');
+  } catch (_) { return ''; }
+}
+
 function readSettings() {
   try {
     const saved = JSON.parse(fs.readFileSync(SETTINGS_PATH(), 'utf8'));
-    // Merge with defaults so newly added fields are always present
-    return { ...DEFAULT_SETTINGS, ...saved };
+    const merged = { ...DEFAULT_SETTINGS, ...saved };
+    // Decrypt token if stored encrypted; fall back to plaintext for migration
+    if (merged._tokenEncrypted) {
+      merged.githubToken = decryptToken(merged._tokenEncrypted);
+      delete merged._tokenEncrypted;
+    }
+    return merged;
   } catch (_) {
     return { ...DEFAULT_SETTINGS };
   }
 }
 
 function writeSettings(settings) {
-  fs.writeFileSync(SETTINGS_PATH(), JSON.stringify(settings, null, 2));
+  const toWrite = { ...settings };
+  if (toWrite.githubToken) {
+    toWrite._tokenEncrypted = encryptToken(toWrite.githubToken);
+    toWrite.githubToken = '';
+  }
+  fs.writeFileSync(SETTINGS_PATH(), JSON.stringify(toWrite, null, 2));
 }
 
 let mainWindow = null;
