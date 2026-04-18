@@ -39,9 +39,6 @@ const CHANNELS = {
   BADGES_GET: 'badges:get',
   BADGES_UPDATED: 'badges:updated',
 
-  // Open settings window
-  SETTINGS_OPEN: 'settings:open',
-
   // XP earned for a calendar day
   STORE_GET_DAY_XP: 'store:getDayXp',
 

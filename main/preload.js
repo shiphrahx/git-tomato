@@ -42,7 +42,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDayXp: (date) => ipcRenderer.invoke('store:getDayXp', { date }),
 
   // Settings
-  openSettings: () => ipcRenderer.invoke('settings:open'),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (settings) => ipcRenderer.invoke('settings:set', settings),
 

@@ -67,7 +67,6 @@ function writeSettings(settings) {
 }
 
 let mainWindow = null;
-let settingsWindow = null;
 let tray = null;
 
 // D-1, D-2, D-3: build streak state payload with computed at-risk booleans.
@@ -156,43 +155,6 @@ app.whenReady().then(() => {
   // Tray icon for tooltip + right-click menu
   tray = new Tray(icon);
   tray.setToolTip('git-tomato');
-
-  function openSettingsWindow() {
-    if (settingsWindow && !settingsWindow.isDestroyed()) {
-      settingsWindow.focus();
-      return;
-    }
-
-    const settingsUrl = isDev
-      ? 'http://localhost:5173?view=settings'
-      : `file://${path.join(__dirname, '../renderer/dist/index.html')}?view=settings`;
-
-    const { workArea: wa } = screen.getPrimaryDisplay();
-    const winWidth = 480;
-    const winHeight = 600;
-    const sx = Math.round(wa.x + (wa.width - winWidth) / 2);
-    const sy = Math.round(wa.y + (wa.height - winHeight) / 2);
-
-    settingsWindow = new BrowserWindow({
-      width: winWidth,
-      height: winHeight,
-      x: sx,
-      y: sy,
-      title: 'git-tomato — Settings',
-      backgroundColor: '#0f1115',
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-        contextIsolation: true,
-        nodeIntegration: false,
-      },
-      resizable: false,
-      skipTaskbar: false,
-    });
-
-    settingsWindow.loadURL(settingsUrl);
-    settingsWindow.setMenuBarVisibility(false);
-    settingsWindow.on('closed', () => { settingsWindow = null; });
-  }
 
   // Right-click tray context menu
   const contextMenu = Menu.buildFromTemplate([
