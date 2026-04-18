@@ -2,6 +2,12 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const { app } = require('electron');
 
+// Safe JSON parse — returns fallback value instead of throwing on corrupt data
+function safeJsonParse(str, fallback) {
+  try { return JSON.parse(str); }
+  catch (e) { console.error('[store] JSON.parse failed:', e.message); return fallback; }
+}
+
 let db;
 
 function getDb() {
@@ -173,13 +179,13 @@ function getPendingXpSessions() {
   return getDb()
     .prepare(`SELECT * FROM sessions WHERE status = 'xp_pending' ORDER BY started_at ASC`)
     .all()
-    .map(r => ({ ...r, repos: JSON.parse(r.repos) }));
+    .map(r => ({ ...r, repos: safeJsonParse(r.repos, []) }));
 }
 
 function getSessionById(id) {
   const r = getDb().prepare(`SELECT * FROM sessions WHERE id = ?`).get(id);
   if (!r) return null;
-  return { ...r, repos: JSON.parse(r.repos) };
+  return { ...r, repos: safeJsonParse(r.repos, []) };
 }
 
 function saveSession(session) {
@@ -217,14 +223,14 @@ function getSessionsForDate(dateStr) {
     )
     .all(dayStart.getTime(), dayEnd.getTime());
 
-  return rows.map(r => ({ ...r, repos: JSON.parse(r.repos) }));
+  return rows.map(r => ({ ...r, repos: safeJsonParse(r.repos, []) }));
 }
 
 function getAllSessions() {
   return getDb()
     .prepare(`SELECT * FROM sessions ORDER BY started_at DESC`)
     .all()
-    .map(r => ({ ...r, repos: JSON.parse(r.repos) }));
+    .map(r => ({ ...r, repos: safeJsonParse(r.repos, []) }));
 }
 
 function getSessionWindowsForDate(dateStr) {
@@ -438,7 +444,7 @@ function markHistoricalPassDone() {
 function getQuestSlate(dateStr) {
   const row = getDb().prepare(`SELECT * FROM quest_slates WHERE date = ?`).get(dateStr);
   if (!row) return null;
-  return { ...row, quests: JSON.parse(row.quests), is_fallback: !!row.is_fallback };
+  return { ...row, quests: safeJsonParse(row.quests, []), is_fallback: !!row.is_fallback };
 }
 
 // Write the initial slate for a day (called once, on first session completion).
@@ -463,7 +469,7 @@ function getAllQuestSlates() {
   return getDb()
     .prepare(`SELECT * FROM quest_slates ORDER BY date DESC`)
     .all()
-    .map(r => ({ ...r, quests: JSON.parse(r.quests), is_fallback: !!r.is_fallback }));
+    .map(r => ({ ...r, quests: safeJsonParse(r.quests, []), is_fallback: !!r.is_fallback }));
 }
 
 // ─── Quest completions (A-3) ──────────────────────────────────────────────────
