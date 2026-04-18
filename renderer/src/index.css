@@ -401,9 +401,7 @@ body {
   overflow: hidden;
 }
 
-.screen--today,
-.screen--week,
-.screen--quests {
+.screen--today {
   overflow: hidden;
 }
 
@@ -413,13 +411,6 @@ body {
 
 .screen--sc {
   overflow-y: auto;
-}
-
-/* ─── Settings window layout ─────────────────────────────────── */
-.app-content--settings {
-  overflow-y: auto;
-  height: 100%;
-  align-items: stretch;
 }
 
 .settings {
@@ -1404,10 +1395,6 @@ body {
 .dash .dash-level__xp-row span,
 .dash .gb-xp,
 .dash .gb-name,
-.dash .q-item__desc,
-.dash .q-item__xp,
-.dash .q-item__done-label,
-.dash .q-item__progress-val,
 .dash .badge-desc,
 .dash .badge-xp,
 .dash .dp__xp,
@@ -1511,14 +1498,6 @@ body {
   font-size: 30px;
   color: var(--text);
   line-height: 1;
-}
-
-/* Bottom 2-column */
-.dash-bottom {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  flex-shrink: 0;
 }
 
 /* Heatmap cells */
@@ -2124,18 +2103,6 @@ body {
   max-height: 580px;
 }
 
-/* Quests 2-column layout matching mockup */
-.quests-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;
-  gap: 12px;
-  padding: 12px;
-  height: 100%;
-  overflow: hidden;
-  align-items: stretch;
-}
-
 /* Quest items */
 .q-item {
   border: 1px solid var(--pb);
@@ -2370,209 +2337,6 @@ body {
   padding: 20px 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   PROFILE (legacy — keep for Settings window)
-═══════════════════════════════════════════════════════════════ */
-.profile {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 14px;
-  overflow-y: auto;
-  flex: 1;
-  color: var(--text);
-}
-
-.profile::-webkit-scrollbar {
-  width: 3px;
-}
-
-.profile::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.profile::-webkit-scrollbar-thumb {
-  background: var(--scrollbar);
-}
-
-.profile__level-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--panel-hi);
-  border: 1px solid var(--pb);
-  padding: 14px;
-}
-
-.profile__level-badge {
-  font-size: 30px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.profile__level-title {
-  font-family: var(--font-ui);
-  font-size: 11px;
-  color: var(--text);
-  letter-spacing: 0.02em;
-  margin-bottom: 4px;
-}
-
-.profile__level-xp {
-  font-family: var(--font-num);
-  font-size: 16px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.profile__section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: var(--font-ui);
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-}
-
-.profile__badge-count {
-  font-family: var(--font-num);
-  font-size: 14px;
-  color: var(--gold);
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.profile__stats {
-  display: flex;
-  gap: 6px;
-}
-
-.profile__stat {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  background: var(--panel-hi);
-  border: 1px solid var(--pb);
-  padding: 12px 6px 10px;
-}
-
-.profile__stat-value {
-  font-family: var(--font-num);
-  font-size: 28px;
-  color: var(--text);
-  line-height: 1;
-}
-
-.profile__stat-label {
-  font-family: var(--font-ui);
-  font-size: 9px;
-  color: var(--muted);
-  text-align: center;
-  letter-spacing: 0.04em;
-  line-height: 1.6;
-}
-
-.profile__stat--at-risk {
-  border-color: var(--gold-dk);
-  background: rgba(176, 120, 24, 0.06);
-}
-
-.profile__stat--at-risk .profile__stat-value {
-  color: var(--gold);
-}
-
-.profile__stat--at-risk .profile__stat-label {
-  color: var(--gold);
-}
-
-.profile__badges {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.profile__badge-category {}
-
-.profile__badge-category-label {
-  font-family: var(--font-ui);
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
-.profile__badge-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.profile__badge-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid var(--pb);
-  background: var(--panel-hi);
-}
-
-.profile__badge-item--unlocked {
-  border-color: rgba(176, 120, 24, 0.25);
-  background: rgba(176, 120, 24, 0.04);
-}
-
-[data-theme="twilight"] .profile__badge-item--unlocked {
-  border-color: rgba(224, 184, 74, 0.25);
-  background: rgba(224, 184, 74, 0.04);
-}
-
-.profile__badge-item--locked {
-  opacity: 0.4;
-}
-
-.profile__badge-item-icon {
-  font-size: 14px;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.profile__badge-item-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.profile__badge-item-name {
-  font-family: var(--font-ui);
-  font-size: 11px;
-  color: var(--text);
-  letter-spacing: 0.02em;
-}
-
-.profile__badge-item--locked .profile__badge-item-name {
-  color: var(--muted);
-}
-
-.profile__badge-item-desc {
-  font-family: monospace;
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-.profile__badge-item-date {
-  font-family: var(--font-num);
-  font-size: 13px;
-  color: var(--gold);
-}
-
 .xp-bar {
   width: 100%;
   height: 10px;
@@ -2606,15 +2370,6 @@ body {
   color: var(--muted);
   margin-top: 6px;
   text-align: center;
-}
-
-.profile__xp-meta {
-  font-family: monospace;
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: var(--muted);
-  margin-top: 8px;
 }
 
 /* Badge header strip */
