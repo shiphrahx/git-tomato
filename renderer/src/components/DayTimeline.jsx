@@ -111,7 +111,7 @@ export function DayTimeline({ questSlate, badgeUnlocks = [], sessions, allSessio
 
   // Level info
   const lvl = totalXpEver > 0 ? getLevelInfo(totalXpEver) : getLevelInfo(0);
-  const streak = streakState?.dailyStreak ?? streakState?.streakState?.dailyStreak ?? 0;
+  const streak = streakState?.dailyStreak ?? 0;
 
   // Badges unlocked today
   const todayBadges = badgeUnlocks
