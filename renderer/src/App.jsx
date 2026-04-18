@@ -18,12 +18,10 @@ class ErrorBoundary extends Component {
 }
 import { useTimer } from './hooks/useTimer';
 import { DayTimeline } from './components/DayTimeline';
-import { WeekDigest } from './components/WeekDigest';
 import { Settings } from './components/Settings';
 import { SessionComplete } from './components/SessionComplete';
 import { BackgroundScene } from './components/BackgroundScene';
 import { FocusScreen } from './components/FocusScreen';
-import { QuestsScreen } from './components/QuestsScreen';
 
 // Settings window loads the same renderer with ?view=settings
 const TABS = [
@@ -53,7 +51,6 @@ export default function App() {
 
   const [badgeUnlocks, setBadgeUnlocks] = useState([]);
   const [questSlate, setQuestSlate] = useState(undefined);
-  const [productiveDays, setProductiveDays] = useState([]);
 
   const [allSessions, setAllSessions] = useState([]);
 
@@ -90,7 +87,6 @@ export default function App() {
     if (!window.electronAPI) return;
     window.electronAPI.getBadgeUnlocks().then(records => setBadgeUnlocks(records ?? []));
     window.electronAPI.getQuestSlate().then(s => setQuestSlate(s ?? null));
-    window.electronAPI.getProductiveDays().then(days => setProductiveDays((days ?? []).map(d => d.day)));
     window.electronAPI.getSessions().then(s => setAllSessions(s ?? []));
     loadTodayData();
     const unsubBadges = window.electronAPI.onBadgesUpdated(records => setBadgeUnlocks(records ?? []));
@@ -104,7 +100,6 @@ export default function App() {
       setCompletedSession(session);
       setTab('timer');
       loadTodayData();
-      window.electronAPI.getProductiveDays().then(days => setProductiveDays((days ?? []).map(d => d.day)));
       window.electronAPI.getSessions().then(s => setAllSessions(s ?? []));
     });
     return cleanup;
@@ -202,12 +197,6 @@ export default function App() {
                     streakState={streakState}
                   />
                 </ErrorBoundary>
-              </div>
-            )}
-
-            {tab === 'week' && (
-              <div className="screen screen--week">
-                <WeekDigest />
               </div>
             )}
 
