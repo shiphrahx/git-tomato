@@ -26,12 +26,10 @@
     "appId": "com.git-tomato.app",
     "productName": "git-tomato",
     "mac": {
-      "category": "public.app-category.productivity",
-      "icon": "assets/icon.icns"
+      "category": "public.app-category.productivity"
     },
     "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico"
+      "target": "nsis"
     },
     "linux": {
       "target": "AppImage"
