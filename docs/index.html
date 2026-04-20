@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>git-tomato — Ship more. Track it.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --tomato: #e8472a;
+      --gold: #fbbf24;
+      --gold-dk: #d9a00a;
+      --green: #22c55e;
+      --night: #0d0a1a;
+      --night2: #1a1430;
+      --cream: #faf7f0;
+      --muted: #6b6080;
+      --pixel: 'Press Start 2P', monospace;
+      --serif: 'DM Serif Display', Georgia, serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--night);
+      color: var(--cream);
+      font-family: var(--mono);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ───────────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 48px;
+      background: rgba(13, 10, 26, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(251, 191, 36, 0.12);
+    }
+
+    .nav-logo {
+      font-family: var(--pixel);
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo .tomato-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--tomato);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      position: relative;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .nav-logo .tomato-icon::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: 9px;
+      width: 6px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 2px;
+    }
+
+    nav a {
+      color: rgba(250, 247, 240, 0.6);
+      text-decoration: none;
+      font-size: 11px;
+      font-family: var(--pixel);
+      letter-spacing: 0.05em;
+      transition: color .2s;
+    }
+
+    nav a:hover {
+      color: var(--gold);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    /* ── HERO ──────────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* pixel-art star field */
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 15% 20%, rgba(251, 191, 36, .7) 0, transparent 0),
+        radial-gradient(1px 1px at 42% 8%, rgba(255, 255, 255, .5) 0, transparent 0),
+        radial-gradient(1px 1px at 68% 15%, rgba(251, 191, 36, .5) 0, transparent 0),
+        radial-gradient(1px 1px at 83% 5%, rgba(255, 255, 255, .6) 0, transparent 0),
+        radial-gradient(1px 1px at 28% 40%, rgba(255, 255, 255, .3) 0, transparent 0),
+        radial-gradient(1px 1px at 90% 30%, rgba(251, 191, 36, .4) 0, transparent 0),
+        radial-gradient(1px 1px at 7% 55%, rgba(255, 255, 255, .4) 0, transparent 0),
+        radial-gradient(1px 1px at 55% 48%, rgba(255, 255, 255, .3) 0, transparent 0),
+        radial-gradient(2px 2px at 78% 60%, rgba(251, 191, 36, .25) 0, transparent 0),
+        radial-gradient(1px 1px at 33% 70%, rgba(255, 255, 255, .35) 0, transparent 0);
+      pointer-events: none;
+    }
+
+    /* horizon glow */
+    #hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 320px;
+      background: linear-gradient(to top,
+          rgba(232, 71, 42, .18) 0%,
+          rgba(251, 191, 36, .06) 50%,
+          transparent 100%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--pixel);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp .6s .1s ease forwards;
+    }
+
+    .hero-title {
+      font-family: var(--serif);
+      font-size: clamp(52px, 8vw, 96px);
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fadeUp .7s .2s ease forwards;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--tomato);
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      line-height: 1.8;
+      color: rgba(250, 247, 240, .55);
+      max-width: 520px;
+      margin: 0 auto 48px;
+      opacity: 0;
+      animation: fadeUp .7s .35s ease forwards;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp .7s .5s ease forwards;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--pixel);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      padding: 14px 24px;
+      border-radius: 4px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      position: relative;
+    }
+
+    .btn:active {
+      transform: translateY(2px);
+    }
+
+    .btn-mac {
+      background: var(--gold);
+      color: #1a0a00;
+      box-shadow: 0 4px 0 var(--gold-dk);
+    }
+
+    .btn-mac:hover {
+      box-shadow: 0 6px 0 var(--gold-dk);
+      transform: translateY(-2px);
+    }
+
+    .btn-win {
+      background: transparent;
+      color: var(--cream);
+      border: 1.5px solid rgba(250, 247, 240, .25);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .4);
+    }
+
+    .btn-win:hover {
+      border-color: rgba(250, 247, 240, .5);
+      box-shadow: 0 6px 0 rgba(0, 0, 0, .4);
+      transform: translateY(-2px);
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .version-note {
+      margin-top: 20px;
+      font-size: 10px;
+      color: rgba(250, 247, 240, .25);
+      letter-spacing: 0.1em;
+      opacity: 0;
+      animation: fadeUp .6s .7s ease forwards;
+    }
+
+    .hero-screenshot {
+      margin-top: 72px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp .9s .6s ease forwards;
+      display: inline-block;
+    }
+
+    .hero-screenshot img {
+      width: min(900px, 90vw);
+      border-radius: 12px;
+      box-shadow:
+        0 0 0 1px rgba(251, 191, 36, .15),
+        0 32px 80px rgba(0, 0, 0, .7),
+        0 0 120px rgba(232, 71, 42, .08);
+      display: block;
+    }
+
+    .screenshot-tab {
+      position: absolute;
+      top: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(251, 191, 36, .12);
+      border: 1px solid rgba(251, 191, 36, .2);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      display: flex;
+      gap: 6px;
+      padding: 8px 16px;
+    }
+
+    .screenshot-tab span {
+      font-family: var(--pixel);
+      font-size: 7px;
+      color: rgba(250, 247, 240, .4);
+      letter-spacing: 0.1em;
+    }
+
+    .screenshot-tab span.active {
+      color: var(--gold);
+    }
+
+    /* theme toggle hint */
+    .theme-hint {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(13, 10, 26, .7);
+      border: 1px solid rgba(250, 247, 240, .1);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: var(--pixel);
+      font-size: 7px;
+      color: rgba(250, 247, 240, .4);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── SECTION BASE ──────────────────────────────────────────── */
+    section {
+      padding: 100px 24px;
+    }
+
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: var(--pixel);
+      font-size: 8px;
+      letter-spacing: 0.3em;
+      color: var(--tomato);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.08;
+      margin-bottom: 20px;
+    }
+
+    .section-body {
+      font-size: 13px;
+      line-height: 1.9;
+      color: rgba(250, 247, 240, .55);
+      max-width: 540px;
+    }
+
+    /* ── HOW IT WORKS ──────────────────────────────────────────── */
+    #how {
+      background: linear-gradient(180deg, var(--night) 0%, var(--night2) 100%);
+      border-top: 1px solid rgba(251, 191, 36, .08);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2px;
+      margin-top: 64px;
+      border: 1px solid rgba(251, 191, 36, .1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .step {
+      background: rgba(255, 255, 255, .02);
+      padding: 40px 32px;
+      border-right: 1px solid rgba(251, 191, 36, .08);
+      position: relative;
+      transition: background .2s;
+    }
+
+    .step:last-child {
+      border-right: none;
+    }
+
+    .step:hover {
+      background: rgba(251, 191, 36, .04);
+    }
+
+    .step-num {
+      font-family: var(--pixel);
+      font-size: 28px;
+      color: rgba(251, 191, 36, .12);
+      margin-bottom: 20px;
+      line-height: 1;
+    }
+
+    .step-title {
+      font-family: var(--serif);
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .step-body {
+      font-size: 12px;
+      line-height: 1.9;
+      color: rgba(250, 247, 240, .45);
+    }
+
+    .step-icon {
+      font-size: 28px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    /* ── FEATURES ──────────────────────────────────────────────── */
+    #features {
+      background: var(--night);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px 60px;
+      margin-top: 80px;
+      align-items: center;
+    }
+
+    .features-grid.reverse {
+      direction: rtl;
+    }
+
+    .features-grid.reverse>* {
+      direction: ltr;
+    }
+
+    .feature-img img {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .06);
+    }
+
+    .feature-text {}
+
+    .feature-tag {
+      font-family: var(--pixel);
+      font-size: 7px;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .feature-title {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3vw, 40px);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .feature-body {
+      font-size: 12px;
+      line-height: 1.9;
+      color: rgba(250, 247, 240, .5);
+      margin-bottom: 24px;
+    }
+
+    .feature-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      font-family: var(--pixel);
+      font-size: 7px;
+      padding: 6px 12px;
+      border-radius: 3px;
+      border: 1px solid rgba(251, 191, 36, .2);
+      color: rgba(251, 191, 36, .7);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── SCREENSHOTS CAROUSEL ──────────────────────────────────── */
+    #screenshots {
+      background: var(--night2);
+      border-top: 1px solid rgba(251, 191, 36, .08);
+      border-bottom: 1px solid rgba(251, 191, 36, .08);
+      overflow: hidden;
+    }
+
+    .screenshots-row {
+      display: flex;
+      gap: 24px;
+      margin-top: 56px;
+      overflow-x: auto;
+      padding-bottom: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(251, 191, 36, .2) transparent;
+    }
+
+    .screenshots-row::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .screenshots-row::-webkit-scrollbar-thumb {
+      background: rgba(251, 191, 36, .2);
+      border-radius: 4px;
+    }
+
+    .shot-card {
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .shot-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, .5);
+    }
+
+    .shot-card img {
+      width: 560px;
+      display: block;
+    }
+
+    .shot-label {
+      padding: 14px 20px;
+      font-family: var(--pixel);
+      font-size: 8px;
+      color: rgba(250, 247, 240, .4);
+      letter-spacing: 0.1em;
+      border-top: 1px solid rgba(255, 255, 255, .05);
+    }
+
+    /* ── LEVELS ────────────────────────────────────────────────── */
+    #levels {
+      background: var(--night);
+    }
+
+    .levels-row {
+      display: flex;
+      gap: 0;
+      margin-top: 64px;
+      border: 1px solid rgba(251, 191, 36, .1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .level-item {
+      flex: 1;
+      padding: 28px 20px;
+      border-right: 1px solid rgba(251, 191, 36, .08);
+      text-align: center;
+      transition: background .2s;
+      position: relative;
+    }
+
+    .level-item:last-child {
+      border-right: none;
+    }
+
+    .level-item:hover {
+      background: rgba(251, 191, 36, .04);
+    }
+
+    .level-num {
+      font-family: var(--pixel);
+      font-size: 7px;
+      color: rgba(251, 191, 36, .3);
+      margin-bottom: 10px;
+      letter-spacing: 0.1em;
+    }
+
+    .level-name {
+      font-family: var(--serif);
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .level-xp {
+      font-size: 10px;
+      color: rgba(250, 247, 240, .3);
+    }
+
+    .level-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 12px auto 0;
+    }
+
+    /* ── DOWNLOAD CTA ──────────────────────────────────────────── */
+    #download {
+      background: linear-gradient(135deg, var(--night2) 0%, rgba(232, 71, 42, .08) 100%);
+      border-top: 1px solid rgba(251, 191, 36, .1);
+      text-align: center;
+    }
+
+    #download .section-title {
+      margin-bottom: 12px;
+    }
+
+    #download .section-body {
+      margin: 0 auto 48px;
+      text-align: center;
+      max-width: 480px;
+    }
+
+    .download-grid {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .download-card {
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 10px;
+      padding: 36px 40px;
+      min-width: 260px;
+      transition: border-color .2s, background .2s;
+    }
+
+    .download-card:hover {
+      border-color: rgba(251, 191, 36, .3);
+      background: rgba(251, 191, 36, .04);
+    }
+
+    .download-card .os-icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .download-card h3 {
+      font-family: var(--serif);
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .download-card p {
+      font-size: 11px;
+      color: rgba(250, 247, 240, .35);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .download-card .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* ── FOOTER ────────────────────────────────────────────────── */
+    footer {
+      background: var(--night);
+      border-top: 1px solid rgba(255, 255, 255, .06);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    footer .nav-logo {
+      opacity: .6;
+    }
+
+    footer p {
+      font-size: 10px;
+      color: rgba(250, 247, 240, .25);
+    }
+
+    footer a {
+      color: rgba(250, 247, 240, .4);
+      font-size: 10px;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--gold);
+    }
+
+    /* ── ANIMATIONS ────────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── SCROLL REVEAL ─────────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── RESPONSIVE ────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      nav {
+        padding: 16px 24px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+
+      .features-grid.reverse {
+        direction: ltr;
+      }
+
+      .levels-row {
+        flex-wrap: wrap;
+      }
+
+      .level-item {
+        flex: 1 1 calc(33% - 1px);
+      }
+
+      footer {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <span class="tomato-icon"></span>
+      git-tomato
+    </div>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#download">Download</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <h1 class="hero-title">Ship more.<br><em>Track it.</em></h1>
+    <p class="hero-sub">
+      A Pomodoro timer that reads your git history. Every XP point, streak,
+      and badge is backed by code you actually committed — not time you merely sat at a keyboard.
+    </p>
+    <div class="hero-cta">
+      <a href="https://github.com/shiphrahx/git-tomato/releases/download/v0.1.0/git-tomato-0.1.0.dmg" class="btn btn-mac">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+        </svg>
+        Download for macOS
+      </a>
+      <a href="https://github.com/shiphrahx/git-tomato/releases/download/v0.1.0/git-tomato+Setup+0.1.0.exe" class="btn btn-win">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 12V6.75l6-1.32v6.57H3zm17 0V5.5l-8 1.5V12h8zM3 13h6v6.43l-6-1.27V13zm17 0h-8v6.5l8-1.5V13z" />
+        </svg>
+        Download for Windows
+      </a>
+    </div>
+    <p class="version-note">Free · Local-first · No account required</p>
+    <div class="hero-screenshot">
+      <div class="screenshot-tab">
+        <span>[ Focus ]</span>
+        <span>[ Stats ]</span>
+        <span>[ Config ]</span>
+        <span style="margin-left:8px; color: rgba(250,247,240,.15)">☆</span>
+      </div>
+      <div class="theme-hint">☀ Day mode</div>
+      <img src="assets/demo.png" alt="git-tomato focus timer — day mode">
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="section-inner">
+      <p class="section-label reveal">How it works</p>
+      <h2 class="section-title reveal">Focus. Commit. Level up.</h2>
+      <p class="section-body reveal">
+        git-tomato turns your actual coding output into a progression system.
+        No made-up points — every reward traces back to a git log entry.
+      </p>
+      <div class="steps reveal">
+        <div class="step">
+          <div class="step-num">01</div>
+          <span class="step-icon">🍅</span>
+          <div class="step-title">Start a session</div>
+          <div class="step-body">Pick a task, start a Pomodoro. The timer sits in your menubar, out of your
+            way.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <span class="step-icon">⌨️</span>
+          <div class="step-title">Write code</div>
+          <div class="step-body">Work normally. git-tomato scans your watched repos for commits the moment your session
+            ends.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <span class="step-icon">📊</span>
+          <div class="step-title">See the truth</div>
+          <div class="step-body">Your git activity appears in the feed. XP is awarded per commit, per session, per
+            streak day.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <span class="step-icon">🏅</span>
+          <div class="step-title">Earn rewards</div>
+          <div class="step-body">Badges, levels, streaks, and daily quests all gated behind real output, never just
+            clock time.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-inner">
+      <p class="section-label reveal">Features</p>
+      <h2 class="section-title reveal">Built for developers<br>who ship.</h2>
+
+      <!-- Feature 1: Dark mode screenshot -->
+      <div class="features-grid reveal" style="margin-top:80px">
+        <div class="feature-img">
+          <img src="assets/dark_demo.png" alt="git-tomato night mode">
+        </div>
+        <div class="feature-text">
+          <p class="feature-tag">Day &amp; Night</p>
+          <h3 class="feature-title">Two themes.<br>One vibe.</h3>
+          <p class="feature-body">
+            Switch between a bright daytime scene and a starlit twilight mode.
+            The pixel-art background changes with your mood — a cozy game aesthetic
+            that makes deep work feel less like a grind.
+          </p>
+          <div class="feature-pills">
+            <span class="pill">Day mode</span>
+            <span class="pill">Night mode</span>
+            <span class="pill">Pixel art backgrounds</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 2: Heatmap -->
+      <div class="features-grid reverse reveal" style="margin-top:100px">
+        <div class="feature-img">
+          <img src="assets/heatmap.png" alt="Focus heatmap and XP">
+        </div>
+        <div class="feature-text">
+          <p class="feature-tag">Progress</p>
+          <h3 class="feature-title">XP that means<br>something.</h3>
+          <p class="feature-body">
+            Seven developer levels from Seedling to Legend. A 12-week focus heatmap.
+            A live day streak that only counts when you have commits to show for it.
+            Your numbers reflect your output, not your optimism.
+          </p>
+          <div class="feature-pills">
+            <span class="pill">7 levels</span>
+            <span class="pill">Day streaks</span>
+            <span class="pill">Focus heatmap</span>
+            <span class="pill">Commit-gated XP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 3: Quests -->
+      <div class="features-grid reveal" style="margin-top:100px">
+        <div class="feature-img">
+          <img src="assets/quests.png" alt="Daily quests">
+        </div>
+        <div class="feature-text">
+          <p class="feature-tag">Daily Quests</p>
+          <h3 class="feature-title">Challenges that<br>scale with you.</h3>
+          <p class="feature-body">
+            Three quests generated fresh each day, calibrated to your own 7-day baseline.
+            A power user won't find them trivial. A new user won't find them impossible.
+            Unfinished quests expire at midnight. No carrying over yesterday's debt.
+          </p>
+          <div class="feature-pills">
+            <span class="pill">Adaptive targets</span>
+            <span class="pill">3 quests / day</span>
+            <span class="pill">Midnight reset</span>
+            <span class="pill">14 quest types</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 4: Badges -->
+      <div class="features-grid reverse reveal" style="margin-top:100px">
+        <div class="feature-img" style="max-width:320px; margin: 0 auto;">
+          <img src="assets/badges.png" alt="Achievement badges">
+        </div>
+        <div class="feature-text">
+          <p class="feature-tag">Achievements</p>
+          <h3 class="feature-title">25 badges.<br>All earned.</h3>
+          <p class="feature-body">
+            One-time unlocks across five categories: Output, Consistency, Time,
+            Style, and Mastery. Badges like Ghost Mode (never paused the timer),
+            The Refactorer (only deletions), and Comeback Kid (returned after 7 days away)
+            tell a story about how you actually work.
+          </p>
+          <div class="feature-pills">
+            <span class="pill">25 badges</span>
+            <span class="pill">5 categories</span>
+            <span class="pill">Pixel art icons</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEVELS -->
+  <section id="levels" style="padding: 80px 24px;">
+    <div class="section-inner" style="text-align:center">
+      <p class="section-label reveal" style="text-align:center">Developer levels</p>
+      <h2 class="section-title reveal">Where do you rank?</h2>
+      <p class="section-body reveal" style="margin: 0 auto 56px; text-align:center">
+        XP is earned by completing sessions with qualifying commits.
+        The curve doubles roughly every two levels — Legend is genuinely hard.
+      </p>
+      <div class="levels-row reveal">
+        <div class="level-item">
+          <div class="level-num">LVL 0</div>
+          <div class="level-name">Seedling</div>
+          <div class="level-xp">0 XP</div>
+          <div class="level-dot" style="background:#22c55e"></div>
+        </div>
+        <div class="level-item">
+          <div class="level-num">LVL 1</div>
+          <div class="level-name">Committer</div>
+          <div class="level-xp">100 XP</div>
+          <div class="level-dot" style="background:#378add"></div>
+        </div>
+        <div class="level-item">
+          <div class="level-num">LVL 2</div>
+          <div class="level-name">Shipper</div>
+          <div class="level-xp">300 XP</div>
+          <div class="level-dot" style="background:#7f77dd"></div>
+        </div>
+        <div class="level-item">
+          <div class="level-num">LVL 3</div>
+          <div class="level-name">Maintainer</div>
+          <div class="level-xp">700 XP</div>
+          <div class="level-dot" style="background:#ef9f27"></div>
+        </div>
+        <div class="level-item">
+          <div class="level-num">LVL 4</div>
+          <div class="level-name">Staff</div>
+          <div class="level-xp">1,500 XP</div>
+          <div class="level-dot" style="background:#d85a30"></div>
+        </div>
+        <div class="level-item">
+          <div class="level-num">LVL 5</div>
+          <div class="level-name">Principal</div>
+          <div class="level-xp">3,000 XP</div>
+          <div class="level-dot" style="background:#d4537e"></div>
+        </div>
+        <div class="level-item">
+          <div class="level-num">LVL 6</div>
+          <div class="level-name" style="color:var(--gold)">Legend</div>
+          <div class="level-xp">6,000 XP</div>
+          <div class="level-dot" style="background:var(--gold)"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section id="download">
+    <div class="section-inner">
+      <p class="section-label reveal" style="text-align:center">Download</p>
+      <h2 class="section-title reveal">Ready to ship?</h2>
+      <p class="section-body reveal">
+        Free, local-first, no account required. Your data never leaves your machine.
+        macOS 12+ and Windows 10+ supported.
+      </p>
+      <div class="download-grid reveal">
+        <div class="download-card">
+          <span class="os-icon">🍎</span>
+          <h3>macOS</h3>
+          <p>Monterey 12 and later<br>Apple Silicon &amp; Intel</p>
+          <a href="https://github.com/shiphrahx/git-tomato/releases/download/v0.1.0/git-tomato-0.1.0.dmg" class="btn btn-mac">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path
+                d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+            </svg>
+            Download .dmg
+          </a>
+        </div>
+        <div class="download-card">
+          <span class="os-icon">🪟</span>
+          <h3>Windows</h3>
+          <p>Windows 10 and later<br>64-bit installer</p>
+          <a href="https://github.com/shiphrahx/git-tomato/releases/download/v0.1.0/git-tomato+Setup+0.1.0.exe" class="btn btn-win">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M3 12V6.75l6-1.32v6.57H3zm17 0V5.5l-8 1.5V12h8zM3 13h6v6.43l-6-1.27V13zm17 0h-8v6.5l8-1.5V13z" />
+            </svg>
+            Download .exe
+          </a>
+        </div>
+      </div>
+      <p class="reveal" style="margin-top:32px;font-size:11px;color:rgba(250,247,240,.2);text-align:center">
+        Source code available on
+        <a href="https://github.com/shiphrahx/git-tomato" style="color:rgba(251,191,36,.5);text-decoration:none;">GitHub</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="nav-logo">
+      <span class="tomato-icon"></span>
+      git-tomato
+    </div>
+    <div style="display:flex;gap:24px">
+      <a href="https://github.com/shiphrahx/git-tomato">GitHub</a>
+      <a href="https://github.com/shiphrahx/git-tomato/releases">Releases</a>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          const delay = entry.target.dataset.delay || 0;
+          setTimeout(() => entry.target.classList.add('visible'), delay);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+      el.dataset.delay = (i % 4) * 80;
+      observer.observe(el);
+    });
+  </script>
+</body>
+
+</html>
