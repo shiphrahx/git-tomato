@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Rebuild native modules
+        run: npx electron-rebuild
+
+      - name: Install renderer dependencies
+        run: npm --prefix renderer ci
+
+      - name: Build renderer
+        run: npm --prefix renderer run build
+
+      - name: Build and publish (macOS)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --mac --publish always
+
+  release-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Rebuild native modules
+        run: npx electron-rebuild
+
+      - name: Install renderer dependencies
+        run: npm --prefix renderer ci
+
+      - name: Build renderer
+        run: npm --prefix renderer run build
+
+      - name: Build and publish (Windows)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --publish always

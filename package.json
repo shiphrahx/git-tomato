@@ -41,6 +41,7 @@
       "renderer/dist/**",
       "assets/**"
     ],
-    "nativeRebuilder": "legacy"
+    "nativeRebuilder": "legacy",
+    "publish": { "provider": "github" }
   }
 }
