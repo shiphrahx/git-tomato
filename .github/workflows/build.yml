@@ -1,0 +1,71 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Rebuild native modules
+        run: npx electron-rebuild
+
+      - name: Install renderer dependencies
+        run: npm --prefix renderer ci
+
+      - name: Build renderer
+        run: npm --prefix renderer run build
+
+      - name: Build Electron (Windows)
+        run: npx electron-builder --win --publish never
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: git-tomato-windows
+          path: dist/*.exe
+          if-no-files-found: error
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Rebuild native modules
+        run: npx electron-rebuild
+
+      - name: Install renderer dependencies
+        run: npm --prefix renderer ci
+
+      - name: Build renderer
+        run: npm --prefix renderer run build
+
+      - name: Build Electron (macOS)
+        run: npx electron-builder --mac --publish never
+
+      - name: Upload macOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: git-tomato-macos
+          path: dist/*.dmg
+          if-no-files-found: error
