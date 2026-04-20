@@ -15,8 +15,7 @@ Most Pomodoro apps tell you how long you worked. git-tomato tells you what you b
 
 Start a focus session, code, and when the timer ends git-tomato scans your configured repositories and attaches every commit made during that window to the session. No manual logging. The Stats tab then gives you a full picture of the day: commit heatmap, XP earned, lines changed, daily quests, and your badge collection.
 
-![alt text](assets/heatmap.png)
----
+<img src="assets/heatmap.png" width="700" alt="git-tomato icon"/>
 
 ## Features
 
@@ -42,13 +41,7 @@ Start a focus session, code, and when the timer ends git-tomato scans your confi
 - **24 achievement badges** with pixel-art SVG icons (earned badges shown first, locked shown greyed)
 - **Daily quests** — generated fresh each day, resets at midnight
 
-![alt text](assets/quests.png)
-
-### Platform
-- **Windows**: native `.ico` tray icon, taskbar integration
-- **macOS**: `Template` PNG tray icon (auto-inverts for light/dark menu bar)
-- Themes: Morning (light) and Twilight (dark), auto-selected by time of day with manual override
-- Persistent storage in SQLite (WAL mode, closed cleanly on quit)
+<img src="assets/quests.png" width="700" alt="quests icon"/>
 
 ---
 
