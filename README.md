@@ -1,6 +1,22 @@
+<div align="center">
+
 # 🍅 git-tomato
 
+[![Release](https://img.shields.io/github/v/release/shiphrahx/git-tomato?style=flat-square&color=fbbf24&label=release)](https://github.com/shiphrahx/git-tomato/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/shiphrahx/git-tomato/release.yml?style=flat-square&label=build)](https://github.com/shiphrahx/git-tomato/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/shiphrahx/git-tomato?style=flat-square&color=8b5cf6)](https://github.com/shiphrahx/git-tomato/commits/main)
+
+[![macOS](https://img.shields.io/badge/macOS-12%2B-000000?style=flat-square&logo=apple&logoColor=white)](https://github.com/shiphrahx/git-tomato/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-10%2B-0078d4?style=flat-square&logo=windows&logoColor=white)](https://github.com/shiphrahx/git-tomato/releases/latest)
+[![Electron](https://img.shields.io/badge/Electron-47848F?style=flat-square&logo=electron&logoColor=white)](https://www.electronjs.org)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+
 **Time your work. Prove it with commits.**
+
+</div>
+
 
 A desktop app that runs a Pomodoro timer and automatically links each focus session to your git commits. At the end of every session it scans your repos and shows exactly what you shipped during that block. Over time you build a commit heatmap, XP level, daily streaks, and badge collection — all driven by real coding output, not self-reported effort.
 
