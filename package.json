@@ -1,6 +1,6 @@
 {
   "name": "git-tomato",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "Pomodoro timer that tracks your git commits per session",
   "main": "main/index.js",
   "scripts": {
