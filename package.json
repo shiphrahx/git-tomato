@@ -9,6 +9,8 @@
     "build": "npm --prefix renderer run build && electron-builder",
     "build:renderer": "npm --prefix renderer run build",
     "rebuild-native": "electron-rebuild",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest",
     "lint": "eslint main/ scripts/",
     "lint:renderer": "npm --prefix renderer run lint",
     "format": "prettier --write \"main/**/*.js\" \"scripts/**/*.js\"",
@@ -27,6 +29,7 @@
     "electron-rebuild": "^3.2.9",
     "eslint": "^10.4.0",
     "prettier": "^3.8.3",
+    "vitest": "^4.1.7",
     "wait-on": "^8.0.0"
   },
   "build": {
