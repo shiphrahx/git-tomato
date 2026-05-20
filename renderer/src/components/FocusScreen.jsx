@@ -230,7 +230,7 @@ export function FocusScreen({
           </div>
           <div className="focus-xp__bar-row">
             <span className="focus-xp__bar-label">{xpToday} XP</span>
-            <span className="focus-xp__bar-next">Today's haul</span>
+            <span className="focus-xp__bar-next">Today&apos;s haul</span>
           </div>
         </div>
 
