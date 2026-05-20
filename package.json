@@ -8,18 +8,28 @@
     "dev:renderer": "npm --prefix renderer run dev",
     "build": "npm --prefix renderer run build && electron-builder",
     "build:renderer": "npm --prefix renderer run build",
-    "rebuild-native": "electron-rebuild"
+    "rebuild-native": "electron-rebuild",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest",
+    "lint": "eslint main/ scripts/",
+    "lint:renderer": "npm --prefix renderer run lint",
+    "format": "prettier --write \"main/**/*.js\" \"scripts/**/*.js\"",
+    "format:renderer": "npm --prefix renderer run format"
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
     "menubar": "^9.5.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
     "electron": "34.5.8",
     "electron-builder": "^26.8.1",
     "electron-rebuild": "^3.2.9",
+    "eslint": "^10.4.0",
+    "prettier": "^3.8.3",
+    "vitest": "^4.1.7",
     "wait-on": "^8.0.0"
   },
   "build": {
@@ -42,6 +52,8 @@
       "assets/**"
     ],
     "nativeRebuilder": "legacy",
-    "publish": { "provider": "github" }
+    "publish": {
+      "provider": "github"
+    }
   }
 }

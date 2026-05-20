@@ -22,15 +22,16 @@ function xpPctWithinLevel(totalXp, levelIndex) {
 }
 
 function XpBar({ xpResult }) {
-  if (!xpResult) return null;
-
-  const { xpGained, newTotalXp, levelBefore, levelAfter } = xpResult;
-  const xpBefore = newTotalXp - xpGained;
-  const didLevelUp = levelAfter > levelBefore;
-  const isLegend = levelAfter >= LEVELS.length - 1;
-
-  const startPct = xpPctWithinLevel(xpBefore, levelBefore);
-  const endPct   = isLegend ? 100 : xpPctWithinLevel(newTotalXp, levelAfter);
+  // Hooks must be called unconditionally — compute safe defaults when xpResult is null
+  const xpGained   = xpResult?.xpGained   ?? 0;
+  const newTotalXp = xpResult?.newTotalXp  ?? 0;
+  const levelBefore = xpResult?.levelBefore ?? 0;
+  const levelAfter  = xpResult?.levelAfter  ?? 0;
+  const didLevelUp  = levelAfter > levelBefore;
+  const isLegend    = levelAfter >= LEVELS.length - 1;
+  const xpBefore    = newTotalXp - xpGained;
+  const startPct    = xpResult ? xpPctWithinLevel(xpBefore, levelBefore) : 0;
+  const endPct      = xpResult ? (isLegend ? 100 : xpPctWithinLevel(newTotalXp, levelAfter)) : 0;
 
   const [barPct, setBarPct] = useState(startPct);
   const [levelIndex, setLevelIndex] = useState(levelBefore);
@@ -55,6 +56,9 @@ function XpBar({ xpResult }) {
     }, 400);
     return () => clearTimeout(t1);
   }, []);
+
+  // Early return after all hooks
+  if (!xpResult) return null;
 
   const levelTitle = LEVELS[levelIndex]?.title ?? `Level ${levelIndex}`;
   const nextTitle  = LEVELS[levelIndex + 1]?.title;

@@ -15,6 +15,7 @@ function getDb() {
     const dbPath = path.join(app.getPath('userData'), 'sessions.sqlite');
     db = new Database(dbPath);
     db.pragma('journal_mode = WAL');
+    db.pragma('busy_timeout = 3000');
     db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -226,9 +227,12 @@ function getSessionsForDate(dateStr) {
   return rows.map(r => ({ ...r, repos: safeJsonParse(r.repos, []) }));
 }
 
-function getAllSessions() {
+function getAllSessions(limit) {
+  const sql = limit
+    ? `SELECT * FROM sessions ORDER BY started_at DESC LIMIT ${parseInt(limit, 10)}`
+    : `SELECT * FROM sessions ORDER BY started_at DESC`;
   return getDb()
-    .prepare(`SELECT * FROM sessions ORDER BY started_at DESC`)
+    .prepare(sql)
     .all()
     .map(r => ({ ...r, repos: safeJsonParse(r.repos, []) }));
 }

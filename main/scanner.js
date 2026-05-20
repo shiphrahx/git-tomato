@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -14,7 +14,7 @@ const WINDOWS_GIT_FALLBACKS = [
 function resolveGitBin() {
   if (process.platform !== 'win32') return 'git';
   for (const p of WINDOWS_GIT_FALLBACKS) {
-    if (fs.existsSync(p)) return `"${p}"`;
+    if (fs.existsSync(p)) return p; // no quoting needed — spawnSync takes args array
   }
   return 'git'; // hope it's in PATH
 }
@@ -44,12 +44,13 @@ function findGitRepos(baseDirs) {
 
 function getRemoteUrl(repoPath) {
   try {
-    const raw = execSync(`${GIT_BIN} remote get-url origin`, {
+    const result = spawnSync(GIT_BIN, ['remote', 'get-url', 'origin'], {
       cwd: repoPath,
       timeout: 3000,
       encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
+    });
+    if (result.status !== 0 || !result.stdout) return null;
+    const raw = result.stdout.trim();
     // Normalise SSH → HTTPS: git@github.com:owner/repo.git → https://github.com/owner/repo
     const ssh = raw.match(/^git@([^:]+):(.+?)(?:\.git)?$/);
     if (ssh) return `https://${ssh[1]}/${ssh[2]}`;
@@ -72,15 +73,12 @@ function getCommitsSince(isoTimestamp, repoPaths) {
     if (!fs.existsSync(path.join(repoPath, '.git'))) continue;
 
     try {
-      const output = execSync(
-        `${GIT_BIN} log --since="${isoTimestamp}" --format="%H|%s|%ae" --all`,
-        {
-          cwd: repoPath,
-          timeout: 5000,
-          encoding: 'utf8',
-          stdio: ['ignore', 'pipe', 'ignore'],
-        }
-      ).trim();
+      const result = spawnSync(
+        GIT_BIN,
+        ['log', `--since=${isoTimestamp}`, '--format=%H|%s|%ae', '--all'],
+        { cwd: repoPath, timeout: 5000, encoding: 'utf8' }
+      );
+      const output = (result.status === 0 && result.stdout) ? result.stdout.trim() : '';
 
       if (!output) continue;
 
@@ -131,15 +129,12 @@ function getAllCommitsForDay(dateStr, repoPaths) {
     if (!fs.existsSync(path.join(repoPath, '.git'))) continue;
 
     try {
-      const output = execSync(
-        `${GIT_BIN} log --after="${dayStart.toISOString()}" --before="${dayEnd.toISOString()}" --format="%H|%s|%ae|%ct" --all`,
-        {
-          cwd: repoPath,
-          timeout: 5000,
-          encoding: 'utf8',
-          stdio: ['ignore', 'pipe', 'ignore'],
-        }
-      ).trim();
+      const result = spawnSync(
+        GIT_BIN,
+        ['log', `--after=${dayStart.toISOString()}`, `--before=${dayEnd.toISOString()}`, '--format=%H|%s|%ae|%ct', '--all'],
+        { cwd: repoPath, timeout: 5000, encoding: 'utf8' }
+      );
+      const output = (result.status === 0 && result.stdout) ? result.stdout.trim() : '';
 
       if (!output) continue;
 
@@ -174,8 +169,8 @@ function getAllCommitsForDay(dateStr, repoPaths) {
 
 function isGitAvailable() {
   try {
-    execSync(`${GIT_BIN} --version`, { timeout: 3000, stdio: 'ignore' });
-    return true;
+    const result = spawnSync(GIT_BIN, ['--version'], { timeout: 3000 });
+    return result.status === 0;
   } catch (_) {
     return false;
   }

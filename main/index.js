@@ -31,7 +31,10 @@ function decryptToken(encrypted) {
   try {
     if (!encrypted || !safeStorage.isEncryptionAvailable()) return '';
     return safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
-  } catch (_) { return ''; }
+  } catch (e) {
+    console.error('[settings] Failed to decrypt GitHub token:', e.message);
+    return '';
+  }
 }
 
 function encryptToken(plain) {
@@ -226,9 +229,9 @@ app.whenReady().then(() => {
   });
 
   // Store handlers
-  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date } = {}) => {
+  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date, limit } = {}) => {
     try {
-      return date ? store.getSessionsForDate(date) : store.getAllSessions();
+      return date ? store.getSessionsForDate(date) : store.getAllSessions(limit);
     } catch (e) {
       console.error('[ipc] STORE_GET_SESSIONS error:', e);
       return [];

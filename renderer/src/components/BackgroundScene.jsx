@@ -45,28 +45,28 @@ function MorningScene() {
 
       <defs>
         <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#62b8e0" />
-          <stop offset="12%" stop-color="#80c8e8" />
-          <stop offset="24%" stop-color="#9ed4f0" />
-          <stop offset="36%" stop-color="#b8e0f5" />
-          <stop offset="48%" stop-color="#cce9f8" />
-          <stop offset="58%" stop-color="#dcf0f8" />
-          <stop offset="68%" stop-color="#eaf5f8" />
-          <stop offset="77%" stop-color="#f4f8f0" />
-          <stop offset="86%" stop-color="#f8f0e0" />
-          <stop offset="100%" stop-color="#f8e8cc" />
+          <stop offset="0%" stopColor="#62b8e0" />
+          <stop offset="12%" stopColor="#80c8e8" />
+          <stop offset="24%" stopColor="#9ed4f0" />
+          <stop offset="36%" stopColor="#b8e0f5" />
+          <stop offset="48%" stopColor="#cce9f8" />
+          <stop offset="58%" stopColor="#dcf0f8" />
+          <stop offset="68%" stopColor="#eaf5f8" />
+          <stop offset="77%" stopColor="#f4f8f0" />
+          <stop offset="86%" stopColor="#f8f0e0" />
+          <stop offset="100%" stopColor="#f8e8cc" />
         </linearGradient>
         <linearGradient id="gradDistantHillM" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#80c060" />
-          <stop offset="100%" stop-color="#5a9e40" />
+          <stop offset="0%" stopColor="#80c060" />
+          <stop offset="100%" stopColor="#5a9e40" />
         </linearGradient>
         <linearGradient id="gradMidHillM" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#5a9e40" />
-          <stop offset="100%" stop-color="#428030" />
+          <stop offset="0%" stopColor="#5a9e40" />
+          <stop offset="100%" stopColor="#428030" />
         </linearGradient>
         <linearGradient id="gradFrontHillM" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#428030" />
-          <stop offset="100%" stop-color="#306020" />
+          <stop offset="0%" stopColor="#428030" />
+          <stop offset="100%" stopColor="#306020" />
         </linearGradient>
       </defs>
       <rect x="0" y="0" width="960" height="425" fill="url(#skyGrad)" />
@@ -184,34 +184,34 @@ function TwilightScene() {
 
       <defs>
         <linearGradient id="twilightSkyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#080418" />
-          <stop offset="13%" stop-color="#110630" />
-          <stop offset="25%" stop-color="#1e0c48" />
-          <stop offset="37%" stop-color="#341560" />
-          <stop offset="48%" stop-color="#4e2070" />
-          <stop offset="57%" stop-color="#6a2c78" />
-          <stop offset="66%" stop-color="#8a3070" />
-          <stop offset="74%" stop-color="#a83858" />
-          <stop offset="82%" stop-color="#cc5048" />
-          <stop offset="88%" stop-color="#e07050" />
-          <stop offset="94%" stop-color="#f09058" />
-          <stop offset="100%" stop-color="#f4a870" />
+          <stop offset="0%" stopColor="#080418" />
+          <stop offset="13%" stopColor="#110630" />
+          <stop offset="25%" stopColor="#1e0c48" />
+          <stop offset="37%" stopColor="#341560" />
+          <stop offset="48%" stopColor="#4e2070" />
+          <stop offset="57%" stopColor="#6a2c78" />
+          <stop offset="66%" stopColor="#8a3070" />
+          <stop offset="74%" stopColor="#a83858" />
+          <stop offset="82%" stopColor="#cc5048" />
+          <stop offset="88%" stopColor="#e07050" />
+          <stop offset="94%" stopColor="#f09058" />
+          <stop offset="100%" stopColor="#f4a870" />
         </linearGradient>
         <mask id="moonmask">
           <circle cx="848" cy="78" r="30" fill="white" />
           <circle cx="863" cy="68" r="24" fill="black" />
         </mask>
         <linearGradient id="gradDistantHill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#2a4e38" />
-          <stop offset="100%" stop-color="#152a1e" />
+          <stop offset="0%" stopColor="#2a4e38" />
+          <stop offset="100%" stopColor="#152a1e" />
         </linearGradient>
         <linearGradient id="gradMidHill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#1e3828" />
-          <stop offset="100%" stop-color="#0e1e14" />
+          <stop offset="0%" stopColor="#1e3828" />
+          <stop offset="100%" stopColor="#0e1e14" />
         </linearGradient>
         <linearGradient id="gradFrontHill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#162818" />
-          <stop offset="100%" stop-color="#090d0a" />
+          <stop offset="0%" stopColor="#162818" />
+          <stop offset="100%" stopColor="#090d0a" />
         </linearGradient>
       </defs>
       <rect x="0" y="0" width="960" height="450" fill="url(#twilightSkyGrad)" />

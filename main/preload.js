@@ -32,8 +32,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Request current timer state on load (invoke pattern)
   getTimerState: () => ipcRenderer.invoke('timer:getState'),
 
-  // Session store queries
-  getSessions: (date) => ipcRenderer.invoke('store:getSessions', { date }),
+  // Session store queries — optional limit caps rows returned (default: all)
+  getSessions: (date, limit) => ipcRenderer.invoke('store:getSessions', { date, limit }),
 
   // All commits for a calendar day + session windows
   getDayCommits: (date) => ipcRenderer.invoke('store:getDayCommits', { date }),

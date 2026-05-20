@@ -1,0 +1,5 @@
+dist/
+renderer/dist/
+node_modules/
+renderer/node_modules/
+*.sqlite
