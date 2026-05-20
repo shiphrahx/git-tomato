@@ -31,7 +31,10 @@ function decryptToken(encrypted) {
   try {
     if (!encrypted || !safeStorage.isEncryptionAvailable()) return '';
     return safeStorage.decryptString(Buffer.from(encrypted, 'base64'));
-  } catch (_) { return ''; }
+  } catch (e) {
+    console.error('[settings] Failed to decrypt GitHub token:', e.message);
+    return '';
+  }
 }
 
 function encryptToken(plain) {
