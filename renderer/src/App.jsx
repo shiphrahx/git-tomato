@@ -23,6 +23,14 @@ import { SessionComplete } from './components/SessionComplete';
 import { BackgroundScene } from './components/BackgroundScene';
 import { FocusScreen } from './components/FocusScreen';
 
+// Reject a promise after `ms` milliseconds — guards against hanging IPC calls
+function withTimeout(promise, ms = 5000) {
+  const timer = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('IPC timeout')), ms)
+  );
+  return Promise.race([promise, timer]);
+}
+
 // Settings window loads the same renderer with ?view=settings
 const TABS = [
   { id: 'timer',  label: '[ Focus ]'  },
@@ -62,6 +70,7 @@ export default function App() {
   const [streakState, setStreakState] = useState(undefined);
 
   function getTodayStr() {
+    // Use local date parts — avoids UTC-offset day-boundary shift
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
@@ -69,25 +78,32 @@ export default function App() {
   async function loadTodayData() {
     if (!window.electronAPI) return;
     const today = getTodayStr();
-    const [sessions, dayCommits, xp, xpSt, streakSt] = await Promise.all([
-      window.electronAPI.getSessions(today),
-      window.electronAPI.getDayCommits(today),
-      window.electronAPI.getDayXp(today),
-      window.electronAPI.getXpState(),
-      window.electronAPI.getStreakState(),
-    ]);
-    setTodaySessions(sessions);
-    setTodayCommits(dayCommits);
-    setTodayXp(xp);
-    setXpState(xpSt);
-    setStreakState(streakSt);
+    try {
+      const [sessions, dayCommits, xp, xpSt, streakSt] = await withTimeout(
+        Promise.all([
+          window.electronAPI.getSessions(today),
+          window.electronAPI.getDayCommits(today),
+          window.electronAPI.getDayXp(today),
+          window.electronAPI.getXpState(),
+          window.electronAPI.getStreakState(),
+        ])
+      );
+      setTodaySessions(sessions);
+      setTodayCommits(dayCommits);
+      setTodayXp(xp);
+      setXpState(xpSt);
+      setStreakState(streakSt);
+    } catch (e) {
+      console.error('[App] loadTodayData failed:', e.message);
+    }
   }
 
   useEffect(() => {
     if (!window.electronAPI) return;
     window.electronAPI.getBadgeUnlocks().then(records => setBadgeUnlocks(records ?? []));
     window.electronAPI.getQuestSlate().then(s => setQuestSlate(s ?? null));
-    window.electronAPI.getSessions().then(s => setAllSessions(s ?? []));
+    // Limit to 200 most-recent sessions — avoids unbounded load at scale
+    window.electronAPI.getSessions(null, 200).then(s => setAllSessions(s ?? []));
     loadTodayData();
     const unsubBadges = window.electronAPI.onBadgesUpdated(records => setBadgeUnlocks(records ?? []));
     const unsubQuests = window.electronAPI.onQuestsUpdated(s => setQuestSlate(s ?? null));
@@ -100,7 +116,7 @@ export default function App() {
       setCompletedSession(session);
       setTab('timer');
       loadTodayData();
-      window.electronAPI.getSessions().then(s => setAllSessions(s ?? []));
+      window.electronAPI.getSessions(null, 200).then(s => setAllSessions(s ?? []));
     });
     return cleanup;
   }, []);

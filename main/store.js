@@ -227,9 +227,12 @@ function getSessionsForDate(dateStr) {
   return rows.map(r => ({ ...r, repos: safeJsonParse(r.repos, []) }));
 }
 
-function getAllSessions() {
+function getAllSessions(limit) {
+  const sql = limit
+    ? `SELECT * FROM sessions ORDER BY started_at DESC LIMIT ${parseInt(limit, 10)}`
+    : `SELECT * FROM sessions ORDER BY started_at DESC`;
   return getDb()
-    .prepare(`SELECT * FROM sessions ORDER BY started_at DESC`)
+    .prepare(sql)
     .all()
     .map(r => ({ ...r, repos: safeJsonParse(r.repos, []) }));
 }

@@ -229,9 +229,9 @@ app.whenReady().then(() => {
   });
 
   // Store handlers
-  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date } = {}) => {
+  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date, limit } = {}) => {
     try {
-      return date ? store.getSessionsForDate(date) : store.getAllSessions();
+      return date ? store.getSessionsForDate(date) : store.getAllSessions(limit);
     } catch (e) {
       console.error('[ipc] STORE_GET_SESSIONS error:', e);
       return [];
