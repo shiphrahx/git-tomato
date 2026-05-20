@@ -15,6 +15,7 @@ function getDb() {
     const dbPath = path.join(app.getPath('userData'), 'sessions.sqlite');
     db = new Database(dbPath);
     db.pragma('journal_mode = WAL');
+    db.pragma('busy_timeout = 3000');
     db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
