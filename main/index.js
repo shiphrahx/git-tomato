@@ -244,6 +244,12 @@ app.whenReady().then(() => {
     catch (e) { console.error('[ipc] XP_STATE_GET error:', e); return null; }
   });
 
+  // Level definitions — single source of truth lives in main/levels.js
+  ipcMain.handle(CHANNELS.LEVELS_GET, async () => {
+    try { const { LEVELS } = require('./levels'); return LEVELS; }
+    catch (e) { console.error('[ipc] LEVELS_GET error:', e); return []; }
+  });
+
   // Badges: return all unlocks with badge def metadata attached
   ipcMain.handle(CHANNELS.BADGES_GET, async () => {
     try { return store.getBadgeUnlocks(); }
