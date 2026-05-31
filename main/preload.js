@@ -50,6 +50,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // XP state
   getXpState: () => ipcRenderer.invoke('xp:getState'),
+
+  // Level definitions (single source of truth in main/levels.js)
+  getLevels: () => ipcRenderer.invoke('xp:getLevels'),
   onXpStateUpdated: (callback) => {
     const handler = (_, data) => callback(data);
     ipcRenderer.on('xp:stateUpdated', handler);

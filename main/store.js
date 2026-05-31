@@ -112,6 +112,19 @@ function getDb() {
     if (!cols.find(c => c.name === 'pause_count')) {
       db.exec(`ALTER TABLE sessions ADD COLUMN pause_count INTEGER NOT NULL DEFAULT 0`);
     }
+    // Migration: cache the total qualifying lines changed per session so the
+    // ten_thousand_lines badge and lines_changed quest don't re-run git over
+    // all history on every session completion. -1 means "not yet computed".
+    if (!cols.find(c => c.name === 'total_lines')) {
+      db.exec(`ALTER TABLE sessions ADD COLUMN total_lines INTEGER NOT NULL DEFAULT -1`);
+    }
+
+    // Indexes for the hot query paths: per-day session lookups and per-session
+    // XP event lookups (both run on every session completion / stats view).
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions(started_at);
+      CREATE INDEX IF NOT EXISTS idx_xp_events_session_id ON xp_events(session_id);
+    `);
 
     // Migration: add QUEST_COMPLETE to xp_events CHECK constraint.
     // SQLite can't ALTER a CHECK constraint, so we recreate the table if needed.
@@ -159,6 +172,36 @@ function completeSession({ id, endedAt, repos }) {
       `UPDATE sessions SET ended_at = @endedAt, repos = @repos, status = 'xp_pending' WHERE id = @id`
     )
     .run({ id, endedAt, repos: JSON.stringify(repos) });
+}
+
+// Cache the qualifying-lines total for a session (see total_lines migration).
+function setSessionTotalLines(id, totalLines) {
+  getDb()
+    .prepare(`UPDATE sessions SET total_lines = ? WHERE id = ?`)
+    .run(totalLines, id);
+}
+
+// Sum cached total_lines across all completed focus sessions. Sessions whose
+// total_lines was never computed (-1) are excluded; the caller backfills them.
+function getSessionsMissingTotalLines() {
+  return getDb()
+    .prepare(
+      `SELECT * FROM sessions
+       WHERE type = 'focus' AND status IN ('completed','xp_pending') AND total_lines < 0
+       ORDER BY started_at ASC`
+    )
+    .all()
+    .map(r => ({ ...r, repos: safeJsonParse(r.repos, []) }));
+}
+
+function getTotalLinesSum() {
+  const row = getDb()
+    .prepare(
+      `SELECT COALESCE(SUM(total_lines), 0) AS total FROM sessions
+       WHERE type = 'focus' AND status IN ('completed','xp_pending') AND total_lines >= 0`
+    )
+    .get();
+  return row.total;
 }
 
 // Mark a session as fully done after XP has been committed.
@@ -502,6 +545,7 @@ module.exports = {
   closeDb,
   saveSession,
   beginSession, completeSession, markSessionXpDone, abortInProgressSessions,
+  setSessionTotalLines, getSessionsMissingTotalLines, getTotalLinesSum,
   getPendingXpSessions, getSessionById,
   getSessionsForDate, getAllSessions, getSessionWindowsForDate,
   getXpState, setXpState,

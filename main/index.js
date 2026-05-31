@@ -6,6 +6,7 @@ const timer = require('./timer');
 const store = require('./store');
 const xp = require('./xp');
 const scanner = require('./scanner');
+const { isGitAvailable } = require('./gitBin');
 const { dailyStreakStatus, weeklyStreakStatus, toDateStr, weekMonday } = require('./streakDefs');
 const { runHistoricalEvaluation, invalidateSettingsCache } = require('./badges');
 const { expireStaleSlates, getTodaySlate } = require('./quests');
@@ -243,6 +244,12 @@ app.whenReady().then(() => {
     catch (e) { console.error('[ipc] XP_STATE_GET error:', e); return null; }
   });
 
+  // Level definitions — single source of truth lives in main/levels.js
+  ipcMain.handle(CHANNELS.LEVELS_GET, async () => {
+    try { const { LEVELS } = require('./levels'); return LEVELS; }
+    catch (e) { console.error('[ipc] LEVELS_GET error:', e); return []; }
+  });
+
   // Badges: return all unlocks with badge def metadata attached
   ipcMain.handle(CHANNELS.BADGES_GET, async () => {
     try { return store.getBadgeUnlocks(); }
@@ -283,7 +290,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle(CHANNELS.GIT_CHECK, async () => {
-    try { return { available: scanner.isGitAvailable() }; }
+    try { return { available: isGitAvailable() }; }
     catch (e) { console.error('[ipc] GIT_CHECK error:', e); return { available: false }; }
   });
 
