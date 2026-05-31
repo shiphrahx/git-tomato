@@ -1,35 +1,10 @@
 // Achievement badge evaluation engine — Sections A, B, C, D, F.
 // Runs after XP and Streaks modules complete (B-1).
 
-const path = require('path');
 const store = require('./store');
-const { BADGES, BADGE_BY_SLUG } = require('./badgeDefs');
+const { BADGES } = require('./badgeDefs');
 const { analyseCommitsRich } = require('./commitAnalyser');
-const { toDateStr, weekMonday, daysBetween } = require('./streakDefs');
-
-// ─── Repo identity helper (F-4) ───────────────────────────────────────────────
-
-// Returns the canonical identifier for a repo: remote URL if available,
-// otherwise the absolute filesystem path.
-function repoId(repoPath) {
-  try {
-    const { execSync } = require('child_process');
-    const GIT_BIN = process.platform === 'win32'
-      ? (require('fs').existsSync('C:\\Program Files\\Git\\cmd\\git.exe')
-          ? '"C:\\Program Files\\Git\\cmd\\git.exe"'
-          : 'git')
-      : 'git';
-    const raw = execSync(`${GIT_BIN} remote get-url origin`, {
-      cwd: repoPath, timeout: 3000, encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
-    const ssh = raw.match(/^git@([^:]+):(.+?)(?:\.git)?$/);
-    if (ssh) return `https://${ssh[1]}/${ssh[2]}`;
-    return raw.replace(/\.git$/, '');
-  } catch (_) {
-    return repoPath; // F-4: no remote → use filesystem path
-  }
-}
+const { toDateStr, weekMonday } = require('./streakDefs');
 
 // ─── Condition helpers ────────────────────────────────────────────────────────
 
@@ -37,37 +12,38 @@ function localHour(ms) {
   return new Date(ms).getHours();
 }
 
-// Count all SESSION_COMPLETE events in the XP event log that fall on todayStr.
-function sessionCompleteCountToday(todayStr, allXpEvents) {
-  const dayStart = new Date(todayStr).setHours(0, 0, 0, 0);
-  const dayEnd   = new Date(todayStr).setHours(23, 59, 59, 999);
-  return allXpEvents.filter(e =>
-    e.event_type === 'SESSION_COMPLETE' &&
-    new Date(e.created_at).getTime() >= dayStart &&
-    new Date(e.created_at).getTime() <= dayEnd
-  ).length;
+// Build per-session aggregates from the XP event log in a single pass, so
+// condition evaluators don't each re-scan all events (was O(sessions × events)).
+//   sessionsWithBonus: Set<session_id> that have ≥1 COMMIT_BONUS
+//   completeOnDay:     Map<dayStr, Set<session_id>> for SESSION_COMPLETE events
+function indexXpEvents(allXpEvents) {
+  const sessionsWithBonus = new Set();
+  const completeOnDay = new Map();
+  for (const e of allXpEvents) {
+    if (e.event_type === 'COMMIT_BONUS') {
+      sessionsWithBonus.add(e.session_id);
+    } else if (e.event_type === 'SESSION_COMPLETE') {
+      const day = toDateStr(new Date(e.created_at).getTime());
+      let set = completeOnDay.get(day);
+      if (!set) { set = new Set(); completeOnDay.set(day, set); }
+      set.add(e.session_id);
+    }
+  }
+  return { sessionsWithBonus, completeOnDay };
+}
+
+// Count all SESSION_COMPLETE events on todayStr.
+function sessionCompleteCountToday(todayStr, xpIndex) {
+  return xpIndex.completeOnDay.get(todayStr)?.size ?? 0;
 }
 
 // Count productive sessions (with at least one COMMIT_BONUS) on todayStr.
-function productiveSessionCountToday(todayStr, allXpEvents) {
-  const dayStart = new Date(todayStr).setHours(0, 0, 0, 0);
-  const dayEnd   = new Date(todayStr).setHours(23, 59, 59, 999);
-
-  // Group events by session_id, filter to those on today
-  const sessionIds = new Set(
-    allXpEvents
-      .filter(e => {
-        const t = new Date(e.created_at).getTime();
-        return e.event_type === 'SESSION_COMPLETE' && t >= dayStart && t <= dayEnd;
-      })
-      .map(e => e.session_id)
-  );
-
-  // Of those sessions, how many have at least one COMMIT_BONUS?
+function productiveSessionCountToday(todayStr, xpIndex) {
+  const completed = xpIndex.completeOnDay.get(todayStr);
+  if (!completed) return 0;
   let count = 0;
-  for (const sid of sessionIds) {
-    const hasBonus = allXpEvents.some(e => e.session_id === sid && e.event_type === 'COMMIT_BONUS');
-    if (hasBonus) count++;
+  for (const sid of completed) {
+    if (xpIndex.sessionsWithBonus.has(sid)) count++;
   }
   return count;
 }
@@ -207,12 +183,12 @@ const CONDITIONS = {
 
   deep_work(ctx) {
     // 4+ productive sessions (with qualifying commits) today (C-15)
-    return productiveSessionCountToday(ctx.todayStr, ctx.allXpEvents) >= 4;
+    return productiveSessionCountToday(ctx.todayStr, ctx.xpIndex) >= 4;
   },
 
   marathon(ctx) {
     // 8+ SESSION_COMPLETE events today regardless of commits (C-16)
-    return sessionCompleteCountToday(ctx.todayStr, ctx.allXpEvents) >= 8;
+    return sessionCompleteCountToday(ctx.todayStr, ctx.xpIndex) >= 8;
   },
 
   lunch_break_hacker(ctx) {
@@ -302,21 +278,20 @@ const CONDITIONS = {
   },
 
   ten_thousand_lines(ctx) {
-    // Cumulative added lines across all qualifying commits >= 10,000 (C-24)
-    // Computed from all historical COMMIT_BONUS events isn't enough (no line counts stored).
-    // Re-derive by summing additions from all sessions using the XP event log session IDs.
-    // We store this progressively: sum richCommits of current session + all prior sessions.
-    // For efficiency, pull all sessions with COMMIT_BONUS events and sum their richCommits.
-    // Because this is potentially expensive on first run, we compute from all past sessions.
-    const allSessions = store.getAllSessions().filter(s => s.status === 'completed' || s.status === 'xp_pending');
-    let total = 0;
-    const settings = _getSettings();
-    for (const s of allSessions) {
-      const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
-      total += rich.reduce((sum, c) => sum + c.additions, 0);
-      if (total >= 10000) return true;
+    // Cumulative qualifying lines changed across all sessions >= 10,000 (C-24).
+    // Line totals are cached per session in sessions.total_lines, so this reads
+    // a single SUM instead of re-running git over all history each completion.
+    // Any sessions whose total wasn't computed yet (-1) are backfilled once.
+    const missing = store.getSessionsMissingTotalLines();
+    if (missing.length > 0) {
+      const settings = _getSettings();
+      for (const s of missing) {
+        const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
+        const lines = rich.reduce((sum, c) => sum + c.totalLines, 0);
+        store.setSessionTotalLines(s.id, lines);
+      }
     }
-    return total >= 10000;
+    return store.getTotalLinesSum() >= 10000;
   },
 
   session_centurion(ctx) {
@@ -370,8 +345,9 @@ function evaluateBadges({ session, richCommits, xpResult, streakResult, historic
   const existingUnlocks = store.getBadgeUnlocks();
   const unlockedSlugs   = new Set(existingUnlocks.map(u => u.slug));
 
-  // Load XP events once
+  // Load XP events once and build per-session aggregates in a single pass
   const allXpEvents = store.getXpEvents();
+  const xpIndex = indexXpEvents(allXpEvents);
 
   const ctx = {
     session,
@@ -379,6 +355,7 @@ function evaluateBadges({ session, richCommits, xpResult, streakResult, historic
     xpResult,
     streakResult: streakResult ?? { dailyStreak: 0, weeklyStreak: 0, isComeback: false, gapDays: 0 },
     allXpEvents,
+    xpIndex,
     unlockedSlugs,
     todayStr,
     nowMs,
