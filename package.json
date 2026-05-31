@@ -17,8 +17,7 @@
     "format:renderer": "npm --prefix renderer run format"
   },
   "dependencies": {
-    "better-sqlite3": "^12.8.0",
-    "menubar": "^9.5.2"
+    "better-sqlite3": "^12.8.0"
   },
   "devDependencies": {
     "@emnapi/core": "^1.10.0",
