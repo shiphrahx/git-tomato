@@ -1,37 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import tomatoImg from '../assets/tomato-1.png';
+import { LEVELS as FALLBACK_LEVELS } from '../levels';
 
-// Mirror of main/levels.js — must stay in sync
-const LEVELS = [
-  { index: 0, title: 'Seedling',   totalXpRequired: 0     },
-  { index: 1, title: 'Committer',  totalXpRequired: 100   },
-  { index: 2, title: 'Shipper',    totalXpRequired: 300   },
-  { index: 3, title: 'Maintainer', totalXpRequired: 700   },
-  { index: 4, title: 'Staff',      totalXpRequired: 1500  },
-  { index: 5, title: 'Principal',  totalXpRequired: 3000  },
-  { index: 6, title: 'Legend',     totalXpRequired: 6000  },
-];
-
-function xpPctWithinLevel(totalXp, levelIndex) {
-  const level = LEVELS[levelIndex];
-  const next  = LEVELS[levelIndex + 1];
+function xpPctWithinLevel(levels, totalXp, levelIndex) {
+  const level = levels[levelIndex];
+  const next  = levels[levelIndex + 1];
   if (!next) return 100; // Legend
   const range = next.totalXpRequired - level.totalXpRequired;
   const since = totalXp - level.totalXpRequired;
   return Math.min(100, Math.max(0, (since / range) * 100));
 }
 
-function XpBar({ xpResult }) {
+function XpBar({ xpResult, levels = FALLBACK_LEVELS }) {
   // Hooks must be called unconditionally — compute safe defaults when xpResult is null
   const xpGained   = xpResult?.xpGained   ?? 0;
   const newTotalXp = xpResult?.newTotalXp  ?? 0;
   const levelBefore = xpResult?.levelBefore ?? 0;
   const levelAfter  = xpResult?.levelAfter  ?? 0;
   const didLevelUp  = levelAfter > levelBefore;
-  const isLegend    = levelAfter >= LEVELS.length - 1;
+  const isLegend    = levelAfter >= levels.length - 1;
   const xpBefore    = newTotalXp - xpGained;
-  const startPct    = xpResult ? xpPctWithinLevel(xpBefore, levelBefore) : 0;
-  const endPct      = xpResult ? (isLegend ? 100 : xpPctWithinLevel(newTotalXp, levelAfter)) : 0;
+  const startPct    = xpResult ? xpPctWithinLevel(levels, xpBefore, levelBefore) : 0;
+  const endPct      = xpResult ? (isLegend ? 100 : xpPctWithinLevel(levels, newTotalXp, levelAfter)) : 0;
 
   const [barPct, setBarPct] = useState(startPct);
   const [levelIndex, setLevelIndex] = useState(levelBefore);
@@ -60,8 +50,8 @@ function XpBar({ xpResult }) {
   // Early return after all hooks
   if (!xpResult) return null;
 
-  const levelTitle = LEVELS[levelIndex]?.title ?? `Level ${levelIndex}`;
-  const nextTitle  = LEVELS[levelIndex + 1]?.title;
+  const levelTitle = levels[levelIndex]?.title ?? `Level ${levelIndex}`;
+  const nextTitle  = levels[levelIndex + 1]?.title;
 
   return (
     <div className="sc__xp-bar-wrap">
@@ -75,7 +65,7 @@ function XpBar({ xpResult }) {
       {!isLegend && (
         <div className="sc__xp-bar-meta">
           <span className="num sc__xp-to-next">
-            {LEVELS[levelAfter + 1].totalXpRequired - newTotalXp}
+            {levels[levelAfter + 1].totalXpRequired - newTotalXp}
           </span> XP to next level
         </div>
       )}
@@ -83,7 +73,7 @@ function XpBar({ xpResult }) {
   );
 }
 
-export function SessionComplete({ session, onDismiss }) {
+export function SessionComplete({ session, onDismiss, levels = FALLBACK_LEVELS }) {
   if (!session) return null;
 
   const totalCommits = session.repos
@@ -117,7 +107,7 @@ export function SessionComplete({ session, onDismiss }) {
         </div>
       </div>
 
-      <XpBar xpResult={xpResult} />
+      <XpBar xpResult={xpResult} levels={levels} />
 
       <div className="sc__xp-row-total">
         <span className="sc__xp-fire">🔥</span>
