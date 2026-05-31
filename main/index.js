@@ -6,6 +6,7 @@ const timer = require('./timer');
 const store = require('./store');
 const xp = require('./xp');
 const scanner = require('./scanner');
+const { isGitAvailable } = require('./gitBin');
 const { dailyStreakStatus, weeklyStreakStatus, toDateStr, weekMonday } = require('./streakDefs');
 const { runHistoricalEvaluation, invalidateSettingsCache } = require('./badges');
 const { expireStaleSlates, getTodaySlate } = require('./quests');
@@ -283,7 +284,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle(CHANNELS.GIT_CHECK, async () => {
-    try { return { available: scanner.isGitAvailable() }; }
+    try { return { available: isGitAvailable() }; }
     catch (e) { console.error('[ipc] GIT_CHECK error:', e); return { available: false }; }
   });
 
