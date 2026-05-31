@@ -61,6 +61,7 @@ export default function App() {
   const [questSlate, setQuestSlate] = useState(undefined);
 
   const [allSessions, setAllSessions] = useState([]);
+  const [levels, setLevels] = useState(undefined);
 
   // Today tab data fetched eagerly
   const [todaySessions, setTodaySessions] = useState(undefined);
@@ -102,6 +103,7 @@ export default function App() {
     if (!window.electronAPI) return;
     window.electronAPI.getBadgeUnlocks().then(records => setBadgeUnlocks(records ?? []));
     window.electronAPI.getQuestSlate().then(s => setQuestSlate(s ?? null));
+    window.electronAPI.getLevels?.().then(l => { if (l && l.length) setLevels(l); });
     // Limit to 200 most-recent sessions — avoids unbounded load at scale
     window.electronAPI.getSessions(null, 200).then(s => setAllSessions(s ?? []));
     loadTodayData();
@@ -194,7 +196,7 @@ export default function App() {
             {showSessionComplete && (
               <div className="screen screen--sc">
                 <ErrorBoundary>
-                  <SessionComplete session={completedSession} onDismiss={handleDismissComplete} />
+                  <SessionComplete session={completedSession} onDismiss={handleDismissComplete} levels={levels} />
                 </ErrorBoundary>
               </div>
             )}
