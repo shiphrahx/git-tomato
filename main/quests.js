@@ -9,6 +9,16 @@ const { Notification } = require('electron');
 const store = require('./store');
 const { QUEST_TYPES, QUEST_BY_SLUG, TIER_XP } = require('./questDefs');
 
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
+// Normalise a session row's repos field to an array. store reads already parse
+// JSON, but defend against rows that still hold a raw string.
+function sessionRepos(session) {
+  if (Array.isArray(session.repos)) return session.repos;
+  try { return JSON.parse(session.repos || '[]'); }
+  catch { return []; }
+}
+
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
 function localDateStr(ms) {
@@ -17,18 +27,6 @@ function localDateStr(ms) {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
-}
-
-function localMidnight(dateStr) {
-  const d = new Date(dateStr);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
-function localMidnightEnd(dateStr) {
-  const d = new Date(dateStr);
-  d.setHours(23, 59, 59, 999);
-  return d.getTime();
 }
 
 // ─── B-2: Baseline window computation ────────────────────────────────────────
@@ -101,7 +99,6 @@ function computeBaseline(baselineDays) {
   }
 
   // Longest single-session commit count (full history, not just baseline)
-  const allSessionIds = allSessions.map(s => s.id);
   let longestSessionCommitCount = 0;
   const commitsBySession = {};
   for (const e of allXpEvents) {
@@ -115,8 +112,7 @@ function computeBaseline(baselineDays) {
   // Most active repo across baseline sessions
   const repoCounts = {};
   for (const s of baselineSessions) {
-    const repos = Array.isArray(s.repos) ? s.repos : JSON.parse(s.repos || '[]');
-    for (const r of repos) {
+    for (const r of sessionRepos(s)) {
       const key = r.remoteUrl || r.repo;
       if (key) repoCounts[key] = (repoCounts[key] ?? 0) + 1;
     }
@@ -173,10 +169,10 @@ function computeTarget(questDef, tier, baseline) {
  * Uses the calendar date as seed so the same day always picks the same quests.
  */
 function seededRandInt(seed, n) {
-  // Simple LCG
-  let s = seed;
-  s = ((s * 1664525) + 1013904223) & 0xffffffff;
-  return Math.abs(s) % n;
+  // Simple LCG. >>> 0 coerces to an unsigned 32-bit int, avoiding the sign-bit
+  // edge case that & 0xffffffff + Math.abs leaves at -0x80000000.
+  const s = (((seed * 1664525) + 1013904223) >>> 0);
+  return s % n;
 }
 
 function dateSeed(dateStr) {
@@ -357,89 +353,72 @@ function generateSlate(dateStr, streakState) {
  * Returns the qualifying commits for today from a session.
  * richCommits are pre-qualified by the commit analyser (E-1).
  */
-function getTodayData(todayStr, currentSession, richCommits) {
+function getTodayData(todayStr, currentSession, richCommits, allXpEvents) {
   // All completed focus sessions today (including the just-completed one)
   const todaySessions = store.getSessionsForDate(todayStr).filter(
     s => s.type === 'focus' && (s.status === 'completed' || s.id === currentSession.id)
   );
 
-  // All XP events for today's sessions
-  const sessionIds = new Set(todaySessions.map(s => s.id));
-  const allXpEvents = store.getXpEvents();
-  const todayEvents = allXpEvents.filter(e => sessionIds.has(e.session_id));
-
-  // Aggregate commits across all today's sessions from repos data
-  const allTodayCommits = [];
-  for (const s of todaySessions) {
-    const repos = Array.isArray(s.repos) ? s.repos : JSON.parse(s.repos || '[]');
-    for (const r of repos) {
-      for (const c of (r.commits ?? [])) {
-        allTodayCommits.push({ ...c, repoKey: r.remoteUrl || r.repo });
-      }
-    }
+  // Precompute COMMIT_BONUS count per session in one pass so each condition
+  // evaluator reads a Map lookup instead of re-filtering all events.
+  const commitBonusBySession = new Map();
+  for (const e of allXpEvents) {
+    if (e.event_type !== 'COMMIT_BONUS') continue;
+    commitBonusBySession.set(e.session_id, (commitBonusBySession.get(e.session_id) ?? 0) + 1);
   }
-
-  // Current session's rich commits (qualifying, from analyser)
-  // For prior sessions today, we use the stored commit count from xp_events
-  // For aggregation quests, we need to pull from repos stored in session row
-  // richCommits = qualifying commits for this session (E-1 already applied by analyseCommitsRich)
 
   return {
     todaySessions,
-    todayEvents,
-    allTodayCommits,
     currentSession,
     richCommits,
+    commitBonusBySession,
   };
 }
 
 /**
- * Count qualifying commits for a session by counting its COMMIT_BONUS events.
- * This respects the XP qualification pipeline (E-1).
+ * Qualifying commit count for a session, from the precomputed map (E-1).
  */
-function getQualifyingCommitCountForSession(sessionId, allXpEvents) {
-  return allXpEvents.filter(
-    e => e.session_id === sessionId && e.event_type === 'COMMIT_BONUS'
-  ).length;
+function getQualifyingCommitCountForSession(sessionId, commitBonusBySession) {
+  return commitBonusBySession.get(sessionId) ?? 0;
 }
 
 const CONDITIONS = {
   // C-1: commits in a single session >= target
-  commits_per_session(quest, data, allXpEvents) {
-    const count = getQualifyingCommitCountForSession(data.currentSession.id, allXpEvents);
+  commits_per_session(quest, data) {
+    const count = getQualifyingCommitCountForSession(data.currentSession.id, data.commitBonusBySession);
     return { met: count >= quest.targetValue, progress: count };
   },
 
   // C-2: cumulative qualifying commits today >= target
-  commits_per_day(quest, data, allXpEvents) {
+  commits_per_day(quest, data) {
+    const total = data.todaySessions.reduce(
+      (sum, s) => sum + getQualifyingCommitCountForSession(s.id, data.commitBonusBySession), 0
+    );
+    return { met: total >= quest.targetValue, progress: total };
+  },
+
+  // C-3: cumulative qualifying lines changed today >= target.
+  // Reads cached sessions.total_lines (computed at session completion) so prior
+  // sessions count too; falls back to current session's rich commits when the
+  // cached total isn't available yet.
+  lines_changed(quest, data) {
     const total = data.todaySessions.reduce((sum, s) => {
-      return sum + getQualifyingCommitCountForSession(s.id, allXpEvents);
+      if (s.id === data.currentSession.id) {
+        return sum + data.richCommits.reduce(
+          (cs, c) => cs + (c.additions ?? 0) + (c.deletions ?? 0), 0
+        );
+      }
+      return sum + (s.total_lines >= 0 ? s.total_lines : 0);
     }, 0);
     return { met: total >= quest.targetValue, progress: total };
   },
 
-  // C-3: cumulative lines changed today >= target
-  lines_changed(quest, data) {
-    const total = data.richCommits.reduce(
-      (sum, c) => sum + (c.additions ?? 0) + (c.deletions ?? 0), 0
-    );
-    // We only have rich commits for the current session; for prior sessions
-    // we track via stored repos — but line counts aren't stored. Use current session only.
-    // TODO: Could be improved by storing line counts, but spec only mentions "current day"
-    // accumulation — for now use the current session's rich commits plus an approximation.
-    // Simplification: treat current session's qualifying lines as the accumulator per evaluation.
-    // This means the quest will complete the session that crosses the threshold.
-    return { met: total >= quest.targetValue, progress: total };
-  },
-
   // C-4: distinct repos with qualifying commits today >= target
-  multi_repo(quest, data, allXpEvents) {
+  multi_repo(quest, data) {
     const repos = new Set();
     for (const s of data.todaySessions) {
-      const count = getQualifyingCommitCountForSession(s.id, allXpEvents);
-      if (count > 0) {
-        const sessionRepos = Array.isArray(s.repos) ? s.repos : JSON.parse(s.repos || '[]');
-        for (const r of sessionRepos) {
+      if (getQualifyingCommitCountForSession(s.id, data.commitBonusBySession) > 0) {
+        for (const r of sessionRepos(s)) {
           if ((r.commits ?? []).length > 0) repos.add(r.remoteUrl || r.repo);
         }
       }
@@ -478,22 +457,19 @@ const CONDITIONS = {
   },
 
   // C-8: at least 1 qualifying session today
-  streak_extend(quest, data, allXpEvents) {
+  streak_extend(quest, data) {
     const hasQualifying = data.todaySessions.some(
-      s => getQualifyingCommitCountForSession(s.id, allXpEvents) > 0
+      s => getQualifyingCommitCountForSession(s.id, data.commitBonusBySession) > 0
     );
     return { met: hasQualifying, progress: hasQualifying ? 1 : 0 };
   },
 
-  // C-9: a session started before target hour AND completed AND had qualifying commit
-  morning_session(quest, data, allXpEvents) {
+  // C-9: a session started strictly before target hour AND had qualifying commit
+  morning_session(quest, data) {
     const targetHour = quest.targetValue; // hour number, e.g. 9 means before 09:00
     const met = data.todaySessions.some(s => {
       const startHour = new Date(s.started_at).getHours();
-      const startMin = new Date(s.started_at).getMinutes();
-      const beforeTarget = startHour < targetHour || (startHour === targetHour && startMin === 0 && false);
-      // "before {time}" means strictly before — startHour < targetHour
-      const qualifies = getQualifyingCommitCountForSession(s.id, allXpEvents) > 0;
+      const qualifies = getQualifyingCommitCountForSession(s.id, data.commitBonusBySession) > 0;
       return startHour < targetHour && qualifies;
     });
     return { met, progress: met ? 1 : 0 };
@@ -511,15 +487,13 @@ const CONDITIONS = {
   },
 
   // C-11: a session was active during 09:00–10:00 AND had qualifying commit
-  golden_hour(quest, data, allXpEvents) {
+  golden_hour(quest, data) {
     const met = data.todaySessions.some(s => {
-      const startHour = new Date(s.started_at).getHours();
-      const endHour = new Date(s.ended_at).getHours();
-      const endMin = new Date(s.ended_at).getMinutes();
       // Session active during 09:00–10:00 = started before 10:00 AND ended after 09:00
-      const activeInWindow = s.started_at < new Date(new Date(s.started_at).setHours(10, 0, 0, 0)).getTime()
-        && s.ended_at > new Date(new Date(s.started_at).setHours(9, 0, 0, 0)).getTime();
-      const qualifies = getQualifyingCommitCountForSession(s.id, allXpEvents) > 0;
+      const windowOpen  = new Date(s.started_at).setHours(9, 0, 0, 0);
+      const windowClose = new Date(s.started_at).setHours(10, 0, 0, 0);
+      const activeInWindow = s.started_at < windowClose && s.ended_at > windowOpen;
+      const qualifies = getQualifyingCommitCountForSession(s.id, data.commitBonusBySession) > 0;
       return activeInWindow && qualifies;
     });
     return { met, progress: met ? 1 : 0 };
@@ -536,20 +510,18 @@ const CONDITIONS = {
   },
 
   // C-13: qualifying commits with message <= 10 words >= target
-  clean_commits(quest, data, allXpEvents) {
+  clean_commits(quest, data) {
+    const isShort = msg => (msg ?? '').trim().split(/\s+/).filter(Boolean).length <= 10;
     let count = 0;
     for (const c of data.richCommits) {
-      const words = (c.message ?? '').trim().split(/\s+/).filter(Boolean).length;
-      if (words <= 10) count++;
+      if (isShort(c.message)) count++;
     }
     // Also count from prior sessions' stored data (best effort)
     for (const s of data.todaySessions) {
       if (s.id === data.currentSession.id) continue;
-      const repos = Array.isArray(s.repos) ? s.repos : JSON.parse(s.repos || '[]');
-      for (const r of repos) {
+      for (const r of sessionRepos(s)) {
         for (const c of (r.commits ?? [])) {
-          const words = (c.message ?? '').trim().split(/\s+/).filter(Boolean).length;
-          if (words <= 10) count++;
+          if (isShort(c.message)) count++;
         }
       }
     }
@@ -557,7 +529,7 @@ const CONDITIONS = {
   },
 
   // C-14: total deletions > total additions AND deletions >= 10
-  deletion_day(quest, data, allXpEvents) {
+  deletion_day(quest, data) {
     let totalAdd = 0;
     let totalDel = 0;
     for (const c of data.richCommits) {
@@ -599,7 +571,7 @@ function evaluateQuests({ session, richCommits, streakState }) {
   }
 
   const allXpEvents = store.getXpEvents();
-  const todayData = getTodayData(todayStr, session, richCommits);
+  const todayData = getTodayData(todayStr, session, richCommits, allXpEvents);
 
   const updatedQuests = [...slate.quests];
   const newlyCompleted = [];
@@ -613,7 +585,7 @@ function evaluateQuests({ session, richCommits, streakState }) {
     const evaluator = CONDITIONS[q.conditionId];
     if (!evaluator) continue;
 
-    const { met, progress } = evaluator(q, todayData, allXpEvents);
+    const { met, progress } = evaluator(q, todayData);
 
     updatedQuests[i] = { ...q, progress };
 
