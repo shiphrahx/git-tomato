@@ -7,7 +7,7 @@ const xp = require('./xp');
 const { analyseCommits, analyseCommitsRich } = require('./commitAnalyser');
 const { evaluateStreak } = require('./streaks');
 const { evaluateBadges } = require('./badges');
-const { evaluateQuests, sendQuestNotifications, expireStaleSlates } = require('./quests');
+const { evaluateQuests, sendQuestNotifications } = require('./quests');
 const { sendSessionCompleteNotification } = require('./notifications');
 const { LEVELS } = require('./levels');
 
@@ -91,6 +91,115 @@ function tick() {
   }
 }
 
+const DEFAULT_STREAK_RESULT = {
+  dailyStreak: 0, weeklyStreak: 0, isComeback: false, gapDays: 0,
+  previousDailyStreak: 0, weekBecameProductiveNow: false,
+};
+
+// Award XP, evaluate streaks/badges/quests for a completed focus session.
+// Persists the cached line total and emits the xp-state update. Returns the
+// data the session-complete payload and notifications need.
+function processFocusSession(sessionRowId, startedAt, endedAt) {
+  // Run rich commit analysis once — used by both XP (via commitBonuses) and badges
+  const richCommits = analyseCommitsRich(state.repoPaths, startedAt, endedAt);
+  const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
+
+  // H-5, H-6: only qualifying sessions (≥1 commit bonus) update streak state.
+  // C-1: evaluate streak before awarding XP so dailyStreak and isComeback feed in.
+  let streakResult = { ...DEFAULT_STREAK_RESULT };
+  if (commitBonuses.length > 0) {
+    streakResult = evaluateStreak(commitBonuses.length, endedAt);
+  }
+
+  const xpResult = xp.awardSessionXp(
+    sessionRowId, commitBonuses, streakResult.dailyStreak, streakResult.isComeback
+  );
+  xpResult.streakResult = streakResult;
+
+  // Cache total qualifying lines so the ten_thousand_lines badge reads a sum
+  // instead of re-deriving from git over all history (store backfills only -1s).
+  const totalLines = richCommits.reduce((sum, c) => sum + (c.totalLines ?? 0), 0);
+  store.setSessionTotalLines(sessionRowId, totalLines);
+
+  // B-1: evaluate badges after XP and streaks. D-1: quests after XP and badges.
+  const completedSession = store.getSessionById(sessionRowId);
+  const newBadgeSlugs = evaluateBadges({ session: completedSession, richCommits, xpResult, streakResult });
+  const { newlyCompleted: newCompletedQuests } = evaluateQuests({
+    session: completedSession,
+    richCommits,
+    streakState: store.getStreakState(),
+  });
+
+  emitXpStateUpdated();
+
+  return { xpResult, newBadgeSlugs, newCompletedQuests, streakResult, totalLines };
+}
+
+function emitXpStateUpdated() {
+  const newXpState = store.getXpState();
+  newXpState.levelTitle = LEVELS[newXpState.levelIndex].title;
+  timerEvents.emit('xpStateUpdated', newXpState);
+}
+
+// Fire all session-end desktop notifications, staggered so they don't overlap:
+// streak status → level-ups (2s each) → badge unlocks (1.5s each) → quests (1s each).
+function scheduleNotifications({ xpResult, newBadgeSlugs, newCompletedQuests, streakResult }) {
+  if (!Notification.isSupported()) return;
+
+  // G-4: streak broken — fires once when streak resets after a gap
+  if (streakResult.isComeback && streakResult.previousDailyStreak >= 1) {
+    new Notification({
+      title: 'Streak ended',
+      body: `Your ${streakResult.previousDailyStreak}-day streak ended`,
+    }).show();
+  }
+  // G-5: comeback
+  if (streakResult.isComeback) {
+    new Notification({
+      title: 'Welcome back',
+      body: `You were away for ${streakResult.gapDays} day${streakResult.gapDays !== 1 ? 's' : ''}`,
+    }).show();
+  }
+  // G-6: weekly streak achieved
+  if (streakResult.weekBecameProductiveNow) {
+    new Notification({ title: 'Week complete', body: `${streakResult.weeklyStreak}-week streak` }).show();
+  }
+
+  // F-4: staggered level-up notifications (2s apart)
+  let levelUpCount = 0;
+  if (xpResult && xpResult.levelAfter > xpResult.levelBefore) {
+    for (let i = xpResult.levelBefore + 1; i <= xpResult.levelAfter; i++) {
+      const from = LEVELS[i - 1].title;
+      const to = LEVELS[i].title;
+      setTimeout(() => {
+        if (Notification.isSupported()) {
+          new Notification({ title: 'Level up', body: `${from} → ${to}` }).show();
+        }
+      }, levelUpCount * 2000);
+      levelUpCount++;
+    }
+  }
+
+  // E-2: badge unlock notifications — after level-ups, 1.5s apart
+  const levelUpDuration = levelUpCount * 2000;
+  if (newBadgeSlugs.length > 0) {
+    const { BADGE_BY_SLUG } = require('./badgeDefs');
+    newBadgeSlugs.forEach((slug, idx) => {
+      const badge = BADGE_BY_SLUG[slug];
+      if (!badge) return;
+      setTimeout(() => {
+        new Notification({ title: badge.name, body: badge.description }).show();
+      }, levelUpDuration + idx * 1500);
+    });
+  }
+
+  // F-3: quest completion notifications — after all badge notifications, 1s apart
+  if (newCompletedQuests.length > 0) {
+    const badgeDuration = newBadgeSlugs.length * 1500;
+    sendQuestNotifications(newCompletedQuests, levelUpDuration + badgeDuration);
+  }
+}
+
 function completeSession() {
   clearInterval(state.intervalId);
   clearInterval(state.pollId);
@@ -109,118 +218,16 @@ function completeSession() {
   // Transition session row to xp_pending
   store.completeSession({ id: sessionRowId, endedAt, repos });
 
-  // Award XP only for naturally completed focus sessions (C-1)
-  let xpResult = null;
-  let newBadgeSlugs = [];
-  let newCompletedQuests = [];
-  let sessionRichCommits = [];
+  let result = { xpResult: null, newBadgeSlugs: [], newCompletedQuests: [], totalLines: 0 };
   if (completedType === 'focus') {
-    // Run rich commit analysis once — used by both XP (via commitBonuses) and badges
-    const richCommits = analyseCommitsRich(state.repoPaths, startedAt, endedAt);
-    sessionRichCommits = richCommits;
-    const commitBonuses = analyseCommits(state.repoPaths, startedAt, endedAt);
-    // H-5, H-6: only qualifying sessions (at least one commit bonus) update streak state
-    // C-1: evaluate streak before awarding XP so dailyStreak and isComeback feed in
-    const qualifyingCommitCount = commitBonuses.length;
-    let streakResult = { dailyStreak: 0, weeklyStreak: 0, isComeback: false, gapDays: 0, previousDailyStreak: 0, weekBecameProductiveNow: false };
-    if (qualifyingCommitCount > 0) {
-      streakResult = evaluateStreak(qualifyingCommitCount, endedAt);
-    }
-    xpResult = xp.awardSessionXp(sessionRowId, commitBonuses, streakResult.dailyStreak, streakResult.isComeback);
-    xpResult.streakResult = streakResult;
-
-    // B-1: evaluate badges after XP and Streaks have both finished
-    const completedSession = store.getSessionById(sessionRowId);
-    newBadgeSlugs = evaluateBadges({
-      session: completedSession,
-      richCommits,
-      xpResult,
-      streakResult,
-    });
-
-    // D-1: evaluate quests after XP and Badges
-    const { newlyCompleted: completedQuests } = evaluateQuests({
-      session: completedSession,
-      richCommits,
-      streakState: store.getStreakState(),
-    });
-    newCompletedQuests = completedQuests;
-
-    // G-4: streak broken notification — fires once when streak resets after a gap
-    // isComeback means previousDailyStreak > 0 AND gap >= 2 → streak was broken
-    if (streakResult.isComeback && streakResult.previousDailyStreak >= 1 && Notification.isSupported()) {
-      new Notification({
-        title: 'Streak ended',
-        body: `Your ${streakResult.previousDailyStreak}-day streak ended`,
-      }).show();
-    }
-
-    // G-5: comeback notification (E-2 triggered)
-    if (streakResult.isComeback && Notification.isSupported()) {
-      new Notification({
-        title: 'Welcome back',
-        body: `You were away for ${streakResult.gapDays} day${streakResult.gapDays !== 1 ? 's' : ''}`,
-      }).show();
-    }
-
-    // G-6: weekly streak achieved notification
-    if (streakResult.weekBecameProductiveNow && Notification.isSupported()) {
-      new Notification({
-        title: 'Week complete',
-        body: `${streakResult.weeklyStreak}-week streak`,
-      }).show();
-    }
-
-    // F-4: staggered level-up notifications
-    let levelUpCount = 0;
-    if (xpResult && xpResult.levelAfter > xpResult.levelBefore) {
-      const levelUps = [];
-      for (let i = xpResult.levelBefore + 1; i <= xpResult.levelAfter; i++) {
-        levelUps.push({ from: LEVELS[i - 1].title, to: LEVELS[i].title });
-      }
-      levelUps.forEach(({ from, to }, idx) => {
-        setTimeout(() => {
-          if (Notification.isSupported()) {
-            new Notification({ title: 'Level up', body: `${from} → ${to}` }).show();
-          }
-        }, idx * 2000);
-      });
-      levelUpCount = levelUps.length;
-    }
-
-    // E-2: badge unlock notifications — staggered 1.5s, after level-up notifications
-    if (newBadgeSlugs.length > 0 && Notification.isSupported()) {
-      const { BADGE_BY_SLUG } = require('./badgeDefs');
-      const levelUpDuration = levelUpCount * 2000;
-      newBadgeSlugs.forEach((slug, idx) => {
-        const badge = BADGE_BY_SLUG[slug];
-        if (!badge) return;
-        setTimeout(() => {
-          new Notification({ title: badge.name, body: badge.description }).show();
-        }, levelUpDuration + idx * 1500);
-      });
-    }
-
-    // F-3: quest completion notifications — staggered 1s, after all badge notifications
-    if (newCompletedQuests.length > 0) {
-      const levelUpDuration = levelUpCount * 2000;
-      const badgeDuration = newBadgeSlugs.length * 1500;
-      sendQuestNotifications(newCompletedQuests, levelUpDuration + badgeDuration);
-    }
-
-    const newXpState = store.getXpState();
-    newXpState.levelTitle = LEVELS[newXpState.levelIndex].title;
-    timerEvents.emit('xpStateUpdated', newXpState);
+    // Award XP only for naturally completed focus sessions (C-1)
+    result = processFocusSession(sessionRowId, startedAt, endedAt);
+    scheduleNotifications(result);
   } else {
     // Break sessions: just mark done, no XP
     store.markSessionXpDone(sessionRowId);
-
-    const newXpState = store.getXpState();
-    newXpState.levelTitle = LEVELS[newXpState.levelIndex].title;
-    timerEvents.emit('xpStateUpdated', newXpState);
+    emitXpStateUpdated();
   }
-
-  const totalLines = sessionRichCommits.reduce((sum, c) => sum + (c.totalLines ?? 0), 0);
 
   const session = {
     id: sessionRowId,
@@ -229,10 +236,10 @@ function completeSession() {
     durationMinutes: Math.round(state.settings[completedType] / 60),
     type: completedType,
     repos,
-    xpResult,
-    totalLines,
-    newBadgeSlugs, // E-3: newly unlocked badge slugs for session-end summary
-    newCompletedQuests, // F-4: quests completed this session
+    xpResult: result.xpResult,
+    totalLines: result.totalLines,
+    newBadgeSlugs: result.newBadgeSlugs, // E-3: newly unlocked badge slugs for session-end summary
+    newCompletedQuests: result.newCompletedQuests, // F-4: quests completed this session
   };
 
   sendToAll(CHANNELS.SESSION_COMPLETE, session);
