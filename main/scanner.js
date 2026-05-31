@@ -1,25 +1,9 @@
-const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { runGit, getRemoteUrl } = require('./gitBin');
 
 const DEFAULT_SCAN_DIRS = ['projects', 'code', 'dev', 'src', 'workspace'];
-
-// Windows fallback paths if 'git' is not in PATH
-const WINDOWS_GIT_FALLBACKS = [
-  'C:\\Program Files\\Git\\cmd\\git.exe',
-  'C:\\Program Files (x86)\\Git\\cmd\\git.exe',
-];
-
-function resolveGitBin() {
-  if (process.platform !== 'win32') return 'git';
-  for (const p of WINDOWS_GIT_FALLBACKS) {
-    if (fs.existsSync(p)) return p; // no quoting needed — spawnSync takes args array
-  }
-  return 'git'; // hope it's in PATH
-}
-
-const GIT_BIN = resolveGitBin();
 
 function findGitRepos(baseDirs) {
   const repos = [];
@@ -42,25 +26,6 @@ function findGitRepos(baseDirs) {
   return repos;
 }
 
-function getRemoteUrl(repoPath) {
-  try {
-    const result = spawnSync(GIT_BIN, ['remote', 'get-url', 'origin'], {
-      cwd: repoPath,
-      timeout: 3000,
-      encoding: 'utf8',
-    });
-    if (result.status !== 0 || !result.stdout) return null;
-    const raw = result.stdout.trim();
-    // Normalise SSH → HTTPS: git@github.com:owner/repo.git → https://github.com/owner/repo
-    const ssh = raw.match(/^git@([^:]+):(.+?)(?:\.git)?$/);
-    if (ssh) return `https://${ssh[1]}/${ssh[2]}`;
-    // Strip trailing .git from HTTPS URLs
-    return raw.replace(/\.git$/, '');
-  } catch (_) {
-    return null;
-  }
-}
-
 function getCommitsSince(isoTimestamp, repoPaths) {
   const searchPaths =
     repoPaths && repoPaths.length > 0
@@ -72,39 +37,32 @@ function getCommitsSince(isoTimestamp, repoPaths) {
   for (const repoPath of searchPaths) {
     if (!fs.existsSync(path.join(repoPath, '.git'))) continue;
 
-    try {
-      const result = spawnSync(
-        GIT_BIN,
-        ['log', `--since=${isoTimestamp}`, '--format=%H|%s|%ae', '--all'],
-        { cwd: repoPath, timeout: 5000, encoding: 'utf8' }
-      );
-      const output = (result.status === 0 && result.stdout) ? result.stdout.trim() : '';
+    const output = runGit(
+      ['log', `--since=${isoTimestamp}`, '--format=%H|%s|%ae', '--all'],
+      repoPath
+    );
+    if (!output) continue;
 
-      if (!output) continue;
+    const commits = output
+      .split('\n')
+      .map(line => {
+        const parts = line.split('|');
+        if (parts.length < 3) return null;
+        const hash = parts[0].trim();
+        const author = parts[parts.length - 1].trim();
+        // join middle parts to handle pipe chars in commit messages
+        const message = parts.slice(1, parts.length - 1).join('|').trim();
+        return { hash, message, author, repo: path.basename(repoPath) };
+      })
+      .filter(c => c && c.hash);
 
-      const commits = output
-        .split('\n')
-        .map(line => {
-          const parts = line.split('|');
-          if (parts.length < 3) return null;
-          const hash = parts[0].trim();
-          const author = parts[parts.length - 1].trim();
-          // join middle parts to handle pipe chars in commit messages
-          const message = parts.slice(1, parts.length - 1).join('|').trim();
-          return { hash, message, author, repo: path.basename(repoPath) };
-        })
-        .filter(c => c && c.hash);
-
-      if (commits.length > 0) {
-        results.push({
-          repo: path.basename(repoPath),
-          repoPath,
-          remoteUrl: getRemoteUrl(repoPath),
-          commits,
-        });
-      }
-    } catch (e) {
-      console.error(`[scanner] getCommitsSince failed for ${repoPath}:`, e.message);
+    if (commits.length > 0) {
+      results.push({
+        repo: path.basename(repoPath),
+        repoPath,
+        remoteUrl: getRemoteUrl(repoPath),
+        commits,
+      });
     }
   }
 
@@ -128,52 +86,36 @@ function getAllCommitsForDay(dateStr, repoPaths) {
   for (const repoPath of searchPaths) {
     if (!fs.existsSync(path.join(repoPath, '.git'))) continue;
 
-    try {
-      const result = spawnSync(
-        GIT_BIN,
-        ['log', `--after=${dayStart.toISOString()}`, `--before=${dayEnd.toISOString()}`, '--format=%H|%s|%ae|%ct', '--all'],
-        { cwd: repoPath, timeout: 5000, encoding: 'utf8' }
-      );
-      const output = (result.status === 0 && result.stdout) ? result.stdout.trim() : '';
+    const output = runGit(
+      ['log', `--after=${dayStart.toISOString()}`, `--before=${dayEnd.toISOString()}`, '--format=%H|%s|%ae|%ct', '--all'],
+      repoPath
+    );
+    if (!output) continue;
 
-      if (!output) continue;
+    const commits = output
+      .split('\n')
+      .map(line => {
+        const parts = line.split('|');
+        if (parts.length < 4) return null;
+        const hash = parts[0].trim();
+        const timestamp = parseInt(parts[parts.length - 1].trim(), 10) * 1000; // to ms
+        const author = parts[parts.length - 2].trim();
+        const message = parts.slice(1, parts.length - 2).join('|').trim();
+        return { hash, message, author, timestamp, repo: path.basename(repoPath) };
+      })
+      .filter(c => c && c.hash);
 
-      const commits = output
-        .split('\n')
-        .map(line => {
-          const parts = line.split('|');
-          if (parts.length < 4) return null;
-          const hash = parts[0].trim();
-          const timestamp = parseInt(parts[parts.length - 1].trim(), 10) * 1000; // to ms
-          const author = parts[parts.length - 2].trim();
-          const message = parts.slice(1, parts.length - 2).join('|').trim();
-          return { hash, message, author, timestamp, repo: path.basename(repoPath) };
-        })
-        .filter(c => c && c.hash);
-
-      if (commits.length > 0) {
-        results.push({
-          repo: path.basename(repoPath),
-          repoPath,
-          remoteUrl: getRemoteUrl(repoPath),
-          commits,
-        });
-      }
-    } catch (e) {
-      console.error(`[scanner] getAllCommitsForDay failed for ${repoPath}:`, e.message);
+    if (commits.length > 0) {
+      results.push({
+        repo: path.basename(repoPath),
+        repoPath,
+        remoteUrl: getRemoteUrl(repoPath),
+        commits,
+      });
     }
   }
 
   return results;
 }
 
-function isGitAvailable() {
-  try {
-    const result = spawnSync(GIT_BIN, ['--version'], { timeout: 3000 });
-    return result.status === 0;
-  } catch (_) {
-    return false;
-  }
-}
-
-module.exports = { getCommitsSince, findGitRepos, getAllCommitsForDay, isGitAvailable };
+module.exports = { getCommitsSince, findGitRepos, getAllCommitsForDay };
