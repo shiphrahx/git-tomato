@@ -32,6 +32,9 @@ const CHANNELS = {
   XP_STATE_GET: 'xp:getState',
   XP_STATE_UPDATED: 'xp:stateUpdated',
 
+  // Level definitions — invoke (renderer mirrors these for XP-bar rendering)
+  LEVELS_GET: 'xp:getLevels',
+
   // Streak state — invoke
   STREAK_STATE_GET: 'streak:getState',
 
