@@ -8,9 +8,19 @@ export function Settings() {
   const [appVersion, setAppVersion] = useState(null);
 
   useEffect(() => {
-    window.electronAPI.getSettings().then(setSettings);
-    window.electronAPI.checkGit().then(({ available }) => setGitAvailable(available));
-    window.electronAPI.getAppVersion().then(v => setAppVersion(v));
+    if (!window.electronAPI) {
+      setSaveError('Settings unavailable: preload bridge not loaded.');
+      return;
+    }
+    window.electronAPI.getSettings()
+      .then(s => setSettings(s ?? {}))
+      .catch(e => {
+        console.error('[Settings] getSettings failed:', e);
+        setSettings({});
+        setSaveError('Failed to load settings: ' + e.message);
+      });
+    window.electronAPI.checkGit().then(({ available }) => setGitAvailable(available)).catch(() => {});
+    window.electronAPI.getAppVersion().then(v => setAppVersion(v)).catch(() => {});
   }, []);
 
   function handleChange(field, value) {
