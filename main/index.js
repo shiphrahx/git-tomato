@@ -114,7 +114,148 @@ function _sundayOf(mondayStr) {
   return `${y}-${m}-${day}`;
 }
 
+// Register every ipcMain.handle/invoke channel. Called first thing in
+// whenReady so handler availability never depends on window/tray/launch code
+// surviving — a throw later cannot leave channels unregistered (which surfaced
+// as "No handler registered for 'settings:get'").
+function registerIpcHandlers() {
+  // Store handlers
+  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date, limit } = {}) => {
+    try {
+      return date ? store.getSessionsForDate(date) : store.getAllSessions(limit);
+    } catch (e) {
+      console.error('[ipc] STORE_GET_SESSIONS error:', e);
+      return [];
+    }
+  });
+
+  ipcMain.handle(CHANNELS.XP_STATE_GET, async () => {
+    try { return store.getXpState(); }
+    catch (e) { console.error('[ipc] XP_STATE_GET error:', e); return null; }
+  });
+
+  // Level definitions — single source of truth lives in main/levels.js
+  ipcMain.handle(CHANNELS.LEVELS_GET, async () => {
+    try { const { LEVELS } = require('./levels'); return LEVELS; }
+    catch (e) { console.error('[ipc] LEVELS_GET error:', e); return []; }
+  });
+
+  // Badges: return all unlocks with badge def metadata attached
+  ipcMain.handle(CHANNELS.BADGES_GET, async () => {
+    try { return store.getBadgeUnlocks(); }
+    catch (e) { console.error('[ipc] BADGES_GET error:', e); return []; }
+  });
+
+  // D-1, D-2, D-3: streak state with computed at-risk fields (never persisted)
+  ipcMain.handle(CHANNELS.STREAK_STATE_GET, async () => {
+    try { return buildStreakPayload(); }
+    catch (e) { console.error('[ipc] STREAK_STATE_GET error:', e); return null; }
+  });
+
+  // Quest handlers
+  ipcMain.handle(CHANNELS.QUESTS_GET, async () => {
+    try { return getTodaySlate(); }
+    catch (e) { console.error('[ipc] QUESTS_GET error:', e); return null; }
+  });
+  ipcMain.handle(CHANNELS.QUESTS_HISTORY_GET, async () => {
+    try { return store.getAllQuestSlates(); }
+    catch (e) { console.error('[ipc] QUESTS_HISTORY_GET error:', e); return []; }
+  });
+
+  ipcMain.handle(CHANNELS.STORE_GET_PRODUCTIVE_DAYS, async () => {
+    try { return store.getAllProductiveDays(); }
+    catch (e) { console.error('[ipc] STORE_GET_PRODUCTIVE_DAYS error:', e); return []; }
+  });
+
+  ipcMain.handle(CHANNELS.GIT_CHECK, async () => {
+    try { return { available: isGitAvailable() }; }
+    catch (e) { console.error('[ipc] GIT_CHECK error:', e); return { available: false }; }
+  });
+
+  ipcMain.handle(CHANNELS.APP_VERSION, async () => {
+    try { return app.getVersion(); }
+    catch (e) { console.error('[ipc] APP_VERSION error:', e); return null; }
+  });
+
+  // Settings handlers
+  ipcMain.handle(CHANNELS.SETTINGS_GET, async () => {
+    try { return readSettings(); }
+    catch (e) { console.error('[ipc] SETTINGS_GET error:', e); return null; }
+  });
+  ipcMain.handle(CHANNELS.SETTINGS_SET, async (_, s) => {
+    try {
+      if (!s || typeof s !== 'object') throw new Error('Invalid settings object');
+      const clamp = (v, min, max, def) => {
+        const n = parseInt(v);
+        return (isNaN(n) || n < min || n > max) ? def : n;
+      };
+      const validated = {
+        focusDuration: clamp(s.focusDuration, 1, 120, 25),
+        shortBreak:    clamp(s.shortBreak,    1,  60, 5),
+        longBreak:     clamp(s.longBreak,     1,  60, 15),
+        repoPaths:     Array.isArray(s.repoPaths) ? s.repoPaths.filter(p => typeof p === 'string' && p.trim()) : [],
+        githubToken:   typeof s.githubToken === 'string' ? s.githubToken : '',
+      };
+      writeSettings(validated);
+      timer.updateSettings(validated);
+      invalidateSettingsCache();
+      return { ok: true };
+    } catch (e) {
+      console.error('[ipc] SETTINGS_SET error:', e);
+      return { ok: false, error: e.message };
+    }
+  });
+
+  // Timer state handler (renderer requests current state on load)
+  ipcMain.handle('timer:getState', async () => {
+    try { return timer.getState(); }
+    catch (e) { console.error('[ipc] timer:getState error:', e); return null; }
+  });
+
+  // Open URL in default browser
+  ipcMain.handle(CHANNELS.OPEN_URL, async (_, url) => {
+    try { await shell.openExternal(url); }
+    catch (e) { console.error('[ipc] OPEN_URL error:', e); }
+  });
+
+  // XP and lines earned on a calendar day
+  ipcMain.handle(CHANNELS.STORE_GET_DAY_XP, async (_, { date } = {}) => {
+    try {
+      if (!date) return { xp: 0, totalLines: 0 };
+      const { analyseCommitsRich } = require('./commitAnalyser');
+      const settings = readSettings();
+      const sessions = store.getSessionsForDate(date).filter(s => s.type === 'focus' && s.status === 'completed');
+      const totalLines = sessions.reduce((sum, s) => {
+        const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
+        return sum + rich.reduce((rs, c) => rs + (c.totalLines ?? 0), 0);
+      }, 0);
+      return { xp: store.getXpForDate(date), totalLines };
+    } catch (e) {
+      console.error('[ipc] STORE_GET_DAY_XP error:', e);
+      return { xp: 0, totalLines: 0 };
+    }
+  });
+
+  // All commits for a calendar day + session windows for that day
+  ipcMain.handle(CHANNELS.STORE_GET_DAY_COMMITS, async (_, { date } = {}) => {
+    try {
+      if (!date) return { repos: [], sessionWindows: [] };
+      const settings = readSettings();
+      const repos = scanner.getAllCommitsForDay(date, settings.repoPaths);
+      const sessionWindows = store.getSessionWindowsForDate(date);
+      return { repos, sessionWindows };
+    } catch (e) {
+      console.error('[ipc] STORE_GET_DAY_COMMITS error:', e);
+      return { repos: [], sessionWindows: [] };
+    }
+  });
+}
+
 app.whenReady().then(() => {
+  // Register IPC handlers before anything that can throw, so the renderer can
+  // always reach them even if window/tray/launch setup fails.
+  registerIpcHandlers();
+
   // Windows: needed for dev-mode desktop notifications
   if (process.platform === 'win32') {
     app.setAppUserModelId('com.git-tomato.app');
@@ -238,39 +379,6 @@ app.whenReady().then(() => {
     }
   });
 
-  // Store handlers
-  ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date, limit } = {}) => {
-    try {
-      return date ? store.getSessionsForDate(date) : store.getAllSessions(limit);
-    } catch (e) {
-      console.error('[ipc] STORE_GET_SESSIONS error:', e);
-      return [];
-    }
-  });
-
-  ipcMain.handle(CHANNELS.XP_STATE_GET, async () => {
-    try { return store.getXpState(); }
-    catch (e) { console.error('[ipc] XP_STATE_GET error:', e); return null; }
-  });
-
-  // Level definitions — single source of truth lives in main/levels.js
-  ipcMain.handle(CHANNELS.LEVELS_GET, async () => {
-    try { const { LEVELS } = require('./levels'); return LEVELS; }
-    catch (e) { console.error('[ipc] LEVELS_GET error:', e); return []; }
-  });
-
-  // Badges: return all unlocks with badge def metadata attached
-  ipcMain.handle(CHANNELS.BADGES_GET, async () => {
-    try { return store.getBadgeUnlocks(); }
-    catch (e) { console.error('[ipc] BADGES_GET error:', e); return []; }
-  });
-
-  // D-1, D-2, D-3: streak state with computed at-risk fields (never persisted)
-  ipcMain.handle(CHANNELS.STREAK_STATE_GET, async () => {
-    try { return buildStreakPayload(); }
-    catch (e) { console.error('[ipc] STREAK_STATE_GET error:', e); return null; }
-  });
-
   timer.timerEvents.on('xpStateUpdated', (xpState) => {
     const payload = { ...xpState, streakState: buildStreakPayload() };
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -281,104 +389,6 @@ app.whenReady().then(() => {
       mainWindow.webContents.send(CHANNELS.QUESTS_UPDATED, getTodaySlate());
     }
     tray.setToolTip(`git-tomato — ${xpState.levelTitle}`);
-  });
-
-  // Quest handlers
-  ipcMain.handle(CHANNELS.QUESTS_GET, async () => {
-    try { return getTodaySlate(); }
-    catch (e) { console.error('[ipc] QUESTS_GET error:', e); return null; }
-  });
-  ipcMain.handle(CHANNELS.QUESTS_HISTORY_GET, async () => {
-    try { return store.getAllQuestSlates(); }
-    catch (e) { console.error('[ipc] QUESTS_HISTORY_GET error:', e); return []; }
-  });
-
-  ipcMain.handle(CHANNELS.STORE_GET_PRODUCTIVE_DAYS, async () => {
-    try { return store.getAllProductiveDays(); }
-    catch (e) { console.error('[ipc] STORE_GET_PRODUCTIVE_DAYS error:', e); return []; }
-  });
-
-  ipcMain.handle(CHANNELS.GIT_CHECK, async () => {
-    try { return { available: isGitAvailable() }; }
-    catch (e) { console.error('[ipc] GIT_CHECK error:', e); return { available: false }; }
-  });
-
-  ipcMain.handle(CHANNELS.APP_VERSION, async () => {
-    try { return app.getVersion(); }
-    catch (e) { console.error('[ipc] APP_VERSION error:', e); return null; }
-  });
-
-  // Settings handlers
-  ipcMain.handle(CHANNELS.SETTINGS_GET, async () => {
-    try { return readSettings(); }
-    catch (e) { console.error('[ipc] SETTINGS_GET error:', e); return null; }
-  });
-  ipcMain.handle(CHANNELS.SETTINGS_SET, async (_, s) => {
-    try {
-      if (!s || typeof s !== 'object') throw new Error('Invalid settings object');
-      const clamp = (v, min, max, def) => {
-        const n = parseInt(v);
-        return (isNaN(n) || n < min || n > max) ? def : n;
-      };
-      const validated = {
-        focusDuration: clamp(s.focusDuration, 1, 120, 25),
-        shortBreak:    clamp(s.shortBreak,    1,  60, 5),
-        longBreak:     clamp(s.longBreak,     1,  60, 15),
-        repoPaths:     Array.isArray(s.repoPaths) ? s.repoPaths.filter(p => typeof p === 'string' && p.trim()) : [],
-        githubToken:   typeof s.githubToken === 'string' ? s.githubToken : '',
-      };
-      writeSettings(validated);
-      timer.updateSettings(validated);
-      invalidateSettingsCache();
-      return { ok: true };
-    } catch (e) {
-      console.error('[ipc] SETTINGS_SET error:', e);
-      return { ok: false, error: e.message };
-    }
-  });
-
-  // Timer state handler (renderer requests current state on load)
-  ipcMain.handle('timer:getState', async () => {
-    try { return timer.getState(); }
-    catch (e) { console.error('[ipc] timer:getState error:', e); return null; }
-  });
-
-  // Open URL in default browser
-  ipcMain.handle(CHANNELS.OPEN_URL, async (_, url) => {
-    try { await shell.openExternal(url); }
-    catch (e) { console.error('[ipc] OPEN_URL error:', e); }
-  });
-
-  // XP and lines earned on a calendar day
-  ipcMain.handle(CHANNELS.STORE_GET_DAY_XP, async (_, { date } = {}) => {
-    try {
-      if (!date) return { xp: 0, totalLines: 0 };
-      const { analyseCommitsRich } = require('./commitAnalyser');
-      const settings = readSettings();
-      const sessions = store.getSessionsForDate(date).filter(s => s.type === 'focus' && s.status === 'completed');
-      const totalLines = sessions.reduce((sum, s) => {
-        const rich = analyseCommitsRich(settings.repoPaths ?? [], s.started_at, s.ended_at);
-        return sum + rich.reduce((rs, c) => rs + (c.totalLines ?? 0), 0);
-      }, 0);
-      return { xp: store.getXpForDate(date), totalLines };
-    } catch (e) {
-      console.error('[ipc] STORE_GET_DAY_XP error:', e);
-      return { xp: 0, totalLines: 0 };
-    }
-  });
-
-  // All commits for a calendar day + session windows for that day
-  ipcMain.handle(CHANNELS.STORE_GET_DAY_COMMITS, async (_, { date } = {}) => {
-    try {
-      if (!date) return { repos: [], sessionWindows: [] };
-      const settings = readSettings();
-      const repos = scanner.getAllCommitsForDay(date, settings.repoPaths);
-      const sessionWindows = store.getSessionWindowsForDate(date);
-      return { repos, sessionWindows };
-    } catch (e) {
-      console.error('[ipc] STORE_GET_DAY_COMMITS error:', e);
-      return { repos: [], sessionWindows: [] };
-    }
   });
 
   // Open devtools in dev mode
