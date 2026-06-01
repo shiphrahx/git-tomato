@@ -114,121 +114,11 @@ function _sundayOf(mondayStr) {
   return `${y}-${m}-${day}`;
 }
 
-app.whenReady().then(() => {
-  // Windows: needed for dev-mode desktop notifications
-  if (process.platform === 'win32') {
-    app.setAppUserModelId('com.git-tomato.app');
-  }
-
-  const iconPath = process.platform === 'win32'
-    ? path.join(__dirname, '../assets/tray_icons/windows/tray.ico')
-    : path.join(__dirname, '../assets/tray_icons/macos/tray_22Template.png');
-  const icon = nativeImage.createFromPath(iconPath);
-
-  // Cap height to workArea on Windows
-  const DESIRED_HEIGHT = 680;
-  const { workArea } = screen.getPrimaryDisplay();
-  const windowHeight = process.platform === 'win32'
-    ? Math.min(DESIRED_HEIGHT, workArea.height)
-    : DESIRED_HEIGHT;
-
-  // Position top-right of work area by default
-  const x = Math.round(workArea.x + workArea.width - 380 - 24);
-  const y = Math.round(workArea.y + 24);
-
-  mainWindow = new BrowserWindow({
-    width: 380,
-    height: windowHeight,
-    x,
-    y,
-    title: 'git-tomato',
-    backgroundColor: '#0f1115',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-    resizable: true,
-    skipTaskbar: false,
-    frame: true,
-  });
-
-
-  mainWindow.loadURL(RENDERER_URL);
-  mainWindow.setMenuBarVisibility(false);
-  mainWindow.maximize();
-  mainWindow.on('closed', () => { mainWindow = null; });
-
-  // Tray icon for tooltip + right-click menu
-  tray = new Tray(icon);
-  tray.setToolTip('git-tomato');
-
-  // Right-click tray context menu
-  const contextMenu = Menu.buildFromTemplate([
-    { label: 'Open git-tomato', click: showMainWindow },
-    { type: 'separator' },
-    { label: 'Quit git-tomato', click: () => app.quit() },
-  ]);
-  tray.on('right-click', () => tray.popUpContextMenu(contextMenu));
-  function showMainWindow() {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.show();
-      mainWindow.focus();
-    } else {
-      mainWindow = new BrowserWindow({
-        width: 380,
-        height: windowHeight,
-        x,
-        y,
-        title: 'git-tomato',
-        backgroundColor: '#0f1115',
-        webPreferences: {
-          preload: path.join(__dirname, 'preload.js'),
-          contextIsolation: true,
-          nodeIntegration: false,
-        },
-        resizable: true,
-        skipTaskbar: false,
-        frame: true,
-      });
-      mainWindow.loadURL(RENDERER_URL);
-      mainWindow.setMenuBarVisibility(false);
-          mainWindow.on('closed', () => { mainWindow = null; });
-      timer.setWindow(mainWindow);
-    }
-  }
-
-  tray.on('click', showMainWindow);
-  tray.on('double-click', showMainWindow);
-
-  // Abort orphaned sessions and retry pending XP awards from last run
-  xp.processSessionsOnLaunch();
-
-  // B-5: one-time historical badge evaluation pass (runs only on first launch after install)
-  runHistoricalEvaluation();
-
-  // D-6: expire any incomplete quests from prior days
-  expireStaleSlates();
-
-  // Apply saved settings to timer
-  const settings = readSettings();
-  timer.updateSettings(settings);
-
-  // Wire up timer
-  timer.setWindow(mainWindow);
-  timer.registerHandlers();
-
-  // Update tray tooltip on every tick
-  timer.timerEvents.on('tick', ({ timeLeft, status }) => {
-    if (status === 'idle') {
-      tray.setToolTip('git-tomato');
-    } else {
-      const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-      const secs = (timeLeft % 60).toString().padStart(2, '0');
-      tray.setToolTip(`git-tomato — ${mins}:${secs}`);
-    }
-  });
-
+// Register every ipcMain.handle/invoke channel. Called first thing in
+// whenReady so handler availability never depends on window/tray/launch code
+// surviving — a throw later cannot leave channels unregistered (which surfaced
+// as "No handler registered for 'settings:get'").
+function registerIpcHandlers() {
   // Store handlers
   ipcMain.handle(CHANNELS.STORE_GET_SESSIONS, async (_, { date, limit } = {}) => {
     try {
@@ -260,18 +150,6 @@ app.whenReady().then(() => {
   ipcMain.handle(CHANNELS.STREAK_STATE_GET, async () => {
     try { return buildStreakPayload(); }
     catch (e) { console.error('[ipc] STREAK_STATE_GET error:', e); return null; }
-  });
-
-  timer.timerEvents.on('xpStateUpdated', (xpState) => {
-    const payload = { ...xpState, streakState: buildStreakPayload() };
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send(CHANNELS.XP_STATE_UPDATED, payload);
-      // Push fresh badge unlocks so renderer header count + collection update (E-4)
-      mainWindow.webContents.send(CHANNELS.BADGES_UPDATED, store.getBadgeUnlocks());
-      // Push fresh quest slate so renderer updates progress
-      mainWindow.webContents.send(CHANNELS.QUESTS_UPDATED, getTodaySlate());
-    }
-    tray.setToolTip(`git-tomato — ${xpState.levelTitle}`);
   });
 
   // Quest handlers
@@ -370,6 +248,147 @@ app.whenReady().then(() => {
       console.error('[ipc] STORE_GET_DAY_COMMITS error:', e);
       return { repos: [], sessionWindows: [] };
     }
+  });
+}
+
+app.whenReady().then(() => {
+  // Register IPC handlers before anything that can throw, so the renderer can
+  // always reach them even if window/tray/launch setup fails.
+  registerIpcHandlers();
+
+  // Windows: needed for dev-mode desktop notifications
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.git-tomato.app');
+  }
+
+  const iconPath = process.platform === 'win32'
+    ? path.join(__dirname, '../assets/tray_icons/windows/tray.ico')
+    : path.join(__dirname, '../assets/tray_icons/macos/tray_22Template.png');
+  const icon = nativeImage.createFromPath(iconPath);
+
+  // Cap height to workArea on Windows
+  const DESIRED_HEIGHT = 680;
+  const { workArea } = screen.getPrimaryDisplay();
+  const windowHeight = process.platform === 'win32'
+    ? Math.min(DESIRED_HEIGHT, workArea.height)
+    : DESIRED_HEIGHT;
+
+  // Position top-right of work area by default
+  const x = Math.round(workArea.x + workArea.width - 380 - 24);
+  const y = Math.round(workArea.y + 24);
+
+  mainWindow = new BrowserWindow({
+    width: 380,
+    height: windowHeight,
+    x,
+    y,
+    title: 'git-tomato',
+    backgroundColor: '#0f1115',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+    resizable: true,
+    skipTaskbar: false,
+    frame: true,
+  });
+
+
+  mainWindow.loadURL(RENDERER_URL);
+  mainWindow.setMenuBarVisibility(false);
+  mainWindow.maximize();
+  mainWindow.on('closed', () => { mainWindow = null; });
+
+  // Tray icon for tooltip + right-click menu
+  tray = new Tray(icon);
+  tray.setToolTip('git-tomato');
+
+  // Right-click tray context menu
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Open git-tomato', click: showMainWindow },
+    { type: 'separator' },
+    { label: 'Quit git-tomato', click: () => app.quit() },
+  ]);
+  tray.on('right-click', () => tray.popUpContextMenu(contextMenu));
+  function showMainWindow() {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      mainWindow = new BrowserWindow({
+        width: 380,
+        height: windowHeight,
+        x,
+        y,
+        title: 'git-tomato',
+        backgroundColor: '#0f1115',
+        webPreferences: {
+          preload: path.join(__dirname, 'preload.js'),
+          contextIsolation: true,
+          nodeIntegration: false,
+        },
+        resizable: true,
+        skipTaskbar: false,
+        frame: true,
+      });
+      mainWindow.loadURL(RENDERER_URL);
+      mainWindow.setMenuBarVisibility(false);
+          mainWindow.on('closed', () => { mainWindow = null; });
+      timer.setWindow(mainWindow);
+    }
+  }
+
+  tray.on('click', showMainWindow);
+  tray.on('double-click', showMainWindow);
+
+  // Launch-time maintenance. Each is wrapped so a failure in one cannot abort
+  // the whenReady callback and leave IPC handlers unregistered (which would
+  // make every renderer invoke() hang forever — e.g. Settings stuck loading).
+  try {
+    // Abort orphaned sessions and retry pending XP awards from last run
+    xp.processSessionsOnLaunch();
+  } catch (e) { console.error('[launch] processSessionsOnLaunch failed:', e); }
+
+  try {
+    // B-5: one-time historical badge evaluation pass (first launch after install)
+    runHistoricalEvaluation();
+  } catch (e) { console.error('[launch] runHistoricalEvaluation failed:', e); }
+
+  try {
+    // D-6: expire any incomplete quests from prior days
+    expireStaleSlates();
+  } catch (e) { console.error('[launch] expireStaleSlates failed:', e); }
+
+  // Apply saved settings to timer
+  const settings = readSettings();
+  timer.updateSettings(settings);
+
+  // Wire up timer
+  timer.setWindow(mainWindow);
+  timer.registerHandlers();
+
+  // Update tray tooltip on every tick
+  timer.timerEvents.on('tick', ({ timeLeft, status }) => {
+    if (status === 'idle') {
+      tray.setToolTip('git-tomato');
+    } else {
+      const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const secs = (timeLeft % 60).toString().padStart(2, '0');
+      tray.setToolTip(`git-tomato — ${mins}:${secs}`);
+    }
+  });
+
+  timer.timerEvents.on('xpStateUpdated', (xpState) => {
+    const payload = { ...xpState, streakState: buildStreakPayload() };
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send(CHANNELS.XP_STATE_UPDATED, payload);
+      // Push fresh badge unlocks so renderer header count + collection update (E-4)
+      mainWindow.webContents.send(CHANNELS.BADGES_UPDATED, store.getBadgeUnlocks());
+      // Push fresh quest slate so renderer updates progress
+      mainWindow.webContents.send(CHANNELS.QUESTS_UPDATED, getTodaySlate());
+    }
+    tray.setToolTip(`git-tomato — ${xpState.levelTitle}`);
   });
 
   // Open devtools in dev mode
