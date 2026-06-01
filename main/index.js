@@ -201,14 +201,23 @@ app.whenReady().then(() => {
   tray.on('click', showMainWindow);
   tray.on('double-click', showMainWindow);
 
-  // Abort orphaned sessions and retry pending XP awards from last run
-  xp.processSessionsOnLaunch();
+  // Launch-time maintenance. Each is wrapped so a failure in one cannot abort
+  // the whenReady callback and leave IPC handlers unregistered (which would
+  // make every renderer invoke() hang forever — e.g. Settings stuck loading).
+  try {
+    // Abort orphaned sessions and retry pending XP awards from last run
+    xp.processSessionsOnLaunch();
+  } catch (e) { console.error('[launch] processSessionsOnLaunch failed:', e); }
 
-  // B-5: one-time historical badge evaluation pass (runs only on first launch after install)
-  runHistoricalEvaluation();
+  try {
+    // B-5: one-time historical badge evaluation pass (first launch after install)
+    runHistoricalEvaluation();
+  } catch (e) { console.error('[launch] runHistoricalEvaluation failed:', e); }
 
-  // D-6: expire any incomplete quests from prior days
-  expireStaleSlates();
+  try {
+    // D-6: expire any incomplete quests from prior days
+    expireStaleSlates();
+  } catch (e) { console.error('[launch] expireStaleSlates failed:', e); }
 
   // Apply saved settings to timer
   const settings = readSettings();
